@@ -2,6 +2,7 @@
 1. Do not upload the env keys into github
 2. Create a pull request to get the working source code pushed to the main branch
 
+### Steps to set up for local environment
 - Create an .env after cloning the repo main branch
 - npm install
 - npm run dev
