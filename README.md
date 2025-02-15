@@ -1,6 +1,6 @@
 # FYP - Tool to detect cryptographic functions in blockchain systems
-### Do not upload the env keys into github
-### Create a pull request to get the working source code pushed to the main branch
+## Do not upload the env keys into github
+## Create a pull request to get the working source code pushed to the main branch
 
 - Create an .env after cloning the repo main branch
 - npm install
