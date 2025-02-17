@@ -26,7 +26,7 @@ const LoginUI = () => {
 
   // Function to handle redirection to the sign-up page
   const handleSignUpRedirect = () => {
-    navigate('/signup');  // Redirect to the sign-up page
+    navigate('/signup/email');  // Redirect to the sign-up page
   };
 
   return (
