@@ -4,7 +4,7 @@ import { resendVerificationEmail } from "../controller/authController";
 const SignUpConfirmation = () => {
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
-    const [showResend, setShowResend] = useState(true);
+    const [isDisabled, setIsDisabled] = useState(false);
     const [email, setEmail] = useState("");
 
     // Retrieve email from localStorage (if stored)
@@ -21,6 +21,8 @@ const SignUpConfirmation = () => {
             return;
         }
 
+        setIsDisabled(true); // Disable the button immediately
+
         const response = await resendVerificationEmail(email);
 
         if (response.error) {
@@ -29,19 +31,33 @@ const SignUpConfirmation = () => {
         } else {
             setError("");
             setMessage("Verification email sent successfully!"); // Show success message
-            setShowResend(false); // Hide the button after sending
         }
+
+        // Reset the button state after 10 seconds
+        setTimeout(() => {
+            window.location.reload(); // This will reload the page
+        }, 10000); // 10 seconds delay
     };
 
     return (
-        <div>
-            <h2>Verify Your Email</h2>
-            <p>We sent a verification email to: {email}</p>
-            {message && <p style={{ color: "green" }}>{message}</p>}
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            {showResend && (
-                <button onClick={handleResendEmail}>Resend Verification Email</button>
-            )}
+        <div className="bg-blue-950 w-screen h-screen flex flex-col items-center justify-center gap-6">
+            <h4 className="text-stone-50 text-5xl font-bold">cyvex</h4>
+            <div className="bg-stone-50 p-8 flex flex-col items-center justify-center gap-4 rounded-md shadow-lg w-100">
+                <p className="text-black text-lg font-regular">Thank you for signing up!</p>
+                <p className="text-black text-lg font-regular mb-0">email not in box?</p>
+                <p className="text-black text-lg font-regular mt-0">might want to check your spam...</p>
+                {/* Display error or success messages */}
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+                {message && <p className="text-green-500 text-sm">{message}</p>}
+                <button 
+                    onClick={handleResendEmail}
+                    disabled={isDisabled} // Disable button when isDisabled is true
+                    className={`w-60 px-6 py-3 rounded-md focus:outline-none 
+                        ${isDisabled ? "bg-gray-400 cursor-not-allowed" : "!bg-blue-950 hover:bg-blue-600 text-white"}`}
+                >
+                    {isDisabled ? "Please wait..." : "Resend Email"}
+                </button>
+            </div>
         </div>
     );
 };

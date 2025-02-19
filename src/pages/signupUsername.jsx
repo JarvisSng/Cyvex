@@ -16,15 +16,34 @@ const SignUpUsername = () => {
     };
 
     return (
-        <div>
-            <h2>Enter Username</h2>
-            <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-            />
-            <button onClick={handleNext}>Continue</button>
+        <div className="bg-blue-950 w-screen h-screen flex flex-col items-center justify-center gap-6">
+            <h4 className="text-stone-50 text-5xl font-bold">cyvex</h4>
+            <div className="bg-stone-50 p-8 flex flex-col items-center justify-center gap-4 rounded-md shadow-lg w-100">
+                <p className="text-black text-3xl font-regular">welcome</p>
+                <p className="text-black text-lg font-regular">nice! enter your preferred username!</p>
+                <input
+                    type="text"
+                    placeholder="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="font-bold p-3 w-60 bg-white text-black opacity-50 border border-blue-950 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button 
+                    onClick={handleNext}
+                    className="w-60 !bg-blue-950 text-white px-6 py-3 rounded-md hover:bg-blue-600 focus:outline-none"
+                >
+                    continue
+                </button>
+                <div className="flex justify-between w-80 mt-2">
+                    <p className="text-sm text-gray-600 hover:underline cursor-pointer">Need help?</p>
+                    <p 
+                        className="text-sm text-gray-600 hover:underline cursor-pointer"
+                        onClick={() => window.location.href = "/"}
+                    >
+                        Have an account?
+                    </p>
+                </div>
+            </div>
         </div>
     );
 };
