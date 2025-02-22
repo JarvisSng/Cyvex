@@ -6,6 +6,7 @@ import SignUpEmail from "./pages/signUpEmail.jsx";
 import SignUpUsername from "./pages/signUpUsername.jsx";
 import SignUpPassword from "./pages/signUpPassword.jsx";
 import SignUpConfirmation from "./pages/signUpConfirmation.jsx";
+import Detector from "./pages/Detector.jsx";  // Added Detector page
 import "./index.css"; // Global styles
 
 function App() {
@@ -14,11 +15,12 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<LoginEmail />} />  {/* Route for login page */}
-          <Route path="/login/password" element={<LoginPassword />} />  {/* Route for login page */}
+          <Route path="/login/password" element={<LoginPassword />} />
           <Route path="/signup/email" element={<SignUpEmail />} />
           <Route path="/signup/username" element={<SignUpUsername />} />
           <Route path="/signup/password" element={<SignUpPassword />} />
           <Route path="/signup/confirmation" element={<SignUpConfirmation />} />
+          <Route path="/detector" element={<Detector />} />
         </Routes>
       </Router>
     </React.StrictMode>
