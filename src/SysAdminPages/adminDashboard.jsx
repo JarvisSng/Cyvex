@@ -50,6 +50,20 @@ function AdminDashboard() {
 							<li
 								onClick={() => {
 									setActiveSection("subscriptions");
+									setActiveSubTab("all");
+								}}
+								className={`py-1 rounded px-2 cursor-pointer ${
+									activeSection === "subscriptions" &&
+									activeSubTab === "all"
+										? "bg-gray-300"
+										: "hover:bg-gray-400"
+								}`}
+							>
+								All Users
+							</li>
+							<li
+								onClick={() => {
+									setActiveSection("subscriptions");
 									setActiveSubTab("subscribed");
 								}}
 								className={`py-1 rounded px-2 cursor-pointer ${
