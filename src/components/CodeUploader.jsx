@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 
 const CodeUploader = ({ onFileUpload }) => {
+  const [fileName, setFileName] = useState("No file chosen");
   const [dragging, setDragging] = useState(false);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
+      setFileName(file.name);  // ✅ Update file name in UI
       readFile(file);
     }
   };
@@ -24,6 +26,7 @@ const CodeUploader = ({ onFileUpload }) => {
     setDragging(false);
     const file = event.dataTransfer.files[0];
     if (file) {
+      setFileName(file.name);  // ✅ Update file name in UI
       readFile(file);
     }
   };
@@ -61,9 +64,11 @@ const CodeUploader = ({ onFileUpload }) => {
         onChange={handleFileChange}
         style={{ display: 'none' }}
       />
+      
       <p style={{ margin: '10px 0', fontSize: '16px', color: '#bbb' }}>
         Drag and drop your file here, or click to upload.
       </p>
+
       <span
         style={{
           display: 'inline-block',
@@ -76,6 +81,11 @@ const CodeUploader = ({ onFileUpload }) => {
       >
         Choose File
       </span>
+
+      {/* ✅ Display uploaded file name */}
+      <p style={{ marginTop: '10px', fontSize: '14px', color: '#ccc' }}>
+        <strong>Selected File:</strong> {fileName}
+      </p>
     </div>
   );
 };
