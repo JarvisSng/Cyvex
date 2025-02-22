@@ -1,45 +1,50 @@
 {
-  "name": "fyp-app",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@supabase/supabase-js": "^2.48.1",
-    "@tailwindcss/vite": "^4.0.7",
-    "@vitejs/plugin-react": "^4.3.4",
-    "process": "^0.11.10",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^7.1.5",
-    "tailwindcss": "^4.0.7",
-    "vite-plugin-react": "^4.0.1",
-    "web-vitals": "^2.1.4"
-  },
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test": "vitest",
-    "eject": "vite eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "vite": "^6.1.0"
-  }
+	"name": "fyp-app",
+	"version": "0.1.0",
+	"private": true,
+	"dependencies": {
+		"@supabase/supabase-js": "^2.48.1",
+		"@tailwindcss/vite": "^4.0.7",
+		"@vitejs/plugin-react": "^4.3.4",
+		"cors": "^2.8.5",
+		"express": "^4.21.2",
+		"process": "^0.11.10",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"react-router-dom": "^7.1.5",
+		"tailwindcss": "^4.0.7",
+		"vite-plugin-react": "^4.0.1",
+		"web-vitals": "^2.1.4",
+		"wikijs": "^6.4.1"
+	},
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview",
+		"test": "vitest",
+		"eject": "vite eject",
+		"server": "nodemon Express/index.js"
+	},
+	"eslintConfig": {
+		"extends": [
+			"react-app",
+			"react-app/jest"
+		]
+	},
+	"browserslist": {
+		"production": [
+			">0.2%",
+			"not dead",
+			"not op_mini all"
+		],
+		"development": [
+			"last 1 chrome version",
+			"last 1 firefox version",
+			"last 1 safari version"
+		]
+	},
+	"devDependencies": {
+		"nodemon": "^3.1.9",
+		"vite": "^6.1.0"
+	}
 }
