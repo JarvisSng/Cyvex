@@ -7,7 +7,7 @@ const CodeUploader = ({ onFileUpload }) => {
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setFileName(file.name);  // ✅ Update file name in UI
+      setFileName(file.name);  //  Show file name
       readFile(file);
     }
   };
@@ -26,7 +26,7 @@ const CodeUploader = ({ onFileUpload }) => {
     setDragging(false);
     const file = event.dataTransfer.files[0];
     if (file) {
-      setFileName(file.name);  // ✅ Update file name in UI
+      setFileName(file.name);
       readFile(file);
     }
   };
@@ -34,7 +34,7 @@ const CodeUploader = ({ onFileUpload }) => {
   const readFile = (file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      onFileUpload(e.target.result);
+      onFileUpload(e.target.result, file.name.split('.').pop());  //  Pass file extension
     };
     reader.readAsText(file);
   };
@@ -55,12 +55,12 @@ const CodeUploader = ({ onFileUpload }) => {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      onClick={() => document.getElementById('fileInput').click()} // Clickable behavior
+      onClick={() => document.getElementById('fileInput').click()}
     >
       <input
         id="fileInput"
         type="file"
-        accept=".js,.txt"
+        accept=".js,.py,.java,.c,.cpp,.txt"
         onChange={handleFileChange}
         style={{ display: 'none' }}
       />
@@ -82,7 +82,7 @@ const CodeUploader = ({ onFileUpload }) => {
         Choose File
       </span>
 
-      {/* ✅ Display uploaded file name */}
+      {/*  Show uploaded file name */}
       <p style={{ marginTop: '10px', fontSize: '14px', color: '#ccc' }}>
         <strong>Selected File:</strong> {fileName}
       </p>
