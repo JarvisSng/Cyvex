@@ -3,9 +3,7 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./index.css"; // Global styles
 import LoginEmail from "./pages/loginEmail.jsx";
 import LoginPassword from "./pages/loginPassword.jsx";
-
-import "./index.css"; // Global styles
-import Detector from "./pages/Detector.jsx"; // Added Detector page
+import Detector from "./pages/Detector.jsx";
 import SignUpConfirmation from "./pages/signUpConfirmation.jsx";
 import SignUpEmail from "./pages/signUpEmail.jsx";
 import SignUpPassword from "./pages/signUpPassword.jsx";
