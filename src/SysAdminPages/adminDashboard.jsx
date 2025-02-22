@@ -1,11 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
+import ManageRules from "../components/ManageRules";
+import ManageSubs from "../components/ManageSubs";
 
 function AdminDashboard() {
+	// activeSection controls which main content component is shown.
+	// "subscriptions" shows the ManageSubs component; "rules" shows ManageRules.
+	const [activeSection, setActiveSection] = useState("subscriptions");
+	// For the subscriptions section, we also keep track of the sub-tab.
+	const [activeSubTab, setActiveSubTab] = useState("subscribed");
+
 	return (
 		<div className="w-screen h-screen flex flex-col bg-gray-50">
 			{/* Top Navbar */}
 			<nav className="bg-blue-900 text-white px-4 py-2 flex justify-between items-center">
-				{/* Left side: Brand & Nav Links */}
 				<div className="flex items-center space-x-6">
 					<span className="text-xl font-bold">cyvex</span>
 					<a
@@ -27,10 +34,8 @@ function AdminDashboard() {
 						Help
 					</a>
 				</div>
-				{/* Right side: Username/Avatar */}
 				<div className="flex items-center space-x-2">
 					<span>name</span>
-					{/* Placeholder avatar (optional) */}
 					<div className="w-8 h-8 bg-gray-300 rounded-full" />
 				</div>
 			</nav>
@@ -38,98 +43,68 @@ function AdminDashboard() {
 			{/* Main content area */}
 			<div className="flex flex-1 overflow-hidden">
 				{/* Sidebar */}
-				<aside className="w-64 bg-white border-r border-gray-200 p-4 overflow-y-auto">
+				<aside className="w-64 bg-gray-500 border-r border-gray-200 p-4 overflow-y-auto">
 					<div className="mb-6">
 						<h2 className="font-bold mb-2">Manage Subscriptions</h2>
 						<ul>
-							<li className="py-1 hover:bg-gray-100 rounded px-2 cursor-pointer">
-								subscribed users
+							<li
+								onClick={() => {
+									setActiveSection("subscriptions");
+									setActiveSubTab("subscribed");
+								}}
+								className={`py-1 rounded px-2 cursor-pointer ${
+									activeSection === "subscriptions" &&
+									activeSubTab === "subscribed"
+										? "bg-gray-300"
+										: "hover:bg-gray-400"
+								}`}
+							>
+								Subscribed Users
 							</li>
-							<li className="py-1 hover:bg-gray-100 rounded px-2 cursor-pointer">
-								pending payment
-							</li>
-							<li className="py-1 hover:bg-gray-100 rounded px-2 cursor-pointer">
-								sub menu
+							<li
+								onClick={() => {
+									setActiveSection("subscriptions");
+									setActiveSubTab("pending");
+								}}
+								className={`py-1 rounded px-2 cursor-pointer ${
+									activeSection === "subscriptions" &&
+									activeSubTab === "pending"
+										? "bg-gray-300"
+										: "hover:bg-gray-400"
+								}`}
+							>
+								Pending Payment
 							</li>
 						</ul>
 					</div>
 					<div>
 						<h2 className="font-bold mb-2">Manage Rules</h2>
 						<ul>
-							<li className="py-1 hover:bg-gray-100 rounded px-2 cursor-pointer">
-								sub menu
+							<li
+								onClick={() => setActiveSection("rules")}
+								className={`py-1 rounded px-2 cursor-pointer ${
+									activeSection === "rules"
+										? "bg-gray-300"
+										: "hover:bg-gray-100"
+								}`}
+							>
+								Sub Menu
 							</li>
 						</ul>
 					</div>
 				</aside>
 
-				{/* Main panel */}
+				{/* Main Panel */}
 				<main className="flex-1 p-6 overflow-y-auto">
-					{/* Tab-like header */}
-					<div className="border-b border-gray-300 mb-4">
-						<ul className="flex space-x-4">
-							<li className="py-2 px-4 border-b-2 border-blue-500 font-semibold cursor-pointer">
-								Subscribed Users
-							</li>
-							<li className="py-2 px-4 text-gray-600 hover:text-blue-500 cursor-pointer">
-								Pending Payment
-							</li>
-							<li className="py-2 px-4 text-gray-600 hover:text-blue-500 cursor-pointer">
-								Sub Menu
-							</li>
-						</ul>
-					</div>
-
-					{/* Table of Subscribed Users */}
-					<div className="overflow-x-auto">
-						<table className="min-w-full bg-white border border-gray-200">
-							<thead className="bg-gray-100">
-								<tr>
-									<th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-										name
-									</th>
-									<th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-										type of sub
-									</th>
-									<th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-										start date
-									</th>
-									<th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-										end date
-									</th>
-									<th className="px-4 py-2 text-right text-sm font-semibold text-gray-700">
-										{/* Empty header for Details button */}
-									</th>
-								</tr>
-							</thead>
-							<tbody>
-								{/* Example rows */}
-								<tr className="border-b border-gray-200">
-									<td className="px-4 py-2">blah</td>
-									<td className="px-4 py-2">blah</td>
-									<td className="px-4 py-2">blah</td>
-									<td className="px-4 py-2">blah</td>
-									<td className="px-4 py-2 text-right">
-										<button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-											Details
-										</button>
-									</td>
-								</tr>
-								<tr className="border-b border-gray-200">
-									<td className="px-4 py-2">blah</td>
-									<td className="px-4 py-2">blah</td>
-									<td className="px-4 py-2">blah</td>
-									<td className="px-4 py-2">blah</td>
-									<td className="px-4 py-2 text-right">
-										<button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-											Details
-										</button>
-									</td>
-								</tr>
-								{/* Add more rows as needed */}
-							</tbody>
-						</table>
-					</div>
+					{/* Render the main content based on activeSection */}
+					{activeSection === "subscriptions" ? (
+						<ManageSubs
+							activeSubTab={activeSubTab}
+							setActiveSubTab={setActiveSubTab}
+						/>
+					) : (
+						<ManageRules />
+					)}
 				</main>
 			</div>
 		</div>
