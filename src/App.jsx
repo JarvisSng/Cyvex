@@ -1,13 +1,14 @@
 import React from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./index.css"; // Global styles
+import LandingPage from "./pages/landingPage.jsx";
 import LoginEmail from "./pages/loginEmail.jsx";
 import LoginPassword from "./pages/loginPassword.jsx";
-import Detector from "./pages/Detector.jsx";
 import SignUpConfirmation from "./pages/signUpConfirmation.jsx";
 import SignUpEmail from "./pages/signUpEmail.jsx";
 import SignUpPassword from "./pages/signUpPassword.jsx";
 import SignUpUsername from "./pages/signUpUsername.jsx";
+import Detector from "./pages/Detector.jsx";
 import AdminDashboard from "./SysAdminPages/adminDashboard.jsx";
 
 function App() {
@@ -15,7 +16,8 @@ function App() {
 		<React.StrictMode>
 			<Router>
 				<Routes>
-					<Route path="/" element={<LoginEmail />} />{" "}
+					<Route path="/" element={<LandingPage />} />{" "}
+					<Route path="/login/email" element={<LoginEmail />} />
 					{/* Route for login page */}
 					<Route path="/login/password" element={<LoginPassword />} />
 					<Route path="/signup/email" element={<SignUpEmail />} />
