@@ -9,6 +9,10 @@ const LandingPage = () => {
     navigate("/login/email");
   }
 
+  const detector = () => {
+    navigate("/detector");
+  }
+
   return (
     <header className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md">
       {/* Header Container */}
@@ -35,6 +39,7 @@ const LandingPage = () => {
             Login
           </button>
           <button 
+            onClick={detector}
             className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
           >
             Try It
