@@ -4,6 +4,7 @@ import "./index.css"; // Global styles
 import LandingPage from "./pages/landingPage.jsx";
 import LoginEmail from "./pages/loginEmail.jsx";
 import LoginPassword from "./pages/loginPassword.jsx";
+import ReportPage from "./pages/ReportPage.jsx"; // Importing Report Page
 import SignUpConfirmation from "./pages/signUpConfirmation.jsx";
 import SignUpEmail from "./pages/signUpEmail.jsx";
 import SignUpPassword from "./pages/signUpPassword.jsx";
@@ -21,6 +22,7 @@ function App() {
 					{/* Route for login page */}
 					<Route path="/login/password" element={<LoginPassword />} />
 					<Route path="/signup/email" element={<SignUpEmail />} />
+					<Route path="/report" element={<ReportPage />} /> {/* New Report Page Route */}
 					<Route
 						path="/signup/username"
 						element={<SignUpUsername />}
