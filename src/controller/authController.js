@@ -55,17 +55,31 @@ export const loginUser = async (email, password) => {
     return { error: "Please verify your email before logging in." };
   }
 
-  // Step 3: Fetch the username from the profiles table
+  // Step 3: Fetch the username and role from the profiles table
   const { data: profileData, error: profileError } = await supabase
     .from("profiles")
-    .select("username")
+    .select("username, role") //Jas - fetch role too
     .eq("id", user.id)
     .single();
 
   if (profileError) return { error: profileError.message };
 
-  // Step 4: Return user details including username
-  return { user, username: profileData.username };
+  // Jas - Step 4: Store user info in local storage
+  localStorage.setItem("username", profileData.username);
+  localStorage.setItem("role", profileData.role);
+
+  // Redirect user to the correct dashboard
+  if (profileData.role === "admin") {
+    window.location.href = "/admin-dashboard"; // Jas - Redirect admins
+  } else {
+    window.location.href = "/user-dashboard"; // Jas - Redirect normal users
+  }
+
+  // Step 5: Return user details including username and role
+  return { user,  
+    username: profileData.username,
+    role: profileData.role // Jas - include role  
+  };
 };
 
 // Function to resend vertification email
@@ -94,5 +108,57 @@ export const resendVerificationEmail = async (email) => {
   } catch (err) {
     console.error("Unhandled Error:", err);
     return { error: "An unexpected error occurred." };
+  }
+};
+
+// Function to handle admin login 
+export const loginAdmin = async (email, password) => {
+  console.log("Admin login attempt...");
+
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (authError) return { error: authError.message };
+
+  const user = authData.user;
+
+  // Fetch role from profiles table
+  const { data: profileData, error: profileError } = await supabase
+    .from("profiles")
+    .select("username, role")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError) return { error: profileError.message };
+
+  // Check if the user is an admin
+  if (profileData.role !== "admin") {
+    return { error: "Access denied. Not an admin." };
+  }
+
+   // Store admin login info
+   localStorage.setItem("username", profileData.username);
+   localStorage.setItem("role", profileData.role);
+
+  return { user, username: profileData.username, role: profileData.role };
+};
+
+// Function to handle user/admin logout 
+export const logoutUser = async () => {
+  await supabase.auth.signOut();
+
+  // Get the stored role before clearing local storage
+  const role = localStorage.getItem("role");
+  
+  // Clear stored user info
+  localStorage.clear(); 
+
+  // Redirect user to the correct login page
+  if (role === "admin") {
+    window.location.href = "/admin-login"; // Redirect admins
+  } else {
+    window.location.href = "/login"; // Redirect normal users
   }
 };
