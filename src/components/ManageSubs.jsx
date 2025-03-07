@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { fetchUserProfilesWithSubscriptions } from "../api/supabaseAPI";
 
 const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 	const [profiles, setProfiles] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const navigate = useNavigate();
 
 	// Fetch profiles with related subscription data on mount
 	useEffect(() => {
@@ -31,7 +33,7 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 			return sub.subscribed === true;
 		}
 		if (activeSubTab === "pending") {
-			// Show rows where payment_confirm is false (and optionally subscribed is true)
+			// Show rows where payment_confirm is false
 			return sub.payment_confirm === false;
 		}
 		return true;
@@ -140,7 +142,14 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 											{sub.payment_confirm ? "Yes" : "No"}
 										</td>
 										<td className="px-4 py-2 text-right">
-											<button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+											<button
+												onClick={() =>
+													navigate(
+														`/admin/dashboard/${profile.id}`
+													)
+												}
+												className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+											>
 												Details
 											</button>
 										</td>
