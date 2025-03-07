@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const supabase = require("../config/supabaseClient"); // Centralized Supabase client
+const supabase = require("../../src/config/supabaseAdminClient"); // Centralized Supabase client
 
 // Endpoint to reset a user's password using their userId (unchanged)
 router.post("/user/:userId/reset-password", async (req, res) => {
