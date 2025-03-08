@@ -47,7 +47,7 @@ function AdminNav() {
 					<div className="w-8 h-8 bg-gray-300 rounded-full" />
 					<button
 						onClick={handleLogout}
-						className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+						className="!bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
 					>
 						Logout
 					</button>
