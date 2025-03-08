@@ -7,10 +7,6 @@ const LandingPage = () => {
 
   const navigate = useNavigate();
 
-  const adminLogin = () => {
-    navigate("/admin-login");
-  };
-
   const login = () => {
     navigate("/login/email");
   }
@@ -38,12 +34,6 @@ const LandingPage = () => {
   
         {/* Buttons (Right) */}
         <div className="flex items-center gap-4">
-          <button 
-            onClick={adminLogin}
-            className="w-36 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
-          >
-            Admin Login
-          </button>
           <button 
             onClick={login}
             className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
