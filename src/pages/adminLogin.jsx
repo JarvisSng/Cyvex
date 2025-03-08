@@ -24,7 +24,7 @@ const AdminLogin = () => {
     localStorage.setItem("role", response.role);
 
     // Redirect to admin dashboard
-    navigate("/admin-dashboard");
+    navigate("/admin/dashboard");
   };
 
   return (

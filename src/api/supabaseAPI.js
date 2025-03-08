@@ -1,8 +1,5 @@
 import supabase from "../config/supabaseClient";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const serviceRoleKey = import.meta.env.VITE_SERVICE_ROLE_KEY;
-
 export const fetchUserProfilesWithSubscriptions = async () => {
 	// Assuming your foreign key relationship is set up so that
 	// profiles.id references subscription.id and the relationship name is "subscription".
