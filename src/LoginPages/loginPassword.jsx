@@ -58,7 +58,7 @@ const LoginUI = () => {
 				/>
 				<button
 					onClick={handleLogin}
-					className="w-60 bg-blue-950 text-white px-6 py-3 rounded-md hover:bg-blue-600 focus:outline-none"
+					className="w-60 !bg-blue-950 text-white px-6 py-3 rounded-md hover:bg-blue-600 focus:outline-none"
 				>
 					Login
 				</button>
