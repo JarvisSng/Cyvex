@@ -15,38 +15,7 @@ function AdminDashboard() {
 	const [activeSection, setActiveSection] = useState("subscriptions");
 	// For the subscriptions section, we also keep track of the sub-tab.
 	const [activeSubTab, setActiveSubTab] = useState("all"); 
-	const [dropdownOpen, setDropdownOpen] = useState(false);
-	const [NotificationOpen, setNotificationOpen] = useState(false);
-	const trigger = useRef(null);
-	const dropdown = useRef(null);
-	const Notification = useRef(null);
-
-	// close on click outside
-	useEffect(() => { 
-		const clickHandler = ({ target }) => {
-		if (!dropdown.current) return;
-		if ( 
-			!dropdownOpen ||
-			dropdown.current.contains(target) ||
-			trigger.current.contains(target)
-		)
-			return;
-		setDropdownOpen(false);
-		setNotificationOpen(false);
-		};
-		document.addEventListener('click', clickHandler);
-		return () => document.removeEventListener('click', clickHandler);
-	});
-
-	// close if the esc key is pressed
-	useEffect(() => {
-		const keyHandler = ({ keyCode }) => {
-		if (!dropdownOpen || keyCode !== 27) return;
-		setDropdownOpen(false);
-		};
-		document.addEventListener('keydown', keyHandler);
-		return () => document.removeEventListener('keydown', keyHandler);
-	});
+	
 	
 	return (
 		<div className="w-screen h-screen flex flex-col bg-gray-50">

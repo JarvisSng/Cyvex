@@ -71,7 +71,7 @@ button:focus-visible {
   }
 }
 .dropdown-absolute {
-  top: 35px !important;
+  top: 55px !important;
   z-index: 1000;
 }
 
@@ -83,4 +83,7 @@ button:focus-visible {
 }
 .pt-70 {
   padding-top: 70px !important;
+}
+.py-6x {
+  padding: 15px;
 }
