@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchUserProfilesWithSubscriptions } from "../api/supabaseAPI";
+import { fetchUserProfilesWithSubscriptions, updateData } from "../api/supabaseAPI";
 
 const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 	const [profiles, setProfiles] = useState([]);
@@ -18,8 +18,16 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 			setLoading(false);
 		};
 		getProfiles();
-	}, []);
+	}, []); 
 
+	const changeStatus = async (id, username, status) => {
+		
+		const result = await updateData(id, username, status);
+		if (result.error) { 
+			setError(result.error);
+		}  
+	}
+ 
 	// Filter the profiles based on the activeSubTab
 	const filteredProfiles = profiles.filter((profile) => {
 		const sub = profile.subscription;
@@ -36,14 +44,18 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 		}
 		return true;
 	});
+	console.log(" filteredProfiles == ", filteredProfiles);
 
 	if (loading) return <div>Loading...</div>;
 	if (error) return <div>Error: {error}</div>;
 
 	return (
 		<div>
-			{/* Header tabs for Manage Subscriptions */}
+			{/* Header tabs for Manage Subscriptions */}  
 			<div className="border-b border-gray-300 mb-4">
+				<h3 className="text-xl font-semibold text-black dark:text-white mb-4">
+					Manage Subscriptions
+				</h3>
 				<ul className="flex space-x-4">
 					<li
 						onClick={() => setActiveSubTab("all")}
@@ -140,15 +152,21 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 											{sub.payment_confirm ? "Yes" : "No"}
 										</td>
 										<td className="px-4 py-2 text-right">
-											<button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+											{/* <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
 												Details
-											</button>
+											</button> */}
+											<>
+											<select defaultValue={sub.status} class="relative z-20 w-half appearance-none rounded border border-stroke bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input" onChange={(e)=>changeStatus(profile.id, profile.username, e.target.value)}>
+												<option value="Active" defaultValue={sub.status}>Active</option>
+												<option value="Deactive" defaultValue={sub.status}>Deactive</option>
+											</select>
+											</>
 										</td>
-									</tr>
+									</tr> 
 								);
 							})}
 						</tbody>
-					</table>
+					</table> 
 				)}
 			</div>
 		</div>

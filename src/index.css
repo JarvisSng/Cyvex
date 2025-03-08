@@ -70,3 +70,17 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+.dropdown-absolute {
+  top: 35px !important;
+  z-index: 1000;
+}
+
+.hori-nav a{
+  color: #ffffff !important;
+}
+.fill-whitetheme {
+  fill: #ffffff !important; 
+}
+.pt-70 {
+  padding-top: 70px !important;
+}
