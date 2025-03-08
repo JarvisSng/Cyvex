@@ -34,43 +34,48 @@ router.post("/user/:userId/reset-password", async (req, res) => {
 	}
 });
 
-// Endpoint to suspend/unsuspend a user account by userId using ban_duration for update.
-// Expects { banDuration: number } in request body (hours).
-// If banDuration > 0, sets ban_duration to banDuration + "h" (e.g., "24h").
-// If banDuration is 0 (or not provided), sets ban_duration to an empty string (unsuspend).
 router.post("/user/:userId/suspend", async (req, res) => {
 	try {
 		const { userId } = req.params;
 		const { banDuration } = req.body; // banDuration in hours
-		let ban;
+		let status, bannedUntil;
 		if (banDuration && banDuration > 0) {
-			ban = banDuration + "h"; // e.g., "24h"
+			// Suspend the user: status becomes "Suspended" and calculate banned_until
+			status = "Suspended";
+			const now = new Date();
+			const future = new Date(now.getTime() + banDuration * 3600 * 1000);
+			bannedUntil = future.toISOString();
 		} else {
-			ban = ""; // unsuspend by clearing ban_duration
+			// Unsuspend the user: status becomes "Active" and banned_until is set to null
+			status = "Active";
+			bannedUntil = null;
 		}
-		// Update using ban_duration field
-		const { data: updatedUser, error } =
-			await supabase.auth.admin.updateUserById(userId, {
-				ban_duration: ban,
-			});
+		// Update the profiles table with new status and banned_until
+		const { data, error } = await supabase
+			.from("profiles")
+			.update({ status, banned_until: bannedUntil })
+			.eq("id", userId);
 		if (error) {
-			console.error("Error updating ban_duration:", error);
+			console.error("Error updating profile:", error);
 			return res.status(400).json({ error: error.message });
 		}
-		// After updating, fetch the user record to retrieve banned_until.
-		const { data: userData, error: fetchError } =
-			await supabase.auth.admin.getUserById(userId);
+		// Fetch the updated profile to verify changes
+		const { data: updatedProfile, error: fetchError } = await supabase
+			.from("profiles")
+			.select("status, banned_until")
+			.eq("id", userId)
+			.single();
 		if (fetchError) {
-			console.error("Error fetching updated user data:", fetchError);
+			console.error("Error fetching updated profile:", fetchError);
 			return res.status(400).json({ error: fetchError.message });
 		}
-		const finalBannedUntil = userData.user.banned_until; // Field available when fetching
-		console.log("Final banned_until retrieved:", finalBannedUntil);
 		res.json({
-			message: finalBannedUntil
-				? `User suspended until ${finalBannedUntil} successfully.`
-				: "User unsuspended successfully.",
-			banned_until: finalBannedUntil,
+			message:
+				updatedProfile.status === "Active"
+					? "User unsuspended successfully."
+					: `User suspended until ${updatedProfile.banned_until} successfully.`,
+			status: updatedProfile.status,
+			banned_until: updatedProfile.banned_until,
 		});
 	} catch (err) {
 		console.error("Unexpected error in suspend endpoint:", err);
@@ -80,63 +85,39 @@ router.post("/user/:userId/suspend", async (req, res) => {
 
 // Endpoint to ban a user for 200 years (without deleting their account).
 // 200 years in hours = 200 * 365 * 24 = 1,752,000 hours.
-router.post("/user/:userId/ban", async (req, res) => {
+// Sets status to "Banned" and banned_until accordingly.
+router.post("/user/:userId/delete", async (req, res) => {
 	try {
 		const { userId } = req.params;
-		const banDurationHours = 1752000; // 200 years in hours
-		const ban = banDurationHours + "h"; // e.g., "1752000h"
-		const { data: updatedUser, error } =
-			await supabase.auth.admin.updateUserById(userId, {
-				ban_duration: ban,
-			});
+		// For permanent ban, update the status to "Deleted" and clear banned_until.
+		const status = "Deleted";
+		const bannedUntil = null;
+		// Update the profiles table with status "Deleted" and banned_until as null
+		const { data, error } = await supabase
+			.from("profiles")
+			.update({ status, banned_until: bannedUntil })
+			.eq("id", userId);
 		if (error) {
 			console.error("Error banning user:", error);
 			return res.status(400).json({ error: error.message });
 		}
-		// Fetch the updated record to get banned_until.
-		const { data: userData, error: fetchError } =
-			await supabase.auth.admin.getUserById(userId);
+		// Fetch the updated profile to verify changes
+		const { data: updatedProfile, error: fetchError } = await supabase
+			.from("profiles")
+			.select("status, banned_until")
+			.eq("id", userId)
+			.single();
 		if (fetchError) {
-			console.error("Error fetching updated user data:", fetchError);
+			console.error("Error fetching updated profile:", fetchError);
 			return res.status(400).json({ error: fetchError.message });
 		}
-		const finalBannedUntil = userData.user.banned_until;
 		res.json({
-			message: "User banned for 200 years successfully.",
-			banned_until: finalBannedUntil,
+			message: "User deleted successfully.",
+			status: updatedProfile.status,
+			banned_until: updatedProfile.banned_until,
 		});
 	} catch (err) {
 		console.error("Unexpected error in ban endpoint:", err);
-		res.status(500).json({ error: "Internal Server Error" });
-	}
-});
-
-// Endpoint to get the remaining ban duration (in hours) for a user.
-// This endpoint fetches the banned_until field and computes the difference from now.
-router.get("/user/:userId/ban-duration", async (req, res) => {
-	try {
-		const { userId } = req.params;
-		const { data: userData, error: getUserError } =
-			await supabase.auth.admin.getUserById(userId);
-		if (getUserError) {
-			console.error("Error fetching user data:", getUserError);
-			return res.status(400).json({ error: getUserError.message });
-		}
-		const bannedUntil = userData.user.banned_until;
-		console.log("Banned until retrieved:", bannedUntil);
-		if (!bannedUntil) {
-			return res.json({ ban_duration: "0h" });
-		}
-		const now = new Date();
-		const banEnd = new Date(bannedUntil);
-		const diffMs = banEnd.getTime() - now.getTime();
-		if (diffMs <= 0) {
-			return res.json({ ban_duration: "0h" });
-		}
-		const diffHours = Math.floor(diffMs / (3600 * 1000));
-		res.json({ ban_duration: diffHours + "h" });
-	} catch (err) {
-		console.error("Unexpected error in get ban-duration endpoint:", err);
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 });

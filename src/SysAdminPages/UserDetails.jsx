@@ -12,12 +12,11 @@ const UserDetails = () => {
 		subscribed: false,
 		payment_confirm: false,
 	});
-	const [banEndTime, setBanEndTime] = useState(null); // banned_until as ISO string
-	const [suspendInput, setSuspendInput] = useState(""); // input for ban duration in hours
+	const [suspendInput, setSuspendInput] = useState(""); // input for ban duration (hours)
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 
-	// 100 years in hours ~ 876000 hours
+	// 100 years in hours ~ 876000 hours (for UI logic if needed)
 	const hundredYearsHours = 876000;
 
 	useEffect(() => {
@@ -47,23 +46,7 @@ const UserDetails = () => {
 			setLoading(false);
 		};
 
-		const loadBanEndTime = async () => {
-			// Call the Express API to fetch the user's ban end time (via ban-duration endpoint)
-			const response = await fetch(
-				`http://localhost:3000/api/admin/user/${userId}/ban-duration`
-			);
-			const result = await response.json();
-			if (!response.ok) {
-				console.error("Error fetching ban duration:", result.error);
-			} else {
-				// result.ban_duration is in format "Xh"
-				const banDurationStr = result.ban_duration;
-				setBanEndTime(banDurationStr);
-			}
-		};
-
 		loadUserProfile();
-		loadBanEndTime();
 	}, [userId]);
 
 	const handleSubscriptionChange = (e) => {
@@ -75,12 +58,22 @@ const UserDetails = () => {
 	};
 
 	const handleUpdateSubscription = async () => {
-		// Do not allow subscription updates if user is suspended.
 		if (isSuspended) {
 			alert("Cannot update subscription while user is suspended.");
 			return;
 		}
-		const result = await updateUserSubscription(userId, subscription);
+		// Convert empty date fields to null
+		const updatedSubscription = {
+			...subscription,
+			start_date:
+				subscription.start_date === "" ? null : subscription.start_date,
+			end_date:
+				subscription.end_date === "" ? null : subscription.end_date,
+		};
+		const result = await updateUserSubscription(
+			userId,
+			updatedSubscription
+		);
 		if (result.error) {
 			alert("Error: " + result.error);
 		} else {
@@ -88,14 +81,16 @@ const UserDetails = () => {
 		}
 	};
 
-	// Determine suspension state: if banned_until is set and in the future.
+	// Determine suspension state based on profile data.
+	// If profile.status is "Suspended" and banned_until is in the future, the user is suspended.
+	// If profile.status is "Deleted", the user is permanently banned.
 	const now = new Date();
-	const banEndDate = banEndTime ? new Date(banEndTime) : null;
-	const isSuspended = banEndDate && banEndDate > now;
-	// User is considered "deleted" if banned for 200 years; 200 years in hours = 1752000 hours.
-	const isDeleted =
-		banEndDate &&
-		banEndDate.getTime() - now.getTime() >= 1752000 * 3600 * 1000;
+	const banEndDate = profile?.banned_until
+		? new Date(profile.banned_until)
+		: null;
+	const isSuspended =
+		profile?.status === "Suspended" && banEndDate && banEndDate > now;
+	const isDeleted = profile?.status === "Deleted";
 
 	const handleSuspendUser = async () => {
 		let hours;
@@ -113,9 +108,7 @@ const UserDetails = () => {
 			`http://localhost:3000/api/admin/user/${userId}/suspend`,
 			{
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
+				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ banDuration: hours }),
 			}
 		);
@@ -124,15 +117,11 @@ const UserDetails = () => {
 			alert("Error: " + result.error);
 		} else {
 			alert(result.message);
-			// Reload the ban end time
-			const res = await fetch(
-				`http://localhost:3000/api/admin/user/${userId}/ban-duration`
-			);
-			const data = await res.json();
-			if (res.ok) {
-				setBanEndTime(data.ban_duration);
+			// Reload profile to get updated status and banned_until
+			const res = await fetchUserProfile(userId);
+			if (!res.error) {
+				setProfile(res.data);
 			}
-			setProfile((prev) => ({ ...prev, suspended: hours > 0 }));
 			setSuspendInput("");
 		}
 	};
@@ -140,16 +129,14 @@ const UserDetails = () => {
 	const handleDeleteUser = async () => {
 		if (
 			window.confirm(
-				"Are you sure you want to ban this user for 200 years? (This will effectively disable the account)"
+				"Are you sure you want to delete this user? This action cannot be reversed without database administrator privileges."
 			)
 		) {
 			const response = await fetch(
-				`http://localhost:3000/api/admin/user/${userId}/ban`,
+				`http://localhost:3000/api/admin/user/${userId}/delete`,
 				{
 					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
+					headers: { "Content-Type": "application/json" },
 				}
 			);
 			const result = await response.json();
@@ -157,9 +144,11 @@ const UserDetails = () => {
 				alert("Error: " + result.error);
 			} else {
 				alert(result.message);
-				// Update local state to indicate the user is banned for 200 years.
-				setBanEndTime(result.ban_end_time);
-				setProfile((prev) => ({ ...prev, suspended: true }));
+				// Reload profile to get updated status and banned_until
+				const res = await fetchUserProfile(userId);
+				if (!res.error) {
+					setProfile(res.data);
+				}
 			}
 		}
 	};
@@ -170,9 +159,7 @@ const UserDetails = () => {
 				`http://localhost:3000/api/admin/user/${profile.id}/reset-password`,
 				{
 					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
+					headers: { "Content-Type": "application/json" },
 				}
 			);
 			const result = await response.json();
@@ -186,6 +173,11 @@ const UserDetails = () => {
 		}
 	};
 
+	// Back button to navigate to the previous page
+	const handleBack = () => {
+		navigate(-1);
+	};
+
 	if (loading) return <div className="p-4 text-center">Loading...</div>;
 	if (error)
 		return (
@@ -195,137 +187,171 @@ const UserDetails = () => {
 		return <div className="p-4 text-center">No user data found.</div>;
 
 	return (
-		<div className="max-w-3xl mx-auto p-6 bg-white shadow rounded">
-			<h1 className="text-3xl text-gray-600 font-bold mb-6">
-				{profile.username}
-			</h1>
+		<div className="w-screen h-screen bg-gray-50 flex flex-col">
+			<div className="max-w-3xl mx-auto p-6 bg-white shadow rounded flex-1 overflow-y-auto">
+				<h1 className="text-3xl text-gray-600 font-bold mb-6">
+					{profile.username}
+				</h1>
+				<p className="text-red-700 mb-4">
+					{isSuspended
+						? "The account is suspended until " +
+						  profile.banned_until
+						: ""}
+				</p>
+				<p className="text-red-700 mb-4">
+					{isDeleted
+						? "This account is deleted and no longer active"
+						: ""}
+				</p>
 
-			{/* Manage Subscription Section */}
-			<section className="mb-8">
-				<h2 className="text-2xl font-semibold mb-4">
-					Manage Subscription
-				</h2>
-				<div className="mb-4">
-					<label className="block text-gray-700 mb-1">
-						Start Date:
-					</label>
-					<input
-						type="date"
-						name="start_date"
-						value={
-							subscription.start_date
-								? subscription.start_date.split("T")[0]
-								: ""
-						}
-						onChange={handleSubscriptionChange}
-						disabled={isSuspended || isDeleted}
-						className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none text-gray-400 focus:ring focus:border-blue-500"
-					/>
-				</div>
-				<div className="mb-4">
-					<label className="block text-gray-700 mb-1">
-						End Date:
-					</label>
-					<input
-						type="date"
-						name="end_date"
-						value={
-							subscription.end_date
-								? subscription.end_date.split("T")[0]
-								: ""
-						}
-						onChange={handleSubscriptionChange}
-						disabled={isSuspended || isDeleted}
-						className="text-gray-400 w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-500"
-					/>
-				</div>
-				<div className="mb-4 flex items-center">
-					<label className="text-gray-700 mr-2">Subscribed:</label>
-					<input
-						type="checkbox"
-						name="subscribed"
-						checked={subscription.subscribed}
-						onChange={handleSubscriptionChange}
-						disabled={isSuspended || isDeleted}
-						className="h-5 w-5 text-blue-600"
-					/>
-				</div>
-				<div className="mb-4 flex items-center">
-					<label className="text-gray-700 mr-2">
-						Payment Confirm:
-					</label>
-					<input
-						type="checkbox"
-						name="payment_confirm"
-						checked={subscription.payment_confirm}
-						onChange={handleSubscriptionChange}
-						disabled={isSuspended || isDeleted}
-						className="h-5 w-5 text-blue-600"
-					/>
-				</div>
-				<button
-					className={`bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded ${
-						isSuspended || isDeleted
-							? "opacity-50 cursor-not-allowed"
-							: ""
-					}`}
-					onClick={handleUpdateSubscription}
-					disabled={isSuspended || isDeleted}
-				>
-					Update Subscription
-				</button>
-			</section>
-
-			{/* Account Management Section */}
-			<section>
-				<h2 className="text-2xl font-semibold mb-4 text-gray-700">
-					Account Management
-				</h2>
-				<div className="flex flex-col gap-4">
-					{/* Show the input for ban duration (hours) only if not suspended and not deleted */}
-					{!isSuspended && !isDeleted && (
-						<div className="flex flex-col max-w-xs">
-							<label className="text-gray-700 mb-1">
-								Ban Duration (hours):
-							</label>
-							<input
-								type="number"
-								min="1"
-								value={suspendInput}
-								onChange={(e) =>
-									setSuspendInput(e.target.value)
-								}
-								className="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring focus:border-blue-500 text-gray-600"
-							/>
-						</div>
-					)}
-					<div className="flex flex-wrap gap-4">
-						<button
-							className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded"
-							onClick={handleSuspendUser}
-							disabled={isDeleted}
-						>
-							{isSuspended ? "Unsuspend User" : "Suspend User"}
-						</button>
-						<button
-							className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-							onClick={handleDeleteUser}
-							disabled={isDeleted}
-						>
-							{isDeleted
-								? "User is Banned for 200 Years"
-								: "Delete User (Ban for 200 Years)"}
-						</button>
-						<button
-							className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
-							onClick={handleResetPassword}
-							disabled={isDeleted}
-						>
-							Reset Password
-						</button>
+				{/* Manage Subscription Section */}
+				<section className="mb-8">
+					<h2 className="text-2xl font-semibold mb-4">
+						Manage Subscription
+					</h2>
+					<div className="mb-4">
+						<label className="block text-gray-700 mb-1">
+							Start Date:
+						</label>
+						<input
+							type="date"
+							name="start_date"
+							value={
+								subscription.start_date
+									? subscription.start_date.split("T")[0]
+									: ""
+							}
+							onChange={handleSubscriptionChange}
+							disabled={isSuspended || isDeleted}
+							className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none text-gray-400 focus:ring focus:border-blue-500"
+						/>
 					</div>
+					<div className="mb-4">
+						<label className="block text-gray-700 mb-1">
+							End Date:
+						</label>
+						<input
+							type="date"
+							name="end_date"
+							value={
+								subscription.end_date
+									? subscription.end_date.split("T")[0]
+									: ""
+							}
+							onChange={handleSubscriptionChange}
+							disabled={isSuspended || isDeleted}
+							className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none text-gray-400 focus:ring focus:border-blue-500"
+						/>
+					</div>
+					<div className="mb-4 flex items-center">
+						<label className="text-gray-700 mr-2">
+							Subscribed:
+						</label>
+						<input
+							type="checkbox"
+							name="subscribed"
+							checked={subscription.subscribed}
+							onChange={handleSubscriptionChange}
+							disabled={isSuspended || isDeleted}
+							className="h-5 w-5 text-blue-600"
+						/>
+					</div>
+					<div className="mb-4 flex items-center">
+						<label className="text-gray-700 mr-2">
+							Payment Confirm:
+						</label>
+						<input
+							type="checkbox"
+							name="payment_confirm"
+							checked={subscription.payment_confirm}
+							onChange={handleSubscriptionChange}
+							disabled={isSuspended || isDeleted}
+							className="h-5 w-5 text-blue-600"
+						/>
+					</div>
+					<button
+						className={`bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded ${
+							isSuspended || isDeleted
+								? "opacity-50 cursor-not-allowed"
+								: ""
+						}`}
+						onClick={handleUpdateSubscription}
+						disabled={isSuspended || isDeleted}
+					>
+						Update Subscription
+					</button>
+				</section>
+
+				{/* Account Management Section */}
+				<section>
+					<h2 className="text-2xl font-semibold mb-4 text-gray-700">
+						Account Management
+					</h2>
+					<div className="flex flex-col gap-4">
+						{profile.status === "Active" && (
+							<div className="flex flex-col max-w-xs">
+								<label className="text-gray-700 mb-1">
+									Ban Duration (hours):
+								</label>
+								<input
+									type="number"
+									min="1"
+									value={suspendInput}
+									onChange={(e) =>
+										setSuspendInput(e.target.value)
+									}
+									className="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring focus:border-blue-500 text-gray-600"
+								/>
+							</div>
+						)}
+						<div className="flex flex-wrap gap-4">
+							<button
+								className={`bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded ${
+									isDeleted
+										? "opacity-50 cursor-not-allowed"
+										: ""
+								}`}
+								onClick={handleSuspendUser}
+								disabled={isDeleted}
+							>
+								{isSuspended
+									? "Unsuspend User"
+									: "Suspend User"}
+							</button>
+							<button
+								className={`bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded ${
+									isDeleted
+										? "opacity-50 cursor-not-allowed"
+										: ""
+								}`}
+								onClick={handleDeleteUser}
+								disabled={isDeleted}
+							>
+								{isDeleted ? "User is Deleted" : "Delete User"}
+							</button>
+							<button
+								className={`bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded ${
+									isDeleted || isSuspended
+										? "opacity-50 cursor-not-allowed"
+										: ""
+								}`}
+								onClick={handleResetPassword}
+								disabled={isDeleted}
+							>
+								Reset Password
+							</button>
+						</div>
+					</div>
+				</section>
+				<div className="flex justify-center">
+					<button
+						onClick={handleBack}
+						className="mb-4 bg-gray-200 hover:bg-gray-300 text-white px-4 py-2 rounded mt-5 w-40"
+					>
+						Back
+					</button>
 				</div>
-			</section>
+			</div>
 		</div>
 	);
 };

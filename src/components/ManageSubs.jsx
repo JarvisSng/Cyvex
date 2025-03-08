@@ -105,6 +105,9 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 								<th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
 									Payment Confirm
 								</th>
+								<th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
+									Status
+								</th>
 								<th className="px-4 py-2 text-right text-sm font-semibold text-gray-700">
 									Actions
 								</th>
@@ -140,6 +143,9 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 										</td>
 										<td className="px-4 py-2 text-gray-700">
 											{sub.payment_confirm ? "Yes" : "No"}
+										</td>
+										<td className="px-4 py-2 text-gray-700">
+											{profile.status}
 										</td>
 										<td className="px-4 py-2 text-right">
 											<button

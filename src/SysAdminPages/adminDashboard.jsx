@@ -1,44 +1,19 @@
 import React, { useState } from "react";
 import ManageRules from "../components/ManageRules";
 import ManageSubs from "../components/ManageSubs";
+import AdminNav from "./AdminNav";
 
 function AdminDashboard() {
 	// activeSection controls which main content component is shown.
 	// "subscriptions" shows the ManageSubs component; "rules" shows ManageRules.
+
 	const [activeSection, setActiveSection] = useState("subscriptions");
 	// For the subscriptions section, we also keep track of the sub-tab.
-	const [activeSubTab, setActiveSubTab] = useState("subscribed");
+	const [activeSubTab, setActiveSubTab] = useState("all");
 
 	return (
 		<div className="w-screen h-screen flex flex-col bg-gray-50">
-			{/* Top Navbar */}
-			<nav className="bg-blue-900 text-white px-4 py-2 flex justify-between items-center">
-				<div className="flex items-center space-x-6">
-					<span className="text-xl font-bold">cyvex</span>
-					<a
-						href="#manage"
-						className="hover:bg-blue-700 px-3 py-2 rounded"
-					>
-						Manage
-					</a>
-					<a
-						href="#contacts"
-						className="hover:bg-blue-700 px-3 py-2 rounded"
-					>
-						Contacts
-					</a>
-					<a
-						href="#help"
-						className="hover:bg-blue-700 px-3 py-2 rounded"
-					>
-						Help
-					</a>
-				</div>
-				<div className="flex items-center space-x-2">
-					<span>name</span>
-					<div className="w-8 h-8 bg-gray-300 rounded-full" />
-				</div>
-			</nav>
+			<AdminNav />
 
 			{/* Main content area */}
 			<div className="flex flex-1 overflow-hidden">

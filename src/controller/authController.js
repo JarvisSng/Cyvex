@@ -40,7 +40,8 @@ export const signUpUser = async (email, username, password) => {
 	}
 };
 
-// Function to log in the user and fetch their username and role
+//Login route both for admin and normal user, redirects accordingly
+// Function to log in the user and fetch their username, role, status, etc.
 export const loginUser = async (email, password) => {
 	console.log("Attempting login...");
 
@@ -50,7 +51,6 @@ export const loginUser = async (email, password) => {
 			email,
 			password,
 		});
-
 	if (authError) return { error: authError.message };
 
 	// Step 2: Check if the user's email is confirmed
@@ -59,40 +59,60 @@ export const loginUser = async (email, password) => {
 		return { error: "Please verify your email before logging in." };
 	}
 
-  // Step 3: Fetch the username and role from the profiles table
-  const { data: profileData, error: profileError } = await supabase
-    .from("profiles")
-    .select("username, role") //Jas - fetch role too
-    .eq("id", user.id)
-    .single();
-
+	// Step 3: Fetch the username, role, status, and banned_until from the profiles table
+	const { data: profileData, error: profileError } = await supabase
+		.from("profiles")
+		.select("username, role, status, banned_until")
+		.eq("id", user.id)
+		.single();
 	if (profileError) return { error: profileError.message };
 
-	// Optionally, check the role and decide whether to allow login.
-	// For example, if only users with role "user" or "admin" are allowed:
+	// Check account status and return error if not allowed to login
+	if (profileData.status === "Suspended") {
+		const formattedDate = new Intl.DateTimeFormat("en-US", {
+			year: "numeric",
+			month: "short",
+			day: "numeric",
+			hour: "numeric",
+			minute: "numeric",
+			hour12: true,
+		}).format(new Date(profileData.banned_until));
+		return { error: `The account is suspended until ${formattedDate}` };
+	}
+	if (profileData.status === "Deleted") {
+		return { error: "This account has been deleted." };
+	}
+
+	// Optionally, check allowed roles (if needed)
 	const allowedRoles = ["user", "admin"];
 	if (!allowedRoles.includes(profileData.role)) {
 		return { error: "Access denied. Your role does not permit login." };
 	}
 
-	// Step 4: Return user details including username and role
-	return { user, username: profileData.username, role: profileData.role };
-  // Jas - Step 4: Store user info in local storage
-  localStorage.setItem("username", profileData.username);
-  localStorage.setItem("role", profileData.role);
+	// Store user info in local storage
+	localStorage.setItem("username", profileData.username);
+	localStorage.setItem("role", profileData.role);
 
-  // Redirect user to the correct dashboard
-  if (profileData.role === "admin") {
-    window.location.href = "/admin-dashboard"; // Jas - Redirect admins
-  } else {
-    window.location.href = "/user-dashboard"; // Jas - Redirect normal users
-  }
+	// Return user details (do not redirect here)
+	return {
+		user,
+		username: profileData.username,
+		role: profileData.role,
+		status: profileData.status,
+		banned_until: profileData.banned_until,
+	};
+};
 
-  // Step 5: Return user details including username and role
-  return { user,  
-    username: profileData.username,
-    role: profileData.role // Jas - include role  
-  };
+// Function to logout user
+export const logoutUserAll = async () => {
+	const { error } = await supabase.auth.signOut();
+	if (error) {
+		console.error("Error logging out:", error);
+		return { error: error.message };
+	}
+	// Clear local storage so that user data is removed from the client
+	localStorage.clear();
+	return { message: "Logout successful." };
 };
 
 // Function to resend vertification email
@@ -129,54 +149,55 @@ export const resendVerificationEmail = async (email) => {
 	}
 };
 
-// Function to handle admin login 
+// Function to handle admin login
 export const loginAdmin = async (email, password) => {
-  console.log("Admin login attempt...");
+	console.log("Admin login attempt...");
 
-  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  });
+	const { data: authData, error: authError } =
+		await supabase.auth.signInWithPassword({
+			email,
+			password,
+		});
 
-  if (authError) return { error: authError.message };
+	if (authError) return { error: authError.message };
 
-  const user = authData.user;
+	const user = authData.user;
 
-  // Fetch role from profiles table
-  const { data: profileData, error: profileError } = await supabase
-    .from("profiles")
-    .select("username, role")
-    .eq("id", user.id)
-    .single();
+	// Fetch role from profiles table
+	const { data: profileData, error: profileError } = await supabase
+		.from("profiles")
+		.select("username, role")
+		.eq("id", user.id)
+		.single();
 
-  if (profileError) return { error: profileError.message };
+	if (profileError) return { error: profileError.message };
 
-  // Check if the user is an admin
-  if (profileData.role !== "admin") {
-    return { error: "Access denied. Not an admin." };
-  }
+	// Check if the user is an admin
+	if (profileData.role !== "admin") {
+		return { error: "Access denied. Not an admin." };
+	}
 
-   // Store admin login info
-   localStorage.setItem("username", profileData.username);
-   localStorage.setItem("role", profileData.role);
+	// Store admin login info
+	localStorage.setItem("username", profileData.username);
+	localStorage.setItem("role", profileData.role);
 
-  return { user, username: profileData.username, role: profileData.role };
+	return { user, username: profileData.username, role: profileData.role };
 };
 
-// Function to handle user/admin logout 
+// Function to handle user/admin logout
 export const logoutUser = async () => {
-  await supabase.auth.signOut();
+	await supabase.auth.signOut();
 
-  // Get the stored role before clearing local storage
-  const role = localStorage.getItem("role");
-  
-  // Clear stored user info
-  localStorage.clear(); 
+	// Get the stored role before clearing local storage
+	const role = localStorage.getItem("role");
 
-  // Redirect user to the correct login page
-  if (role === "admin") {
-    window.location.href = "/admin-login"; // Redirect admins
-  } else {
-    window.location.href = "/login"; // Redirect normal users
-  }
+	// Clear stored user info
+	localStorage.clear();
+
+	// Redirect user to the correct login page
+	if (role === "admin") {
+		window.location.href = "/admin-login"; // Redirect admins
+	} else {
+		window.location.href = "/login"; // Redirect normal users
+	}
 };
