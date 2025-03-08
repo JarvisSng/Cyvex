@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { fetchUserProfilesWithSubscriptions, updateData } from "../api/supabaseAPI";
 
 const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 	const [profiles, setProfiles] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const navigate = useNavigate();
 
 	// Fetch profiles with related subscription data on mount
 	useEffect(() => {
@@ -39,7 +41,7 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 			return sub.subscribed === true;
 		}
 		if (activeSubTab === "pending") {
-			// Show rows where payment_confirm is false (and optionally subscribed is true)
+			// Show rows where payment_confirm is false
 			return sub.payment_confirm === false;
 		}
 		return true;
@@ -115,6 +117,9 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 								<th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
 									Payment Confirm
 								</th>
+								<th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
+									Status
+								</th>
 								<th className="px-4 py-2 text-right text-sm font-semibold text-gray-700">
 									Actions
 								</th>
@@ -151,10 +156,20 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 										<td className="px-4 py-2 text-gray-700">
 											{sub.payment_confirm ? "Yes" : "No"}
 										</td>
+										<td className="px-4 py-2 text-gray-700">
+											{profile.status}
+										</td>
 										<td className="px-4 py-2 text-right">
-											{/* <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+											<button
+												onClick={() =>
+													navigate(
+														`/admin/dashboard/${profile.id}`
+													)
+												}
+												className="!bg-blue-500 text-white px-3 py-1 rounded hover:!bg-blue-600"
+											>
 												Details
-											</button> */}
+											</button> 
 											<>
 											<select defaultValue={sub.status} class="relative z-20 w-half appearance-none rounded border border-stroke bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input" onChange={(e)=>changeStatus(profile.id, profile.username, e.target.value)}>
 												<option value="Active" defaultValue={sub.status}>Active</option>
