@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { fetchUserProfilesWithSubscriptions, updateData } from "../api/supabaseAPI";
-import toast, { Toaster } from 'react-hot-toast';
-
+import {
+	fetchUserProfilesWithSubscriptions,
+	updateData,
+} from "../api/supabaseAPI";
 
 const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 	const [profiles, setProfiles] = useState([]);
@@ -10,29 +12,32 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 	const [error, setError] = useState(null);
 	const navigate = useNavigate();
 
-	// Fetch profiles with related subscription data on mount
+	// Create a function to fetch and update the profiles state
+	const loadProfiles = async () => {
+		const result = await fetchUserProfilesWithSubscriptions();
+		if (result.error) {
+			setError(result.error);
+		} else {
+			setProfiles(result.data);
+		}
+		setLoading(false);
+	};
+
 	useEffect(() => {
-		const getProfiles = async () => {
-			const result = await fetchUserProfilesWithSubscriptions();
-			if (result.error) {
-				setError(result.error);
-			} else {
-				setProfiles(result.data);
-			}
-			setLoading(false);
-		};
-		getProfiles();
-	}, []); 
+		loadProfiles();
+	}, []);
 
 	const changeStatus = async (id, username, status) => {
 		const result = await updateData(id, username, status);
-		if (result.error) { 
+		if (result.error) {
 			setError(result.error);
-		}  else {
-			toast("Status has been changed."); 
+		} else {
+			toast("Status has been changed.");
+			// Reload profiles after the status update without reloading the entire page
+			loadProfiles();
 		}
-	}
- 
+	};
+
 	// Filter the profiles based on the activeSubTab
 	const filteredProfiles = profiles.filter((profile) => {
 		const sub = profile.subscription;
@@ -49,15 +54,14 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 		}
 		return true;
 	});
-	console.log(" filteredProfiles == ", filteredProfiles);
 
 	if (loading) return <div>Loading...</div>;
 	if (error) return <div>Error: {error}</div>;
 
 	return (
 		<div>
-			<Toaster/>
-			{/* Header tabs for Manage Subscriptions */}  
+			<Toaster />
+			{/* Header tabs for Manage Subscriptions */}
 			<div className="border-b border-gray-300 mb-4">
 				<h3 className="text-xl font-semibold text-black dark:text-white mb-4">
 					Manage Subscriptions
@@ -124,8 +128,28 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 								<th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
 									Status
 								</th>
-								<th colSpan={2} className="px-4 py-2 text-right text-sm font-semibold text-gray-700">
+								<th className="px-4 py-2 text-right text-sm font-semibold text-gray-700">
 									Actions
+								</th>
+								<th>
+									<select
+										defaultValue={
+											filteredProfiles[0]?.status
+										}
+										onChange={(e) =>
+											changeStatus(
+												filteredProfiles[0]?.id,
+												filteredProfiles[0]?.username,
+												e.target.value
+											)
+										}
+										className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block p-2.5"
+									>
+										<option value="Active">Activate</option>
+										<option value="Suspended">
+											Deactivate
+										</option>
+									</select>
 								</th>
 							</tr>
 						</thead>
@@ -170,24 +194,36 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 														`/admin/dashboard/${profile.id}`
 													)
 												}
-												className="!bg-blue-500 text-white px-3 py-1 rounded hover:!bg-blue-600"
+												className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
 											>
 												Details
-											</button> 
+											</button>
 										</td>
-											<td>
-											<select defaultValue={profile.status} onChange={(e)=>changeStatus(profile.id, profile.username, e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-
-											{/* <select defaultValue={profile.status} class="relative z-20 w-half appearance-none rounded border border-stroke bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input" onChange={(e)=>changeStatus(profile.id, profile.username, e.target.value)}> */}
-												<option value="Active" defaultValue={sub.status}>Activate</option>
-												<option value="Deactive" defaultValue={sub.status}>Deactivate</option>
+										<td>
+											<select
+												defaultValue={profile.status}
+												onChange={(e) =>
+													changeStatus(
+														profile.id,
+														profile.username,
+														e.target.value
+													)
+												}
+												className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block p-2.5"
+											>
+												<option value="Active">
+													Activate
+												</option>
+												<option value="Suspended">
+													Deactivate
+												</option>
 											</select>
-											</td>
-									</tr> 
+										</td>
+									</tr>
 								);
 							})}
 						</tbody>
-					</table> 
+					</table>
 				)}
 			</div>
 		</div>

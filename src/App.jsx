@@ -85,6 +85,7 @@ function App() {
 						}
 					/>
 					<Route path="/noaccess" element={<NoAccess />} />
+					{/*End of Routes for SysAdmin pages */}
 
 					<Route path="/reset-password" element={<ResetPassword />} />
 				</Routes>

@@ -88,8 +88,20 @@ const UserDetails = () => {
 	const banEndDate = profile?.banned_until
 		? new Date(profile.banned_until)
 		: null;
-	const isSuspended =
-		profile?.status === "Suspended" && banEndDate && banEndDate > now;
+
+	const formattedDate = banEndDate
+		? new Intl.DateTimeFormat("en-US", {
+				year: "numeric",
+				month: "short",
+				day: "numeric",
+				hour: "numeric",
+				minute: "numeric",
+				second: "numeric",
+				timeZoneName: "short",
+		  }).format(new Date(banEndDate))
+		: null;
+
+	const isSuspended = profile?.status === "Suspended";
 	const isDeleted = profile?.status === "Deleted";
 
 	const handleSuspendUser = async () => {
@@ -194,8 +206,8 @@ const UserDetails = () => {
 				</h1>
 				<p className="text-red-700 mb-4">
 					{isSuspended
-						? "The account is suspended until " +
-						  profile.banned_until
+						? "The account is suspended " +
+						  (banEndDate == null ? "" : "until " + formattedDate)
 						: ""}
 				</p>
 				<p className="text-red-700 mb-4">
