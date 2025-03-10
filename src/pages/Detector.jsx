@@ -1,307 +1,180 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import CodeUploader from '../components/CodeUploader';
+// detector.jsx
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const Detector = () => {
+// 1) Skip lines that start with // or #
+function isCommentLine(line) {
+  const trimmed = line.trim();
+  return trimmed.startsWith("//") || trimmed.startsWith("#");
+}
+
+// 2) Strip inline comments (everything after //)
+function stripInlineComment(line) {
+  const index = line.indexOf("//");
+  return index !== -1 ? line.substring(0, index) : line;
+}
+
+// 3) Detection rules for each language, using word boundaries (\b)
+const detectionRules = {
+  JavaScript: {
+    // Put \b before "crypto" or "MessageDigest" etc. to avoid partial matches like "mycrypto"
+    // AES
+    AES: /\bcrypto\.(?:createCipheriv|createCipher)\s*\(\s*['"]aes-\d+-cbc['"]/i,
+
+    // RSA (Weak Key) before RSA
+    "RSA (Weak Key)": /\bcrypto\.generateKeyPairSync\s*\(\s*['"]rsa['"]\s*,\s*\{\s*[^}]*modulusLength\s*:\s*(512|1024)/i,
+    RSA: /\bcrypto\.generateKeyPairSync\s*\(\s*['"]rsa['"]\s*,\s*\{\s*[^}]*modulusLength\s*:\s*(?!.*(512|1024))\d+/i,
+
+    // SHA-1, SHA-256, MD5, HMAC
+    "SHA-1": /\bcrypto\.createHash\s*\(\s*['"]sha1['"]\s*\)/i,
+    "SHA-256": /\bcrypto\.createHash\s*\(\s*['"]sha256['"]\s*\)/i,
+    MD5: /\bcrypto\.createHash\s*\(\s*['"]md5['"]\s*\)/i,
+    HMAC: /\bcrypto\.createHmac\s*\(\s*['"]sha\d+['"]\s*,/i,
+
+    // DES
+    DES: /\bcrypto\.createCipher\s*\(\s*['"]des(?:-\d+)?-cbc['"]\s*,/i,
+
+    // Hardcoded Key
+    "Hardcoded Key": /\b(?:const|let|var)\s+\w*(?:key|password|secret)\w*\s*=\s*['"][^'"]{5,}['"]/i,
+  },
+
+  Python: {
+    // RSA (Weak Key) first
+    "RSA (Weak Key)": /\bRSA\.generate\s*\(\s*(512|1024)(?:[^)]*)\)/i,
+    RSA: /\bRSA\.generate\s*\(\s*(?!512|1024)\d+(?:[^)]*)\)/i,
+
+    AES: /\bAES\.new\(/i,
+    "SHA-1": /\bhashlib\.sha1\(|\bhashlib\.new\(['"]sha1['"]\)/i,
+    "SHA-256": /\bhashlib\.sha256\(|\bhashlib\.new\(['"]sha256['"]\)/i,
+    MD5: /\bhashlib\.md5\(|\bhashlib\.new\(['"]md5['"]\)/i,
+    HMAC: /\bhmac\.new\(\s*.*,\s*hashlib\.sha\d+/i,
+    DES: /\bDES\.new\(/i,
+    "Hardcoded Key": /\b\w*(?:key|password|secret)\w*\s*=\s*['"][^'"]{5,}['"]/i,
+  },
+
+  Java: {
+    // RSA (Weak Key) first
+    "RSA (Weak Key)": /\bKeyPairGenerator\.getInstance\(\s*"RSA"\s*\)\.initialize\(\s*(512|1024)/i,
+    RSA: /\bKeyPairGenerator\.getInstance\(\s*"RSA"\s*\)(?!.*(512|1024))/i,
+
+    AES: /\bCipher\.getInstance\(\s*"AES/i,
+    "SHA-1": /\bMessageDigest\.getInstance\(\s*"SHA-1"/i,
+    "SHA-256": /\bMessageDigest\.getInstance\(\s*"SHA-256"/i,
+    MD5: /\bMessageDigest\.getInstance\(\s*"MD5"/i,
+    HMAC: /\bMac\.getInstance\(\s*"HmacSHA\d+"/i,
+    DES: /\bCipher\.getInstance\(\s*"DES/i,
+    "Hardcoded Key": /\b(?:String|char\s*\[\])\s+\w+\s*=\s*['"][^'"]{5,}['"]/i,
+  },
+
+  "C/C++": {
+    // RSA (Weak Key) first
+    "RSA (Weak Key)": /\bRSA_generate_key\s*\(\s*(512|1024)/i,
+    RSA: /\bRSA_generate_key\s*\(\s*(?!.*(512|1024))/i,
+
+    AES: /\bAES_set_encrypt_key\(/i,
+    "SHA-1": /\bSHA1\s*\(/i,
+    "SHA-256": /\bSHA256\s*\(/i,
+    MD5: /\bMD5_Init\(|\bMD5_Update\(|\bMD5_Final\(/i,
+    HMAC: /\bHMAC_Init_ex\(/i,
+    DES: /\bDES_set_key_checked\(|\bDES_ecb_encrypt\(/i,
+    "Hardcoded Key": /\b(?:char|const\s+char\*)\s+\w*(?:key|password|secret)\w*\s*=\s*['"][^'"]{5,}['"]/i,
+  },
+};
+
+export default function Detector() {
   const navigate = useNavigate();
+  const [code, setCode] = useState("");
 
-  // Full list of rules
-  const allRules = [
-    'AES', 
-    'RSA', 
-    'RSA (Weak Key)',
-    'SHA', 
-    'SHA-1', 
-    'MD5', 
-    'HMAC', 
-    'DES', 
-    'Hardcoded Key'
-  ];
+  // For demo, we always pick Python. Adapt as needed for real detection or user selection.
+  const detectLanguage = () => "Python";
 
-  // States
-  const [codeContent, setCodeContent] = useState('');
-  const [fileExt, setFileExt] = useState('');
-  const [fileType, setFileType] = useState(''); // RE-INTRODUCED
-  const [rules, setRules] = useState([...allRules]);
+  const handleScan = () => {
+    const language = detectLanguage();
+    const rulesForLanguage = detectionRules[language] || {};
 
-  // Improved detection rules for each language
-  const detectionRules = {
-    'JavaScript': {
-      'AES': /crypto\.(?:createCipheriv|createCipher)\s*\(\s*['"]aes-\d+-cbc['"]/i,
-      'RSA (Weak Key)': /crypto\.generateKeyPairSync\s*\(\s*['"]rsa['"]\s*,\s*\{\s*[^}]*modulusLength\s*:\s*(512|1024)/i,
-      'RSA': /crypto\.generateKeyPairSync\s*\(\s*['"]rsa['"]\s*,\s*\{\s*[^}]*modulusLength\s*:\s*(?!.*(512|1024))\d+/i,
-      'SHA': /crypto\.createHash\s*\(\s*['"]sha256['"]\s*\)/i,
-      'SHA-1': /crypto\.createHash\s*\(\s*['"]sha1['"]\s*\)/i,
-      'MD5': /crypto\.createHash\s*\(\s*['"]md5['"]\s*\)/i,
-      'HMAC': /crypto\.createHmac\s*\(\s*['"]sha\d+['"]\s*,/i,
-      'DES': /crypto\.createCipher\s*\(\s*['"]des(?:-\d+)?-cbc['"]\s*,/i,
-      'Hardcoded Key': /(?:const|let|var)\s+\w*(?:key|password|secret)\w*\s*=\s*['"][^'"]{5,}['"]/i
-    },
-    'Python': {
-      'AES': /AES\.new\(/i,
-      'RSA (Weak Key)': /RSA\.generate\s*\(\s*(512|1024)/i,
-      'RSA': /RSA\.generate\s*\(\s*(?!.*(512|1024))/i,
-      'SHA-1': /hashlib\.sha1\(|hashlib\.new\(['"]sha1['"]\)/i,
-      'SHA': /hashlib\.sha256\(|hashlib\.new\(['"]sha256['"]\)/i,
-      'MD5': /hashlib\.md5\(|hashlib\.new\(['"]md5['"]\)/i,
-      'HMAC': /hmac\.new\(\s*.*,\s*hashlib\.sha\d+/i,
-      'DES': /DES\.new\(/i,
-      'Hardcoded Key': /\b\w*(?:key|password|secret)\w*\s*=\s*['"][^'"]{5,}['"]/i
-    },
-    'Java': {
-      'AES': /Cipher\.getInstance\(\s*"AES/i,
-      'RSA (Weak Key)': /KeyPairGenerator\.getInstance\(\s*"RSA"\s*\)\.initialize\(\s*(512|1024)/i,
-      'RSA': /KeyPairGenerator\.getInstance\(\s*"RSA"\s*\)(?!.*(512|1024))/i,
-      'SHA-1': /MessageDigest\.getInstance\(\s*"SHA-1"/i,
-      'SHA': /MessageDigest\.getInstance\(\s*"SHA-256"/i,
-      'MD5': /MessageDigest\.getInstance\(\s*"MD5"/i,
-      'HMAC': /Mac\.getInstance\(\s*"HmacSHA\d+"/i,
-      'DES': /Cipher\.getInstance\(\s*"DES/i,
-      'Hardcoded Key': /\b(?:String|char\s*\[\])\s+\w+\s*=\s*['"][^'"]{5,}['"]/i
-    },
-    'C/C++': {
-      'AES': /AES_set_encrypt_key\(/i,
-      'RSA (Weak Key)': /RSA_generate_key\s*\(\s*(512|1024)/i,
-      'RSA': /RSA_generate_key\s*\(\s*(?!.*(512|1024))/i,
-      'SHA-1': /SHA1\s*\(/i,
-      'SHA': /SHA256\s*\(/i,
-      'MD5': /MD5_Init\(|MD5_Update\(|MD5_Final\(/i,
-      'HMAC': /HMAC_Init_ex\(/i,
-      'DES': /DES_set_key_checked\(|DES_ecb_encrypt\(/i,
-      'Hardcoded Key': /\b(?:char|const\s+char\*)\s+\w*(?:key|password|secret)\w*\s*=\s*['"][^'"]{5,}['"]/i
-    }
-  };
+    const lines = code.split("\n");
+    const detectedCryptographicFunctions = [];
+    const securityWarnings = [];
+    const snippets = [];
 
-  // Merge lines into statements
-  const parseStatements = (lines) => {
-    const statements = [];
-    let buffer = [];
-    let startLine = 0;
+    lines.forEach((lineContent, index) => {
+      // 1) Skip full comment lines
+      if (isCommentLine(lineContent)) return;
 
-    const statementEndRegex = /;\s*$|;\s*\}\s*$|\);\s*$|},?\s*$/;
+      // 2) Strip inline comments
+      const processedLine = stripInlineComment(lineContent);
 
-    for (let i = 0; i < lines.length; i++) {
-      buffer.push(lines[i]);
-      if (statementEndRegex.test(lines[i])) {
-        statements.push({
-          start: startLine,
-          end: i,
-          code: buffer.join('\n')
-        });
-        buffer = [];
-        startLine = i + 1;
-      }
-    }
+      // 3) Only proceed if the line has "(" to reduce false positives
+      if (!processedLine.includes("(")) return;
 
-    if (buffer.length > 0) {
-      statements.push({
-        start: startLine,
-        end: lines.length - 1,
-        code: buffer.join('\n')
-      });
-    }
-    return statements;
-  };
-
-  // Extract snippets in the order of the allRules array
-  const extractSnippetsOrdered = (code, language) => {
-    const lines = code.split('\n');
-    const statements = parseStatements(lines);
-    const selectedRules = detectionRules[language] || {};
-    let snippetMatches = [];
-
-    for (const rule of allRules) {
-      if (!rules.includes(rule)) continue;
-      const regex = selectedRules[rule];
-      if (!regex) continue;
-
-      statements.forEach(stmt => {
-        if (regex.test(stmt.code)) {
-          snippetMatches.push({
-            rule,
-            line: stmt.start + 1,
-            code: stmt.code.trim(),
-            secure: !['MD5','SHA-1','DES','Hardcoded Key','RSA (Weak Key)'].includes(rule)
+      // 4) Check each rule in the order listed
+      Object.entries(rulesForLanguage).forEach(([ruleName, regex]) => {
+        if (regex.test(processedLine)) {
+          // If not already detected
+          if (!detectedCryptographicFunctions.includes(ruleName)) {
+            detectedCryptographicFunctions.push(ruleName);
+          }
+          // Add snippet
+          snippets.push({
+            line: index + 1,
+            code: lineContent,
+            rule: ruleName,
           });
         }
       });
-    }
-    return snippetMatches;
-  };
-
-  // Detect language from code
-  const detectLanguage = (code) => {
-    if (/import\s+crypto|crypto\./.test(code)) return 'JavaScript';
-    if (/from\s+Crypto|import\s+hashlib|AES\.new\(/i.test(code)) return 'Python';
-    if (/import\s+javax\.crypto|Cipher\.getInstance\(/.test(code)) return 'Java';
-    if (/#include\s+<openssl\//.test(code)) return 'C/C++';
-    return 'Unknown';
-  };
-
-  // Analyze code
-  const analyzeCode = () => {
-    if (!codeContent.trim()) return;
-
-    // Determine language
-    const language = fileExt
-      ? {
-          'js': 'JavaScript',
-          'py': 'Python',
-          'java': 'Java',
-          'c': 'C/C++',
-          'cpp': 'C/C++'
-        }[fileExt] || 'Unknown'
-      : detectLanguage(codeContent);
-
-    // RE-INTRODUCED setFileType
-    setFileType(language);
-
-    // Extract snippet matches
-    const snippetMatches = extractSnippetsOrdered(codeContent, language);
-
-    // Determine which rules were found
-    let detected = [];
-    snippetMatches.forEach(s => {
-      if (!detected.includes(s.rule)) {
-        detected.push(s.rule);
-      }
     });
 
-    // Build security warnings
-    const securityWarnings = [];
-    if (detected.includes('Hardcoded Key')) {
-      securityWarnings.push("Avoid storing keys in source code.");
-    }
-    if (detected.includes('SHA-1')) {
+    // 5) Security warnings
+    if (detectedCryptographicFunctions.includes("SHA-1")) {
       securityWarnings.push("SHA-1 is weak.");
     }
-    if (detected.includes('MD5')) {
+    if (detectedCryptographicFunctions.includes("MD5")) {
       securityWarnings.push("MD5 is vulnerable to hash collisions.");
     }
-    if (detected.includes('DES')) {
-      securityWarnings.push("DES is outdated, use AES instead.");
-    }
-    if (detected.includes('RSA (Weak Key)')) {
+    if (detectedCryptographicFunctions.includes("RSA (Weak Key)")) {
       securityWarnings.push("Weak RSA key detected. Use 2048 bits or more.");
     }
+    if (detectedCryptographicFunctions.includes("Hardcoded Key")) {
+      securityWarnings.push("Avoid storing keys in source code.");
+    }
 
-    // Navigate
-    navigate('/report', {
-      state: {
-        report: {
-          language,
-          codeLength: codeContent.length,
-          detectedCryptographicFunctions: detected,
-          securityWarnings,
-          snippets: snippetMatches,
-          timestamp: new Date().toLocaleString()
-        },
-        rules
-      }
-    });
-  };
+    // 6) Build the report object
+    const report = {
+      language,
+      codeLength: code.length,
+      detectedCryptographicFunctions,
+      securityWarnings,
+      snippets,
+    };
 
-  // Toggling rules
-  const toggleRule = (rule) => {
-    setRules(prev =>
-      prev.includes(rule)
-        ? prev.filter(r => r !== rule)
-        : [...prev, rule]
-    );
-  };
-
-  const addAllRules = () => {
-    setRules([
-      'AES', 
-      'RSA', 
-      'RSA (Weak Key)',
-      'SHA', 
-      'SHA-1', 
-      'MD5', 
-      'HMAC', 
-      'DES', 
-      'Hardcoded Key'
-    ]);
-  };
-
-  const removeAllRules = () => {
-    setRules([]);
+    // 7) Navigate to /report
+    navigate("/report", { state: { report } });
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Cryptographic Function Detector</h1>
-      <CodeUploader onFileUpload={setCodeContent} onPaste={setCodeContent} />
-
-      <div style={{ marginTop: '20px' }}>
-        <h3>Define Rules / Patterns</h3>
-        {rules.length === 0 && <p>No rules selected.</p>}
-
-        {[
-          'AES', 
-          'RSA', 
-          'RSA (Weak Key)',
-          'SHA', 
-          'SHA-1', 
-          'MD5', 
-          'HMAC', 
-          'DES', 
-          'Hardcoded Key'
-        ].map(rule => (
-          <label key={rule} style={{ display: 'block', marginBottom: '5px' }}>
-            <input
-              type="checkbox"
-              checked={rules.includes(rule)}
-              onChange={() => toggleRule(rule)}
-            />
-            {rule}
-          </label>
-        ))}
-
-        <button
-          onClick={addAllRules}
-          style={{
-            marginTop: '10px',
-            padding: '10px',
-            backgroundColor: '#28a745',
-            color: 'white',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            marginRight: '5px'
-          }}
-        >
-          Add All
-        </button>
-        <button
-          onClick={removeAllRules}
-          style={{
-            marginTop: '10px',
-            padding: '10px',
-            backgroundColor: '#dc3545',
-            color: 'white',
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }}
-        >
-          Remove All
-        </button>
-      </div>
-
+    <div style={{ padding: "20px" }}>
+      <h1>Detector</h1>
+      <p>Paste or type your code below, then click "Scan".</p>
+      <textarea
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        rows={10}
+        cols={60}
+        style={{ display: "block", marginBottom: "10px" }}
+      />
       <button
-        onClick={analyzeCode}
+        onClick={handleScan}
         style={{
-          marginTop: '10px',
-          padding: '10px',
-          backgroundColor: '#007bff',
-          color: 'white',
-          borderRadius: '5px',
-          cursor: 'pointer'
+          padding: "10px",
+          backgroundColor: "navy",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
         }}
       >
-        Analyze Code
+        Scan
       </button>
     </div>
   );
-};
-
-export default Detector;
+}
