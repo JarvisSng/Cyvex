@@ -1,5 +1,3 @@
-
-  //TODO: Add a way to allow admin to navigate to admin dashboard
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
