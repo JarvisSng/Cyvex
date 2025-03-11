@@ -16,7 +16,7 @@ const ViewReports = () => {
         var username = localStorage.getItem("username");
         const result = await fetchAdminProfiles(username);
         if (result.error) {
-          setError(result.error);
+          setError(result.error); 
         } else { 
           setProfiles(result.data);
           console.log(" profiles == "+profiles);
@@ -32,7 +32,7 @@ const ViewReports = () => {
               <h3 className="text-xl font-semibold text-black dark:text-white mb-4">
                 Reports
               </h3>
-              <div class="relative max-w-sm mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+              <div class="relative mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                 <div class="flex mb-4">
                   <div class="w-14 flex-none"><a href="#"><img src={search} alt="Search" /></a></div>
                   <div class="w-64 flex-2"><p>AID-20240204-239</p></div>
@@ -50,7 +50,7 @@ const ViewReports = () => {
                   </div>  
               </div>
 
-              <div class="relative max-w-sm mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+              <div class="relative mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                 <div class="flex mb-4">
                   <div class="w-14 flex-none"><a href="#"><img src={search} alt="Search" /></a></div>
                   <div class="w-64 flex-2"><p>AID-20240204-239</p></div>
@@ -68,7 +68,7 @@ const ViewReports = () => {
                   </div>  
               </div>
 
-              <div class="relative max-w-sm mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+              <div class="relative mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                 <div class="flex mb-4">
                   <div class="w-14 flex-none"><a href="#"><img src={search} alt="Search" /></a></div>
                   <div class="w-64 flex-2"><p>AID-20240204-239</p></div>

@@ -35,7 +35,7 @@ const Profile = () => {
                 </h5>
               </div>
               <div className="flex items-center justify-center p-2.5 xl:p-5">
-                <p className="hidden text-black dark:text-white sm:block">{profiles[0]?.username}</p>
+                <p className="hidden text-black dark:text-white sm:block">{profiles?.user_metadata?.username}</p>
               </div>            
             </div>
 
