@@ -72,99 +72,96 @@ const CodeUploader = ({ onFileUpload, onPaste }) => {
     onPaste("");
   };
 
+  // Submit uploaded or pasted text
+  const handleSubmit = () => {
+    if (fileContent.trim() === "") {
+      alert("Please upload a file or paste code before submitting.");
+      return;
+    }
+    onSubmit(fileContent, fileExt);
+  };
+
   return (
     <div
-      style={{
-        padding: '20px',
-        border: dragging ? '2px dashed #00ff00' : '2px dashed #aaa',
-        borderRadius: '5px',
-        textAlign: 'center',
-        backgroundColor: dragging ? '#333' : '#222',
-        color: '#fff',
-      }}
+      className={`p-5 border-2 ${
+        dragging ? "border-green-500 bg-gray-300" : "border-gray-400 bg-gray-200"
+      } rounded-md text-center text-white`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <h3>Upload or Paste Code</h3>
-
+      <h3 className="text-black text-lg font-semibold">Upload or Paste Code</h3>
+  
       {/* File Upload Section */}
-      <div>
+      <div className="mt-4">
         <input
           id="fileInput"
           type="file"
           onChange={handleFileChange}
           accept=".js,.py,.java,.c,.cpp,.txt"
-          style={{ display: 'none' }}
+          className="hidden"
         />
         <button
-          onClick={() => document.getElementById('fileInput').click()}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-          }}
+          onClick={() => document.getElementById("fileInput").click()}
+          className="px-4 py-2 !bg-blue-950 text-white rounded-md hover:bg-blue-600 transition"
         >
           Choose File
         </button>
+
         {fileName !== "No file chosen" && (
-          <button
-            onClick={clearFile}
-            style={{
-              marginLeft: '10px',
-              padding: '10px 20px',
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-            }}
-          >
-            Clear File
-          </button>
+          <div className="mt-3 flex gap-3 justify-center">
+            <button
+              onClick={clearFile}
+              className="px-4 py-2 !bg-blue-950 text-white rounded-md hover:bg-red-600 transition"
+            >
+              Clear File
+            </button>
+            
+            <button
+              onClick={handleSubmit}
+              className="px-6 py-3 !bg-blue-950 text-white rounded-md transition disabled:bg-gray-500 disabled:cursor-not-allowed"
+            >
+              Submit
+            </button>
+          </div>
         )}
-        <p style={{ marginTop: '10px' }}>
+
+        <p className="text-black mt-2">
           <strong>Selected File:</strong> {fileName}
         </p>
       </div>
-
+  
       {/* Paste Code Section */}
-      <div style={{ marginTop: '20px' }}>
+      <div className="mt-5">
         <textarea
           placeholder="Or paste your code here..."
           value={pastedCode}
           onChange={handlePaste}
           rows={8}
-          style={{
-            width: '100%',
-            padding: '10px',
-            borderRadius: '5px',
-            border: '1px solid #ccc',
-            backgroundColor: '#fff',
-            color: '#000',
-          }}
+          className="w-full p-2 rounded-md border border-gray-400 bg-white text-black"
         ></textarea>
+
         {pastedCode && (
-          <button
-            onClick={clearPastedText}
-            style={{
-              marginTop: '10px',
-              padding: '10px 20px',
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-            }}
-          >
-            Clear Text
-          </button>
+          <div className="mt-3 flex justify-center gap-3">
+            <button
+              onClick={clearPastedText}
+              className="px-4 py-2 !bg-blue-950 text-white rounded-md hover:bg-red-600 transition"
+            >
+              Clear Text
+            </button>
+            
+            <button
+              onClick={handleSubmit}
+              disabled={!pastedCode || fileName === "No file chosen"}
+              className="px-6 py-3 !bg-blue-950 text-white rounded-md transition disabled:bg-gray-500 disabled:cursor-not-allowed"
+            >
+              Submit
+            </button>
+          </div>
         )}
+
+        </div>
       </div>
-    </div>
   );
 };
 

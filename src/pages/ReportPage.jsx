@@ -19,6 +19,19 @@ const insecureRules = ["MD5", "SHA-1", "DES", "Hardcoded Key", "RSA (Weak Key)"]
 export default function ReportPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [activeButton, setActiveButton] = useState(null);
+
+  const handleButtonClick = (button) => {
+    setActiveButton(button);
+  };
+
+  const login = () => {
+    navigate("/login/email");
+  }
+
+  const detector = () => {
+    navigate("/detector");
+  }
 
   // The analysis data from navigate("/report", { state: { report, rules } })
   const reportData = location.state?.report || null;
@@ -290,148 +303,120 @@ export default function ReportPage() {
   );
 
   return (
-    <div className="page-wrapper" style={{ color: "#333" }}>
-      {/* ====== Top Navigation Bar ====== */}
-      <header className="top-nav">
-        <div className="nav-left">
-          <a href="#" className="nav-brand">
-            cyvex
-          </a>
-          <nav className="nav-links">
-            <a href="#">solutions</a>
-            <a href="#">customers</a>
-            <a href="#">services</a>
-            <a href="#">insights</a>
-            <a href="#">company</a>
+    <>
+      {/* Header (Fixed at the Top) */}
+      <header className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md z-50 h-20">
+        <div className="flex items-center justify-between w-full h-full">
+          
+          {/* Logo (Left) */}
+          <h2 className="text-stone-50 text-4xl font-bold flex items-center">cyvex</h2>
+  
+          {/* Navigation Links (Centered) */}
+          <nav className="flex items-center gap-8">
+            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">solutions</h2>
+            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">customers</h2>
+            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">services</h2>
+            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">insights</h2>
+            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">company</h2>
           </nav>
-        </div>
-        <div className="nav-right">
-          <button className="login-btn">log in</button>
-          <button className="try-btn">try it</button>
+  
+          {/* Buttons (Right) */}
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={login}
+              className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+            >
+              Login
+            </button>
+            <button 
+              onClick={detector}
+              className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+            >
+              Try It
+            </button>
+          </div>
         </div>
       </header>
-
+  
       {/* ====== Layout: Sidebar + Main Content ====== */}
-      <div className="layout">
+      <div className="flex pt-20"> {/* Adding pt-20 to make space for the fixed header */}
         {/* Left Sidebar */}
-        <aside className="sidebar">
-          <a href="#">upload code</a>
-          <a href="#">view results</a>
-          <a href="#">view reports</a>
-          <a href="#">settings</a>
-          <a href="#">log out</a>
+        <aside className="w-64 h-screen bg-gray-200 text-white p-6 fixed top-20 left-0">
+          <nav className="flex flex-col gap-4">
+            <a href="/detector" className="hover:bg-gray-300 p-2 rounded-md">
+              Upload Code
+            </a>
+            <a href="/report" className="hover:bg-gray-300 p-2 rounded-md">
+              View Results
+            </a>
+          </nav>
         </aside>
 
         {/* Main Content => Two-Column Design */}
-        <main className="main-content" style={{ backgroundColor: "#fff" }}>
-          {/* Row of tabs: "pending scans" / "completed scans" */}
-          <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+        <main className="flex flex-col ml-64 p-6"> {/* Adding ml-64 to give space for sidebar */}
+          {/* Buttons (Positioned at the top of the content) */}
+          <div className="flex gap-2.5 mb-5 mt-5"> {/* Use margin-top (mt-5) for spacing */}
             <button
-              style={{
-                padding: "10px",
-                borderRadius: "5px",
-                border: "none",
-                fontWeight: "bold",
-                backgroundColor: "navy",
-                color: "white",
-                cursor: "pointer",
-              }}
+              onClick={() => handleButtonClick("pending")}
+              className={`px-4 py-2 rounded-lg border-none font-bold cursor-pointer ${
+                activeButton === "pending"
+                  ? "!bg-blue-950 text-white"
+                  : "bg-white text-black border-2 border-black"
+              }`}
             >
               pending scans
             </button>
             <button
-              style={{
-                padding: "10px",
-                borderRadius: "5px",
-                border: "none",
-                fontWeight: "bold",
-                backgroundColor: "darkblue",
-                color: "white",
-                cursor: "pointer",
-              }}
+              onClick={() => handleButtonClick("completed")}
+              className={`px-4 py-2 rounded-lg border-none font-bold cursor-pointer ${
+                activeButton === "completed"
+                  ? "!bg-blue-950 text-white"
+                  : "bg-white text-black border-2 border-black"
+              }`}
             >
               completed scans
             </button>
           </div>
 
-          {/* Two columns: left = logs + analysis placeholders, right = actual analysis */}
-          <div style={{ display: "flex", gap: "20px" }}>
-            {/* Left Column */}
-            <div
-              style={{
-                flex: 1,
-                backgroundColor: "#f9f9f9",
-                padding: "20px",
-                borderRadius: "5px",
-              }}
-            >
+          <div className="flex gap-5 w-full"> {/* Flex container to separate the two columns */}
+            {/* Left Column: Logs + Analysis */}
+            <div className="flex flex-col gap-5 w-1/3"> {/* Left column takes 1/3 of the space */}
               {/* Real-time log updates */}
-              <h3>real-time log updates</h3>
-              <p>status: completed</p>
-              <p>... (placeholder for logs) ...</p>
-
-              {/* cyvex analysis block */}
-              <div style={{ marginTop: "20px" }}>
-                <h3>cyvex analysis</h3>
-                <p>scanned for cryptographic functions</p>
-                <p>... (placeholder) ...</p>
+              <div className="bg-gray-100 p-5 rounded-lg">
+                <h3 className="text-xl font-semibold">real-time log updates</h3>
+                <p>Status: completed</p>
+                <p>... (placeholder for logs) ...</p>
               </div>
 
-              {/* pagination at bottom */}
-              <div
-                style={{
-                  marginTop: "30px",
-                  textAlign: "center",
-                }}
-              >
-                <span
-                  style={{
-                    display: "inline-block",
-                    width: "30px",
-                    height: "30px",
-                    lineHeight: "30px",
-                    background: "navy",
-                    color: "white",
-                    margin: "0 5px",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
+              {/* cyvex analysis block */}
+              <div className="bg-gray-100 p-5 rounded-lg">
+                <div className="mt-5 mb-5">
+                  <h3 className="text-xl font-semibold">cyvex analysis</h3>
+                  <p>Scanned for cryptographic functions</p>
+                  <p>... (placeholder) ...</p>
+                </div>
+              </div>
+
+              {/* Pagination at bottom */}
+              <div className="mt-8 text-center">
+                <span className="inline-block w-8 h-8 leading-8 bg-blue-900 text-white mx-2 rounded-md cursor-pointer font-semibold">
                   1
                 </span>
-                <span
-                  style={{
-                    display: "inline-block",
-                    width: "30px",
-                    height: "30px",
-                    lineHeight: "30px",
-                    background: "navy",
-                    color: "white",
-                    margin: "0 5px",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
+                <span className="inline-block w-8 h-8 leading-8 bg-blue-900 text-white mx-2 rounded-md cursor-pointer font-semibold">
                   2
                 </span>
               </div>
             </div>
 
             {/* Right Column => Analysis Report */}
-            <div
-              style={{
-                flex: 2,
-                backgroundColor: "#fff",
-                borderRadius: "5px",
-              }}
-            >
-              {analysisReport}
+            <div className="flex flex-col gap-5 w-2/3"> {/* Right column takes 2/3 of the space */}
+              <div className="bg-gray-100 p-5 rounded-lg">
+                {analysisReport}
+              </div>
             </div>
           </div>
         </main>
       </div>
-    </div>
-  );
+    </>
+  );  
 }

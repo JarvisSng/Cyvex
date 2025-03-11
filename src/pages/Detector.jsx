@@ -1,6 +1,6 @@
 // detector.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 // 1) Skip lines that start with // or #
 function isCommentLine(line) {
@@ -81,9 +81,17 @@ const detectionRules = {
   },
 };
 
-export default function Detector() {
+  function Detector() {
   const navigate = useNavigate();
   const [code, setCode] = useState("");
+
+  const login = () => {
+    navigate("/login/email");
+  }
+
+  const detector = () => {
+    navigate("/detector");
+  }
 
   // For demo, we always pick Python. Adapt as needed for real detection or user selection.
   const detectLanguage = () => "Python";
@@ -152,29 +160,78 @@ export default function Detector() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Detector</h1>
-      <p>Paste or type your code below, then click "Scan".</p>
-      <textarea
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        rows={10}
-        cols={60}
-        style={{ display: "block", marginBottom: "10px" }}
-      />
-      <button
-        onClick={handleScan}
-        style={{
-          padding: "10px",
-          backgroundColor: "navy",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-        }}
-      >
-        Scan
-      </button>
-    </div>
+    <>
+      {/* Header (Fixed at the Top) */}
+      <header className="bg-blue-950 absolute top-0 left-0 w-full py-4 px-8 shadow-md z-50 h-20">
+        <div className="flex items-center justify-between w-full h-full">
+          
+          {/* Logo (Left) */}
+          <h2 className="text-stone-50 text-4xl font-bold flex items-center">cyvex</h2>
+
+          {/* Navigation Links (Centered) */}
+          <nav className="flex items-center gap-8">
+            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">solutions</h2>
+            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">customers</h2>
+            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">services</h2>
+            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">insights</h2>
+            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">company</h2>
+          </nav>
+
+          {/* Buttons (Right) */}
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={login}
+              className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+            >
+              Login
+            </button>
+            <button 
+              onClick={detector}
+              className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+            >
+              Try It
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Sidebar + Main Content Wrapper */}
+      <div className="flex"> {/* Ensure no overlap by adding margin-top for header height */}
+        {/* Sidebar */}
+        <aside className="w-64 h-screen bg-gray-200 text-white p-6 fixed top-20 left-0">
+          <nav className="flex flex-col gap-4">
+            <a href="/detector" className="hover:bg-gray-300 p-2 rounded-md">
+              Upload Code
+            </a>
+            <a href="/report" className="hover:bg-gray-300 p-2 rounded-md">
+              View Results
+            </a>
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <main className="ml-64 mt-20 p-6 w-full"> {/* Make sure content doesn't overlap header */}
+          <h1 className="text-2xl font-bold text-gray-800">Detector</h1>
+          <p className="text-lg text-gray-700">Paste or type your code below, then click "Scan".</p>
+          
+          <textarea
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            rows={10}
+            cols={60}
+            className="w-full border border-gray-300 rounded-md p-2 mt-2"
+          />
+          
+          <button
+            onClick={handleScan}
+            className="mt-4 px-6 py-2 !bg-blue-900 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-200"
+          >
+            Scan
+          </button>
+        </main>
+      </div>
+    </>
   );
 }
+
+export default Detector;

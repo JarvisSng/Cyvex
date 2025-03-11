@@ -22,7 +22,7 @@ function UserDashboard() {
 				<aside className="w-64 bg-gray-500 border-r border-gray-200 p-4 overflow-y-auto">
 					
 					<div>
-						<h2 className="font-bold mb-2">My Dashboard</h2>
+						<h2 className="text-black font-bold mb-2">My Dashboard</h2>
 						<ul>
 							<li
 								onClick={() => setActiveSection("dashboard")}
