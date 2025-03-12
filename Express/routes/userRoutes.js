@@ -67,21 +67,43 @@ router.post("/profile/:userId/subscription", async (req, res) => {
 	}
 });
 
-// GET admin profiles by username (query parameter)
+// GET admin profiles by username (via query parameter)
 router.get("/admin-profiles", async (req, res) => {
 	try {
 		const { username } = req.query;
+		// First, fetch the admin profiles from the "profiles" table.
 		const { data: userdata, error: uerror } = await supabase
 			.from("profiles")
 			.select("*")
 			.eq("username", username)
 			.eq("role", "admin");
+
 		if (uerror) {
 			console.error("Error fetching admin profiles:", uerror);
 			return res.status(400).json({ error: uerror.message });
 		}
-		// Optionally, you can merge additional auth info if needed.
-		res.json({ data: userdata });
+
+		// For each profile, fetch additional auth information (e.g., email) from the auth table.
+		const profilesWithAuth = await Promise.all(
+			userdata.map(async (profile) => {
+				const { data: userData, error: getUserError } =
+					await supabase.auth.admin.getUserById(profile.id);
+				if (getUserError) {
+					console.error(
+						"Error fetching auth data for user",
+						profile.id,
+						getUserError
+					);
+					// Optionally, you can choose to continue even if one fetch fails:
+					return profile;
+				}
+				// Attach the auth data to the profile (e.g., email, phone, etc.)
+				profile.authData = userData.user; // now you can access profile.authData.email, etc.
+				return profile;
+			})
+		);
+
+		res.json({ data: profilesWithAuth });
 	} catch (err) {
 		console.error("Unexpected error:", err);
 		res.status(500).json({ error: "Internal Server Error" });

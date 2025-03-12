@@ -1,12 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import ManageRules from "../components/ManageRules";
 import ManageSubs from "../components/ManageSubs";
-import Profile from "../components/Profile"; 
+import Profile from "../components/Profile";
 import SystemActivity from "../components/SystemActivity";
 import ViewReports from "../components/ViewReports";
-import { Link } from 'react-router-dom';
-import { logoutUser } from "../controller/authController";
- import AdminNav from "./AdminNav";
+import AdminNav from "./AdminNav";
 
 function AdminDashboard() {
 	// activeSection controls which main content component is shown.
@@ -14,12 +12,11 @@ function AdminDashboard() {
 
 	const [activeSection, setActiveSection] = useState("subscriptions");
 	// For the subscriptions section, we also keep track of the sub-tab.
-	const [activeSubTab, setActiveSubTab] = useState("all"); 
-	
-	
+	const [activeSubTab, setActiveSubTab] = useState("all");
+
 	return (
 		<div className="w-screen h-screen flex flex-col bg-gray-50">
-			<AdminNav />
+			<AdminNav setActiveSection={setActiveSection} />
 
 			{/* Main content area */}
 			<div className="flex flex-1 overflow-hidden pt-70">
@@ -86,13 +83,15 @@ function AdminDashboard() {
 								Sub Menu
 							</li>
 							<li
-								onClick={() => setActiveSection("System Activity")}
+								onClick={() =>
+									setActiveSection("System Activity")
+								}
 								className={`py-1 rounded px-2 cursor-pointer ${
 									activeSection === "System Activity"
 										? "bg-gray-300"
 										: "hover:bg-gray-100"
 								}`}
-							> 
+							>
 								System Activity
 							</li>
 							<li
@@ -102,33 +101,33 @@ function AdminDashboard() {
 										? "bg-gray-300"
 										: "hover:bg-gray-100"
 								}`}
-							> 
+							>
 								View Reports
 							</li>
 						</ul>
-					</div> 
+					</div>
 				</aside>
 
 				{/* Main Panel */}
 				<main className="flex-1 p-6 overflow-y-auto">
 					{/* Render the main content based on activeSection */}
-					
-					{(activeSection === "subscriptions") ? (
+
+					{activeSection === "subscriptions" ? (
 						<ManageSubs
 							activeSubTab={activeSubTab}
 							setActiveSubTab={setActiveSubTab}
 						/>
-					) : (activeSection == "profile") ? (
-						<Profile />		 			
-					) : (activeSection == "System Activity") ? (
-						<SystemActivity />		 			
-					) : (activeSection == "View Reports") ? (
-						<ViewReports/>
+					) : activeSection == "profile" ? (
+						<Profile />
+					) : activeSection == "System Activity" ? (
+						<SystemActivity />
+					) : activeSection == "View Reports" ? (
+						<ViewReports />
 					) : (
-						<ManageRules /> 
-					)} 
-				</main> 
-			</div> 
+						<ManageRules />
+					)}
+				</main>
+			</div>
 		</div>
 	);
 }

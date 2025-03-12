@@ -51,7 +51,6 @@ export const updateSubscription = async (userId, subscription) => {
 	}
 };
 
-// 4. Fetch admin profiles by username (via query parameter)
 export const fetchAdminProfiles = async (username) => {
 	try {
 		const response = await fetch(
@@ -61,7 +60,10 @@ export const fetchAdminProfiles = async (username) => {
 			const result = await response.json();
 			throw new Error(result.error || "Failed to fetch admin profiles");
 		}
-		return await response.json();
+
+		const resultData = await response.json();
+
+		return resultData;
 	} catch (error) {
 		return { error: error.message };
 	}

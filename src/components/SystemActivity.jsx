@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
-import { fetchAdminProfiles } from "../api/supabaseAPI";
+import { fetchAdminProfiles } from "../controller/userController";
 
 const SystemActivity = () => {
 	const [profiles, setProfiles] = useState([]);
@@ -198,9 +198,9 @@ const SystemActivity = () => {
 				<h3 className="text-xl font-semibold text-black dark:text-white">
 					System Activity
 				</h3>
-				<div class="relative p-6 z-20 bg-white dark:bg-form-input">
+				<div className="relative p-6 z-20 bg-white dark:bg-form-input">
 					<select
-						class="relative z-20 w-half appearance-none rounded border border-stroke bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
+						className="relative z-20 w-half appearance-none rounded border border-stroke bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
 						onChange={changeBarChart}
 					>
 						<option value="1">This Week</option>

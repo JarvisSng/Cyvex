@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchAdminProfiles } from "../api/supabaseAPI";
+import { fetchAdminProfiles } from "../controller/userController";
 import deleteimg from "../images/delete.png";
 import save from "../images/save.jpg";
 import search from "../images/search.jpg";
@@ -31,17 +31,17 @@ const ViewReports = () => {
 				<h3 className="text-xl font-semibold text-black dark:text-white mb-4">
 					Reports
 				</h3>
-				<div class="relative mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-					<div class="flex mb-4">
-						<div class="w-14 flex-none">
+				<div className="relative mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+					<div className="flex mb-4">
+						<div className="w-14 flex-none">
 							<a href="#">
 								<img src={search} alt="Search" />
 							</a>
 						</div>
-						<div class="w-64 flex-2">
+						<div className="w-64 flex-2">
 							<p>AID-20240204-239</p>
 						</div>
-						<div class="w-14 flex-none">
+						<div className="w-14 flex-none">
 							<a href="#">
 								<img
 									src={save}
@@ -51,7 +51,7 @@ const ViewReports = () => {
 							</a>
 						</div>
 					</div>
-					<div class="grid grid-cols-2 gap-2">
+					<div className="grid grid-cols-2 gap-2">
 						<div>Date: 02/04/2025</div>
 						<div>Functions Detected: 3</div>
 						<div>Time: 19:15</div>
@@ -71,17 +71,17 @@ const ViewReports = () => {
 					</div>
 				</div>
 
-				<div class="relative mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-					<div class="flex mb-4">
-						<div class="w-14 flex-none">
+				<div className="relative mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+					<div className="flex mb-4">
+						<div className="w-14 flex-none">
 							<a href="#">
 								<img src={search} alt="Search" />
 							</a>
 						</div>
-						<div class="w-64 flex-2">
+						<div className="w-64 flex-2">
 							<p>AID-20240204-239</p>
 						</div>
-						<div class="w-14 flex-none">
+						<div className="w-14 flex-none">
 							<a href="#">
 								<img
 									src={save}
@@ -91,7 +91,7 @@ const ViewReports = () => {
 							</a>
 						</div>
 					</div>
-					<div class="grid grid-cols-2 gap-2">
+					<div className="grid grid-cols-2 gap-2">
 						<div>Date: 02/04/2025</div>
 						<div>Functions Detected: 3</div>
 						<div>Time: 19:15</div>
@@ -109,17 +109,17 @@ const ViewReports = () => {
 					</div>
 				</div>
 
-				<div class="relative mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-					<div class="flex mb-4">
-						<div class="w-14 flex-none">
+				<div className="relative mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+					<div className="flex mb-4">
+						<div className="w-14 flex-none">
 							<a href="#">
 								<img src={search} alt="Search" />
 							</a>
 						</div>
-						<div class="w-64 flex-2">
+						<div className="w-64 flex-2">
 							<p>AID-20240204-239</p>
 						</div>
-						<div class="w-14 flex-none">
+						<div className="w-14 flex-none">
 							<a href="#">
 								<img
 									src={save}
@@ -129,7 +129,7 @@ const ViewReports = () => {
 							</a>
 						</div>
 					</div>
-					<div class="grid grid-cols-2 gap-2">
+					<div className="grid grid-cols-2 gap-2">
 						<div>Date: 02/04/2025</div>
 						<div>Functions Detected: 3</div>
 						<div>Time: 19:15</div>

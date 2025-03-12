@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { logoutUserAll } from "../controller/authController";
 
-function AdminNav() {
+function AdminNav({ setActiveSection }) {
 	const navigate = useNavigate();
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 	const trigger = useRef(null);
@@ -225,7 +225,6 @@ function AdminNav() {
 							// to="/profile"
 							onClick={() => {
 								setActiveSection("profile");
-								setActiveSubTab("all");
 							}}
 							className="flex text-blue-800 items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
 						>
