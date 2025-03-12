@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { fetchUserProfile, updateUserSubscription } from "../api/supabaseAPI";
+import {
+	deleteUser,
+	getUserProfile,
+	resetUserPassword,
+	suspendUser,
+	updateSubscription,
+} from "../controller/userController";
 
 const UserDetails = () => {
 	const { userId } = useParams();
@@ -21,7 +27,7 @@ const UserDetails = () => {
 
 	useEffect(() => {
 		const loadUserProfile = async () => {
-			const result = await fetchUserProfile(userId);
+			const result = await getUserProfile(userId);
 			if (result.error) {
 				setError(result.error);
 			} else {
@@ -70,10 +76,7 @@ const UserDetails = () => {
 			end_date:
 				subscription.end_date === "" ? null : subscription.end_date,
 		};
-		const result = await updateUserSubscription(
-			userId,
-			updatedSubscription
-		);
+		const result = await updateSubscription(userId, updatedSubscription);
 		if (result.error) {
 			alert("Error: " + result.error);
 		} else {
@@ -82,13 +85,12 @@ const UserDetails = () => {
 	};
 
 	// Determine suspension state based on profile data.
-	// If profile.status is "Suspended" and banned_until is in the future, the user is suspended.
+	// If profile.status is "Suspended", the user is suspended.
 	// If profile.status is "Deleted", the user is permanently banned.
 	const now = new Date();
 	const banEndDate = profile?.banned_until
 		? new Date(profile.banned_until)
 		: null;
-
 	const formattedDate = banEndDate
 		? new Intl.DateTimeFormat("en-US", {
 				year: "numeric",
@@ -98,9 +100,8 @@ const UserDetails = () => {
 				minute: "numeric",
 				second: "numeric",
 				timeZoneName: "short",
-		  }).format(new Date(banEndDate))
+		  }).format(banEndDate)
 		: null;
-
 	const isSuspended = profile?.status === "Suspended";
 	const isDeleted = profile?.status === "Deleted";
 
@@ -116,21 +117,13 @@ const UserDetails = () => {
 		} else {
 			hours = 0; // unsuspend
 		}
-		const response = await fetch(
-			`http://localhost:3000/api/admin/user/${userId}/suspend`,
-			{
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ banDuration: hours }),
-			}
-		);
-		const result = await response.json();
-		if (!response.ok) {
+		const result = await suspendUser(userId, hours);
+		if (result.error) {
 			alert("Error: " + result.error);
 		} else {
 			alert(result.message);
 			// Reload profile to get updated status and banned_until
-			const res = await fetchUserProfile(userId);
+			const res = await getUserProfile(userId);
 			if (!res.error) {
 				setProfile(res.data);
 			}
@@ -144,20 +137,13 @@ const UserDetails = () => {
 				"Are you sure you want to delete this user? This action cannot be reversed without database administrator privileges."
 			)
 		) {
-			const response = await fetch(
-				`http://localhost:3000/api/admin/user/${userId}/delete`,
-				{
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-				}
-			);
-			const result = await response.json();
-			if (!response.ok) {
+			const result = await deleteUser(userId);
+			if (result.error) {
 				alert("Error: " + result.error);
 			} else {
 				alert(result.message);
 				// Reload profile to get updated status and banned_until
-				const res = await fetchUserProfile(userId);
+				const res = await getUserProfile(userId);
 				if (!res.error) {
 					setProfile(res.data);
 				}
@@ -167,15 +153,8 @@ const UserDetails = () => {
 
 	const handleResetPassword = async () => {
 		try {
-			const response = await fetch(
-				`http://localhost:3000/api/admin/user/${profile.id}/reset-password`,
-				{
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-				}
-			);
-			const result = await response.json();
-			if (!response.ok) {
+			const result = await resetUserPassword(profile.id);
+			if (result.error) {
 				alert("Error: " + result.error);
 			} else {
 				alert(result.message);
@@ -201,6 +180,14 @@ const UserDetails = () => {
 	return (
 		<div className="w-screen h-screen bg-gray-50 flex flex-col">
 			<div className="max-w-3xl mx-auto p-6 bg-white shadow rounded flex-1 overflow-y-auto">
+				<div className="flex justify-center">
+					<button
+						onClick={handleBack}
+						className="mb-4 bg-gray-200 hover:bg-gray-300 text-white px-4 py-2 rounded mt-5 w-40"
+					>
+						Back
+					</button>
+				</div>
 				<h1 className="text-3xl text-gray-600 font-bold mb-6">
 					{profile.username}
 				</h1>
@@ -355,14 +342,6 @@ const UserDetails = () => {
 						</div>
 					</div>
 				</section>
-				<div className="flex justify-center">
-					<button
-						onClick={handleBack}
-						className="mb-4 bg-gray-200 hover:bg-gray-300 text-white px-4 py-2 rounded mt-5 w-40"
-					>
-						Back
-					</button>
-				</div>
 			</div>
 		</div>
 	);

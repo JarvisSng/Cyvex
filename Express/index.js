@@ -7,6 +7,7 @@ const path = require("path");
 const blockchainRoutes = require("./routes/blockchain");
 const analyzeRoutes = require("./routes/analyze");
 const adminRoutes = require("./routes/adminRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use(express.json());
 
 // Mount your API routes first
 app.use("/api/admin", adminRoutes);
+app.use("/api/user", userRoutes);
 app.use("/api/blockchain", blockchainRoutes);
 app.use("/api/analyze", analyzeRoutes);
 

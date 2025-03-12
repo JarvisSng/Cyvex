@@ -69,15 +69,19 @@ export const loginUser = async (email, password) => {
 
 	// Check account status and return error if not allowed to login
 	if (profileData.status === "Suspended") {
-		const formattedDate = new Intl.DateTimeFormat("en-US", {
-			year: "numeric",
-			month: "short",
-			day: "numeric",
-			hour: "numeric",
-			minute: "numeric",
-			hour12: true,
-		}).format(new Date(profileData.banned_until));
-		return { error: `The account is suspended until ${formattedDate}` };
+		if (profileData.banned_until != null) {
+			const formattedDate = new Intl.DateTimeFormat("en-US", {
+				year: "numeric",
+				month: "short",
+				day: "numeric",
+				hour: "numeric",
+				minute: "numeric",
+				hour12: true,
+			}).format(new Date(profileData.banned_until));
+			return { error: `The account is suspended until ${formattedDate}` };
+		} else {
+			return { error: `The account is suspended` };
+		}
 	}
 	if (profileData.status === "Deleted") {
 		return { error: "This account has been deleted." };
