@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+
 import {
-	fetchUserProfilesWithSubscriptions,
+	getUserProfilesWithSubscriptions,
 	updateData,
-} from "../api/supabaseAPI";
+} from "../controller/userController";
 
 const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 	const [profiles, setProfiles] = useState([]);
@@ -14,7 +15,7 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 
 	// Create a function to fetch and update the profiles state
 	const loadProfiles = async () => {
-		const result = await fetchUserProfilesWithSubscriptions();
+		const result = await getUserProfilesWithSubscriptions();
 		if (result.error) {
 			setError(result.error);
 		} else {
