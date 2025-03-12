@@ -15,6 +15,7 @@ const SignUpConfirmation = () => {
         }
     }, []);
 
+    // Function that resend email confirmation
     const handleResendEmail = async () => {
         if (!email) {
             setError("Email not found. Please sign up again.");
@@ -63,3 +64,6 @@ const SignUpConfirmation = () => {
 };
 
 export default SignUpConfirmation;
+
+// Code Reviewed by Jarvis
+// Code good for now

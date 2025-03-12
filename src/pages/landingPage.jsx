@@ -5,10 +5,12 @@ const LandingPage = () => {
 
   const navigate = useNavigate();
 
+  // Function that navigate to the login pages
   const login = () => {
     navigate("/login/email");
   }
 
+  // Function that navigate to the detector tool
   const detector = () => {
     navigate("/detector");
   }
@@ -52,3 +54,6 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
+
+// Code Reviewed by Jarvis.
+// Code good for now.

@@ -49,3 +49,6 @@ const SignUpEmail = () => {
 };
 
 export default SignUpEmail;
+
+// Code Reviewed by Jarvis
+// Good for now

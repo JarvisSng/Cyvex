@@ -14,6 +14,7 @@ const LoginUI = () => {
 		}
 	}, [email, navigate]);
 
+	// Function that handle login of the user details
 	const handleLogin = async (e) => {
 		e.preventDefault();
 
@@ -36,6 +37,7 @@ const LoginUI = () => {
 		}
 	};
 
+	// Function that navigate to signup page
 	const handleSignUpRedirect = () => {
 		navigate("/signup/email");
 	};
@@ -79,3 +81,6 @@ const LoginUI = () => {
 };
 
 export default LoginUI;
+
+// Code Reviewed by Jarvis
+// Code good for now
