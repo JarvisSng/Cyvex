@@ -19,6 +19,7 @@ import AdminProtectedRoute from "./SysAdminPages/AdminProtectedRoute.jsx";
 import NoAccess from "./SysAdminPages/NoAccess.jsx";
 import ResetPassword from "./SysAdminPages/resetPassword.jsx";
 import UserDetails from "./SysAdminPages/UserDetails.jsx";
+import GitHubPull from "./components/GitHubPull.jsx";
 
 function App() {
 	return (
@@ -50,6 +51,7 @@ function App() {
 					<Route path="/detector" element={<Detector />} />
 					<Route path="/admin-login" element={<AdminLogin />} />
 					<Route path="/user-dashboard" element={<UserDashboard />} />
+					<Route path="/github-pull" element={<GitHubPull />} />
 					{/* Routes for SysAdmin pages */}
 
 					<Route

@@ -14,8 +14,8 @@
 		"react-apexcharts": "^1.7.0",
 		"react-dom": "^18.2.0",
 		"react-hot-toast": "^2.5.2",
+		"react-icons": "^5.5.0",
 		"react-router-dom": "^7.1.5",
-		"tailwindcss": "^4.0.7",
 		"vite-plugin-react": "^4.0.1",
 		"web-vitals": "^2.1.4",
 		"wikijs": "^6.4.1"
@@ -47,7 +47,10 @@
 		]
 	},
 	"devDependencies": {
+		"autoprefixer": "^10.4.21",
 		"nodemon": "^3.1.9",
+		"postcss": "^8.5.3",
+		"tailwindcss": "^4.0.13",
 		"vite": "^6.1.0"
 	}
 }
