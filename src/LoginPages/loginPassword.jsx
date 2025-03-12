@@ -37,6 +37,11 @@ const LoginUI = () => {
 		}
 	};
 
+	// Function to handle redirection to the sign-up page
+	const PasswordResetRedirect = () => {
+		navigate('/reset/email');  // Redirect to the sign-up page
+	};
+	
 	// Function that navigate to signup page
 	const handleSignUpRedirect = () => {
 		navigate("/signup/email");
@@ -65,9 +70,12 @@ const LoginUI = () => {
 					Login
 				</button>
 				<div className="flex justify-between w-80 mt-2">
-					<p className="text-sm text-gray-600 hover:underline cursor-pointer">
-						Need help?
-					</p>
+					<p 
+                        className="text-sm text-gray-600 hover:underline cursor-pointer"
+                        onClick={PasswordResetRedirect}
+                    >
+                        Reset Password
+                    </p>
 					<p
 						className="text-sm text-gray-600 hover:underline cursor-pointer"
 						onClick={handleSignUpRedirect}

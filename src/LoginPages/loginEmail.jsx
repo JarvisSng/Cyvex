@@ -6,6 +6,11 @@ const LoginEmail = () => {
     const navigate = useNavigate();  // Initialize navigate
 
     // Function to handle redirection to the sign-up page
+    const PasswordResetRedirect = () => {
+        navigate('/reset/email');  // Redirect to the sign-up page
+    };
+
+    // Function to handle redirection to the sign-up page
     const handleSignUpRedirect = () => {
         navigate('/signup/email');  // Redirect to the sign-up page
     };
@@ -40,7 +45,12 @@ const LoginEmail = () => {
                     continue
                     </button>
                 <div className="flex justify-between w-80 mt-2">
-                    <p className="text-sm text-gray-600 hover:underline cursor-pointer">Need help?</p>
+                    <p 
+                        className="text-sm text-gray-600 hover:underline cursor-pointer"
+                        onClick={PasswordResetRedirect}
+                    >
+                        Reset Password
+                    </p>
                     <p 
                         className="text-sm text-gray-600 hover:underline cursor-pointer"
                         onClick={handleSignUpRedirect}

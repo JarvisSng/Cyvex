@@ -20,6 +20,9 @@ import NoAccess from "./SysAdminPages/NoAccess.jsx";
 import ResetPassword from "./SysAdminPages/resetPassword.jsx";
 import UserDetails from "./SysAdminPages/UserDetails.jsx";
 import GitHubPull from "./components/GitHubPull.jsx";
+import ResetEmail from "./ResetEmailPages/resetAccount.jsx";
+import ResendEmail from "./ResetEmailPages/resendEmail.jsx";
+import ResetUserPassword from "./ResetEmailPages/resetUserPassword.jsx";
 
 function App() {
 	return (
@@ -45,6 +48,11 @@ function App() {
 						path="/signup/confirmation"
 						element={<SignUpConfirmation />}
 					/>
+					{/* Routes for User Account Reset page */}
+					<Route path="/reset/email" element={<ResetEmail />} />		
+					<Route path="/reset/resendEmail" element={<ResendEmail />} />		
+					<Route path="/resetAccount/password" element={<ResetUserPassword />} />	
+					"/reset/resendEmail"
 					{/* Route for Report page */}
 					<Route path="/report" element={<ReportPage />} />
 					{/* Route for detector page */}

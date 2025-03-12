@@ -5,6 +5,11 @@ const SignUpEmail = () => {
     const [email, setEmail] = useState('');
     const navigate = useNavigate();
 
+    // Function to handle redirection to the sign-up page
+    const PasswordResetRedirect = () => {
+        navigate('/reset/email');  // Redirect to the sign-up page
+    };
+
     // Function that forwards to the next part of the sign up page (Username)
     const handleNext = () => {
         if (!email) {
@@ -35,7 +40,12 @@ const SignUpEmail = () => {
                     continue
                 </button>
                 <div className="flex justify-between w-80 mt-2">
-                    <p className="text-sm text-gray-600 hover:underline cursor-pointer">Need help?</p>
+					<p 
+                        className="text-sm text-gray-600 hover:underline cursor-pointer"
+                        onClick={PasswordResetRedirect}
+                    >
+                        Reset Password
+                    </p>
                     <p 
                         className="text-sm text-gray-600 hover:underline cursor-pointer"
                         onClick={() => window.location.href = "/"}

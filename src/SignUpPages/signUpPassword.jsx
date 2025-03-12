@@ -11,6 +11,11 @@ const SignUpPassword = () => {
     const email = localStorage.getItem("email");
     const username = localStorage.getItem("username");
 
+     // Function to handle redirection to the sign-up page
+    const PasswordResetRedirect = () => {
+        navigate('/reset/email');  // Redirect to the sign-up page
+    };
+
     const handleSignUp = async () => {
         if (!password) {
             setError("Please enter a password.");
@@ -50,7 +55,12 @@ const SignUpPassword = () => {
                     sign up
                 </button>
                 <div className="flex justify-between w-80 mt-2">
-                    <p className="text-sm text-gray-600 hover:underline cursor-pointer">Need help?</p>
+                    <p 
+                        className="text-sm text-gray-600 hover:underline cursor-pointer"
+                        onClick={PasswordResetRedirect}
+                    >
+                        Reset Password
+                    </p>
                     <p 
                         className="text-sm text-gray-600 hover:underline cursor-pointer"
                         onClick={() => window.location.href = "/"}
