@@ -64,7 +64,7 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 			<Toaster />
 			{/* Header tabs for Manage Subscriptions */}
 			<div className="border-b border-gray-300 mb-4">
-				<h3 className="text-xl font-semibold text-black dark:text-white mb-4">
+				<h3 className="text-xl font-semibold text-black mb-4">
 					Manage Subscriptions
 				</h3>
 				<ul className="flex space-x-4">

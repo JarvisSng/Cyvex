@@ -1,9 +1,35 @@
 // src/controller/userController.js
+import supabase from "../config/supabaseClient";
+
+// Get the access token using the new getSession method.
+export const getAuthToken = async () => {
+	const { data, error } = await supabase.auth.getSession();
+	if (error) {
+		console.error("Error getting session:", error);
+		return null;
+	}
+	// data.session contains the session if available.
+	return data.session?.access_token || null;
+};
+
+// A helper function that wraps fetch and adds the Authorization header
+export const fetchWithAuth = async (url, options = {}) => {
+	const token = await getAuthToken();
+	const headers = {
+		"Content-Type": "application/json",
+		...options.headers,
+		...(token ? { Authorization: `Bearer ${token}` } : {}),
+	};
+
+	return fetch(url, { ...options, headers });
+};
 
 // 1. Get all user profiles with subscription details (for role "user")
 export const getUserProfilesWithSubscriptions = async () => {
 	try {
-		const response = await fetch("http://localhost:3000/api/user/profiles");
+		const response = await fetchWithAuth(
+			"http://localhost:3000/api/user/profiles"
+		);
 		if (!response.ok) {
 			const result = await response.json();
 			throw new Error(result.error || "Failed to fetch profiles");
@@ -17,7 +43,7 @@ export const getUserProfilesWithSubscriptions = async () => {
 // 2. Get a single user profile with subscription details by userId
 export const getUserProfile = async (userId) => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`http://localhost:3000/api/user/profile/${userId}`
 		);
 		if (!response.ok) {
@@ -33,7 +59,7 @@ export const getUserProfile = async (userId) => {
 // 3. Update subscription details for a user
 export const updateSubscription = async (userId, subscription) => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`http://localhost:3000/api/user/profile/${userId}/subscription`,
 			{
 				method: "POST",
@@ -53,7 +79,7 @@ export const updateSubscription = async (userId, subscription) => {
 
 export const fetchAdminProfiles = async (username) => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`http://localhost:3000/api/user/admin-profiles?username=${username}`
 		);
 		if (!response.ok) {
@@ -72,7 +98,7 @@ export const fetchAdminProfiles = async (username) => {
 // 5. Update admin profile status (updateData)
 export const updateData = async (id, username, status) => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`http://localhost:3000/api/user/${id}/status`,
 			{
 				method: "POST",
@@ -93,7 +119,7 @@ export const updateData = async (id, username, status) => {
 // 6. Reset a user's password
 export const resetUserPassword = async (userId) => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`http://localhost:3000/api/admin/user/${userId}/reset-password`,
 			{
 				method: "POST",
@@ -113,7 +139,7 @@ export const resetUserPassword = async (userId) => {
 // 7. Suspend (or unsuspend) a user
 export const suspendUser = async (userId, banDuration) => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`http://localhost:3000/api/admin/user/${userId}/suspend`,
 			{
 				method: "POST",
@@ -134,7 +160,7 @@ export const suspendUser = async (userId, banDuration) => {
 // 8. Delete (ban) a user (set status to "Deleted")
 export const deleteUser = async (userId) => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`http://localhost:3000/api/admin/user/${userId}/delete`,
 			{
 				method: "POST",

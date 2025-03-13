@@ -2,6 +2,9 @@
 const express = require("express");
 const router = express.Router();
 const supabase = require("../../src/config/supabaseAdminClient"); // or supabaseAdminClient if you need admin access
+const verifyAuth = require("../middleware/verifyAuth");
+
+router.use(verifyAuth);
 
 // GET all user profiles with subscription details (for role "user")
 router.get("/profiles", async (req, res) => {
