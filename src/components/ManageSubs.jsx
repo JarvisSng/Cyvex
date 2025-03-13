@@ -132,26 +132,7 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 								<th className="px-4 py-2 text-right text-sm font-semibold text-gray-700">
 									Actions
 								</th>
-								<th>
-									<select
-										defaultValue={
-											filteredProfiles[0]?.status
-										}
-										onChange={(e) =>
-											changeStatus(
-												filteredProfiles[0]?.id,
-												filteredProfiles[0]?.username,
-												e.target.value
-											)
-										}
-										className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block p-2.5"
-									>
-										<option value="Active">Activate</option>
-										<option value="Suspended">
-											Deactivate
-										</option>
-									</select>
-								</th>
+								<th></th>
 							</tr>
 						</thead>
 						<tbody>
