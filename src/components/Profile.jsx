@@ -16,7 +16,7 @@ const Profile = () => {
 				setError(result.error);
 			} else {
 				// Assuming the API returns { data: [ profile, ... ] }
-				console.log("Fetched profile:", result.data[0]);
+
 				setProfile(result.data[0]);
 			}
 		};

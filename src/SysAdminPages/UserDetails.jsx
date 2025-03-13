@@ -180,14 +180,6 @@ const UserDetails = () => {
 	return (
 		<div className="w-screen h-screen bg-gray-50 flex flex-col">
 			<div className="max-w-3xl mx-auto p-6 bg-white shadow rounded flex-1 overflow-y-auto">
-				<div className="flex justify-center">
-					<button
-						onClick={handleBack}
-						className="mb-4 bg-gray-200 hover:bg-gray-300 text-white px-4 py-2 rounded mt-5 w-40"
-					>
-						Back
-					</button>
-				</div>
 				<h1 className="text-3xl text-gray-600 font-bold mb-6">
 					{profile.username}
 				</h1>
@@ -338,6 +330,14 @@ const UserDetails = () => {
 								disabled={isDeleted}
 							>
 								Reset Password
+							</button>
+						</div>
+						<div className="flex justify-center">
+							<button
+								onClick={handleBack}
+								className="mb-4 bg-gray-200 hover:bg-gray-300 text-white px-4 py-2 rounded mt-5 w-40"
+							>
+								Back
 							</button>
 						</div>
 					</div>
