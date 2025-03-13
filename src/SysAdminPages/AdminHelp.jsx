@@ -6,7 +6,7 @@ const AdminHelp = () => {
 	return (
 		<div className="w-screen h-screen flex flex-col bg-gray-50">
 			<AdminNav />
-			<div className="flex-1 flex items-center justify-center p-6">
+			<div className="flex-1 flex items-center justify-center p-6 mt-6">
 				<div className="w-full h-full bg-white shadow rounded p-8">
 					<h1 className="text-3xl font-bold text-gray-700 mb-4">
 						Help

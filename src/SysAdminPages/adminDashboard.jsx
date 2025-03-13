@@ -70,7 +70,7 @@ function AdminDashboard() {
 						</ul>
 					</div>
 					<div>
-						<h2 className="font-bold mb-2">Manage Rules</h2>
+						<h2 className="font-bold mb-2">Others</h2>
 						<ul>
 							<li
 								onClick={() => setActiveSection("rules")}
@@ -80,7 +80,7 @@ function AdminDashboard() {
 										: "hover:bg-gray-100"
 								}`}
 							>
-								Sub Menu
+								Manage Rules
 							</li>
 							<li
 								onClick={() =>
