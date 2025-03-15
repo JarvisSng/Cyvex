@@ -107,6 +107,14 @@ const GitHubPull = () => {
         <aside className="w-64 h-screen bg-gray-200 text-black p-6 fixed top-20 left-0">
           <nav className="flex flex-col gap-4">
             <a href="/detector" className="hover:bg-gray-300 p-2 rounded-md">Upload Code</a>
+						<div className="ml-4">
+							<a
+								href="/github-pull"
+								className="hover:bg-gray-400 p-2 rounded-md text-blue-700"
+							>
+								● Git Pull
+							</a>
+						</div>
             <a href="/report" className="hover:bg-gray-300 p-2 rounded-md">View Results</a>
           </nav>
         </aside>
