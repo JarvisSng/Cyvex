@@ -261,7 +261,7 @@ const UserDetails = () => {
 						/>
 					</div>
 					<button
-						className={`bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded ${
+						className={`!bg-blue-950 hover:bg-blue-600 text-white px-4 py-2 rounded ${
 							isSuspended || isDeleted
 								? "opacity-50 cursor-not-allowed"
 								: ""
@@ -297,7 +297,7 @@ const UserDetails = () => {
 						)}
 						<div className="flex flex-wrap gap-4">
 							<button
-								className={`bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded ${
+								className={`!bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded ${
 									isDeleted
 										? "opacity-50 cursor-not-allowed"
 										: ""
@@ -310,7 +310,7 @@ const UserDetails = () => {
 									: "Suspend User"}
 							</button>
 							<button
-								className={`bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded ${
+								className={`!bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded ${
 									isDeleted
 										? "opacity-50 cursor-not-allowed"
 										: ""
@@ -321,7 +321,7 @@ const UserDetails = () => {
 								{isDeleted ? "User is Deleted" : "Delete User"}
 							</button>
 							<button
-								className={`bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded ${
+								className={`!bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded ${
 									isDeleted || isSuspended
 										? "opacity-50 cursor-not-allowed"
 										: ""
@@ -335,7 +335,7 @@ const UserDetails = () => {
 						<div className="flex justify-center">
 							<button
 								onClick={handleBack}
-								className="mb-4 bg-gray-200 hover:bg-gray-300 text-white px-4 py-2 rounded mt-5 w-40"
+								className="mb-4 !bg-blue-950 hover:bg-gray-300 text-white px-4 py-2 rounded mt-5 w-40"
 							>
 								Back
 							</button>
