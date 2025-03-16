@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 /**
@@ -21,6 +21,28 @@ export default function ReportPage() {
   const navigate = useNavigate();
   const [activeButton, setActiveButton] = useState(null);
   const [activeTab, setActiveTab] = useState("/report"); // Set default active tab
+  const [isSubscribed, setIsSubscribed] = useState(false); 
+  
+    // Fetch subscription status when component mounts
+    useEffect(() => {
+      const checkSubscription = async () => {
+        try {
+          const response = await fetch("/api/check-subscription", { credentials: "include" });
+          const result = await response.json();
+  
+          //console.log("Subscription status:", result.isSubscribed); // Debugging
+  
+          if (result.isSubscribed) {
+            setIsSubscribed(true);
+          }
+        } catch (err) {
+          console.error("Error checking subscription:", err);
+        }
+      };
+  
+      checkSubscription();
+    }, []);
+  
 
   const handleButtonClick = (button) => {
     setActiveButton(button);
@@ -358,6 +380,17 @@ export default function ReportPage() {
 						>
 							Upload Code
 						</button>
+            {/* Show or Hide "Git Pull" Based on Subscription */}
+            {isSubscribed && (
+              <button
+                onClick={() => navigate("/github-pull")}
+                className={`p-2 rounded-md text-left ${
+                  window.location.pathname === "/github-pull" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+                }`}
+              >
+                Git Pull
+              </button>
+            )}
 						<button
 							onClick={() => handleTabClick("/report")}
 							className={`p-2 rounded-md text-left ${

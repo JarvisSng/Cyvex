@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaGithub } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -8,7 +8,35 @@ const GitHubPull = () => {
   const [fileName, setFileName] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false); 
+
   const navigate = useNavigate();
+
+	const login = () => {
+		navigate("/login/email");
+	};
+
+	const detector = () => {
+		navigate("/detector");
+	};
+
+  // Fetch subscription status when component mounts
+  useEffect(() => {
+    const checkSubscription = async () => {
+      try {
+        const response = await fetch("/api/check-subscription", { credentials: "include" });
+        const result = await response.json();
+
+        if (result.isSubscribed) {
+          setIsSubscribed(true);
+        }
+      } catch (err) {
+        console.error("Error checking subscription:", err);
+      }
+    };
+
+    checkSubscription();
+  }, []);
 
   const handleRepoChange = (event) => {
     setRepoLink(event.target.value);
@@ -74,92 +102,134 @@ const GitHubPull = () => {
 
   return (
     <>
-      {/* Header */}
-      <header className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md z-50 h-20">
-        <div className="flex items-center justify-between w-full h-full">
-          {/* Logo */}
-          <h2 className="text-stone-50 text-4xl font-bold">cyvex</h2>
+      {/* Header (Fixed at the Top) */}
+			<header className="bg-blue-950 absolute top-0 left-0 w-full py-4 px-8 shadow-md z-50 h-20">
+				<div className="flex items-center justify-between w-full h-full">
+					<h2 className="text-stone-50 text-4xl font-bold flex items-center">
+						cyvex
+					</h2>
 
-          {/* Navigation Links */}
-          <nav className="flex items-center gap-8">
-            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">solutions</h2>
-            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">customers</h2>
-            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">services</h2>
-            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">insights</h2>
-            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">company</h2>
-          </nav>
+					{/* Navigation Links (Centered) */}
+					<nav className="flex items-center gap-8">
+						<h2 className="text-stone-50 text-2xl font-bold cursor-pointer">
+							solutions
+						</h2>
+						<h2 className="text-stone-50 text-2xl font-bold cursor-pointer">
+							customers
+						</h2>
+						<h2 className="text-stone-50 text-2xl font-bold cursor-pointer">
+							services
+						</h2>
+						<h2 className="text-stone-50 text-2xl font-bold cursor-pointer">
+							insights
+						</h2>
+						<h2 className="text-stone-50 text-2xl font-bold cursor-pointer">
+							company
+						</h2>
+					</nav>
 
-          {/* Buttons */}
-          <div className="flex items-center gap-4">
-            <button className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600">
-              Login
-            </button>
-            <button className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600">
-              Try It
-            </button>
-          </div>
-        </div>
-      </header>
+					{/* Buttons (Right) */}
+					<div className="flex items-center gap-4">
+						<button
+							onClick={login}
+							className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+						>
+							Login
+						</button>
+						<button
+							onClick={detector}
+							className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+						>
+							Try It
+						</button>
+					</div>
+				</div>
+			</header>
 
       {/* Sidebar + Main Content Wrapper */}
-      <div className="flex pt-20">
-        {/* Sidebar */}
-        <aside className="w-64 h-screen bg-gray-200 text-black p-6 fixed top-20 left-0">
-          <nav className="flex flex-col gap-4">
-            <a href="/detector" className="hover:bg-gray-300 p-2 rounded-md">Upload Code</a>
-						<div className="ml-4">
-							<a
-								href="/github-pull"
-								className="hover:bg-gray-400 p-2 rounded-md text-blue-700"
-							>
-								● Git Pull
-							</a>
-						</div>
-            <a href="/report" className="hover:bg-gray-300 p-2 rounded-md">View Results</a>
-          </nav>
-        </aside>
+      <div className="flex">
+      {/* Sidebar */}
+      <aside className="w-64 h-screen bg-gray-200 border-r border-gray-300 p-6 fixed top-20 left-0">
+        <nav className="flex flex-col gap-4">
+          <button
+            onClick={() => navigate("/detector")}
+            className={`p-2 rounded-md text-left ${
+              window.location.pathname === "/detector"
+                ? "!bg-blue-950 text-white"
+                : "hover:bg-gray-300"
+            }`}
+          >
+            Upload Code
+          </button>
+
+          {isSubscribed && (
+            <button
+              onClick={() => navigate("/github-pull")}
+              className={`p-2 rounded-md text-left ${
+                window.location.pathname === "/github-pull"
+                  ? "!bg-blue-950 text-white"
+                  : "hover:bg-gray-300"
+              }`}
+            >
+              Git Pull
+            </button>
+          )}
+
+          <button
+            onClick={() => navigate("/report")}
+            className={`p-2 rounded-md text-left ${
+              window.location.pathname === "/report"
+                ? "!bg-blue-950 text-white"
+                : "hover:bg-gray-300"
+            }`}
+          >
+            View Results
+          </button>
+        </nav>
+      </aside>
+
 
         {/* Main Content */}
-        <main className="ml-64 flex flex-col items-center w-full min-h-screen">
-          <div className="mt-[5.5rem] w-full max-w-lg text-center">
-            <h1 className="text-2xl font-semibold text-black-100 tracking-wide whitespace-nowrap">Pull GitHub Repository</h1>
-            <p className="text-md text-left text-black-400 mt-5">Enter a repository URL to pull its contents.</p>
+        <main className="ml-64 p-6 w-full flex flex-col items-center gap-6">
+          <h1 className="text-2xl font-semibold">Pull GitHub Repository</h1>
+          <p className="text-md text-gray-700">Enter a repository URL to pull its contents.</p>
 
-            <div className="flex items-center border border-gray-400 rounded-lg p-3 bg-gray-1000 w-full mt-6">
-              <FaGithub size={24} className="text-black mr-2" />
-              <input
-                type="text"
-                value={repoLink}
-                onChange={handleRepoChange}
-                placeholder="https://github.com/user/repo"
-                className="flex-1 p-2 bg-transparent text-black placeholder-gray-500 outline-none"
-              />
-              <button
-                onClick={handlePullRepo}
-                className="px-4 py-2 ml-2 bg-blue-600 hover:bg-blue-500 text-black rounded-md transition"
-                disabled={loading}
-              >
-                {loading ? "Pulling..." : "Pull"}
-              </button>
-            </div>
+          <div className="flex items-center border border-gray-400 rounded-lg p-3 bg-gray-1000 w-full max-w-lg">
+            <FaGithub size={24} className="text-black mr-2" />
+            <input 
+              type="text" 
+              value={repoLink} 
+              onChange={handleRepoChange}
+              placeholder="https://github.com/user/repo"
+              className="flex-1 p-2 bg-transparent text-black placeholder-gray-500 outline-none"
+            />
+
+            {/* Pull Button */}
+            <button
+              onClick={handlePullRepo}
+              className="px-4 py-2 ml-2 !bg-blue-950 text-white rounded-md hover:bg-blue-600 transition"
+            >
+              {loading ? "Pulling..." : "Pull"}
+            </button>
           </div>
 
-          {error && <p className="text-red-500 mt-3">{error}</p>}
-
-          {fileContent && (
-            <div className="mt-6 p-4 border border-gray-300 rounded-lg bg-blue-950 w-full max-w-md text-left shadow-md">
-              <h3 className="text-xl text-white font-semibold mb-2">File: {fileName}</h3>
-              <pre className="bg-gray-200 p-3 rounded-md text-sm max-h-40 overflow-y-auto text-white-800">
-                {fileContent.substring(0, 500)}...
-              </pre>
-              <button
-                onClick={handleAnalyze}
-                className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-500 text-black rounded-lg transition"
-              >
-                Analyze Code
-              </button>
-            </div>
-          )}
+          {/* Reserved Space for File Box */}
+          <div className="mt-6 min-h-[200px]">
+            {fileContent && (
+              <div className="p-8 border border-gray-300 rounded-lg bg-gray-200 w-full max-w-md text-left shadow-md">
+                <h3 className="text-xl text-black font-semibold mb-2">File: {fileName}</h3>
+                <pre className="bg-gray-300 border-gray-200 p-3 rounded-md text-sm max-h-40 overflow-y-auto text-black">
+                  {fileContent.substring(0, 500)}...
+                </pre>
+                <button
+                  onClick={handleAnalyze}
+                  className="mt-6 px-6 py-2 !bg-blue-950 text-white rounded-md hover:bg-blue-600 transition"
+                >
+                  Analyze Code
+                </button>
+              </div>
+            )}
+          </div>
         </main>
       </div>
     </>

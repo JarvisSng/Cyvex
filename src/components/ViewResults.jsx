@@ -342,7 +342,7 @@ export default function ViewResults({code}) {
 								activeTab === "/detector" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
 							}`}
 						>
-							Upload Code
+							Upload Codewww
 						</button>
 						<button
 							onClick={() => handleTabClick("/report")}

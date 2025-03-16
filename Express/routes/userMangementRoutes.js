@@ -34,6 +34,37 @@ router.get("/profiles", async (req, res) => {
 });
 
 /*
+	GET /check-subscription
+	Checks if the logged-in user has an active subscription.
+*/
+router.get("/check-subscription", async (req, res) => {
+	try {
+		const userId = req.user?.id; // Ensure req.user exists from authentication middleware
+
+		if (!userId) {
+			return res.status(401).json({ isSubscribed: false, error: "Unauthorized. Please log in." });
+		}
+
+		// Fetch user's subscription status
+		const { data, error } = await supabase
+			.from("subscription")
+			.select("subscribed, end_date")
+			.eq("id", userId)
+			.single();
+
+		// If there's an error, user is not subscribed, or subscription expired
+		if (error || !data || !data.subscribed || new Date(data.end_date) < new Date()) {
+			return res.json({ isSubscribed: false });
+		}
+
+		res.json({ isSubscribed: true }); // User has an active subscription
+	} catch (err) {
+		console.error("Error checking subscription:", err);
+		res.status(500).json({ isSubscribed: false, error: "Internal Server Error" });
+	}
+});
+
+/*
 	GET /profile/:userId
 	Retrieves a single user profile along with subscription details using the userId.
 */

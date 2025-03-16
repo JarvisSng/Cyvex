@@ -50,6 +50,7 @@ function Detector() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [activeTab, setActiveTab] = useState("/detector"); // Set default active tab
+  	const [isSubscribed, setIsSubscribed] = useState(false);
 
 	// Retrieve pulled code (if available)
 	const pulledCode = location.state?.pulledCode || "";
@@ -73,6 +74,27 @@ function Detector() {
 
 		fetchRules();
 	}, []);
+
+	  // Fetch subscription status when component mounts
+	  useEffect(() => {
+		const checkSubscription = async () => {
+		  try {
+			const response = await fetch("/api/check-subscription", { credentials: "include" });
+			const result = await response.json();
+	
+			//console.log("Subscription status:", result.isSubscribed); // Debugging
+	
+			if (result.isSubscribed) {
+			  setIsSubscribed(true);
+			}
+		  } catch (err) {
+			console.error("Error checking subscription:", err);
+		  }
+		};
+	
+		checkSubscription();
+	  }, []);
+	
 
 	useEffect(() => {
 		if (Notification.permission !== "granted") {
@@ -169,6 +191,7 @@ function Detector() {
 		navigate("/report", { state: { report } });
 	};
 
+
 	return (
 		<>
 			{/* Header (Fixed at the Top) */}
@@ -228,6 +251,17 @@ function Detector() {
 						>
 							Upload Code
 						</button>
+						{/* Show or Hide "Git Pull" Based on Subscription */}
+						{isSubscribed && (
+						<button
+							onClick={() => navigate("/github-pull")}
+							className={`p-2 rounded-md text-left ${
+							window.location.pathname === "/github-pull" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+							}`}
+						>
+							Git Pull
+						</button>
+						)}
 						<button
 							onClick={() => handleTabClick("/report")}
 							className={`p-2 rounded-md text-left ${
