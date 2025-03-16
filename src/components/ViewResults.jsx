@@ -181,8 +181,10 @@ export default function ViewResults({code, fileExt}) {
   };
 
   useEffect(() => {
-    handleScan(); // Call handleScan when component mounts
-  }, [code]); // Empty dependency array, so it runs only once on mount
+    if (code && detectionRules) {
+      handleScan();
+    }
+  }, [code, detectionRules]); // Ensure scan runs only after detectionRules is set
 
   /**
    * Generates a .txt file containing the report data
