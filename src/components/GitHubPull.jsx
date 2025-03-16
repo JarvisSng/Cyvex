@@ -49,8 +49,7 @@ const GitHubPull = ({ onSubmit }) => {
 
   return (
     <main className="p-6 w-full flex flex-col items-center gap-6">
-      <h1 className="text-2xl font-semibold">Pull GitHub Repository</h1>
-      <p className="text-md text-gray-700">Enter a repository URL to pull its contents.</p>
+      <p className="text-md text-gray-700">Please enter a repository URL to pull its contents.</p>
 
       <div className="flex items-center border border-gray-400 rounded-lg p-3 bg-gray-100 w-full max-w-lg">
         <FaGithub size={24} className="text-black mr-2" />

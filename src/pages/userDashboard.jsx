@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CodeUploader from "../components/CodeUploader";
 import UserProfile from "../components/UserProfile";
 import ViewReports from "../components/ViewReports";
@@ -10,6 +10,25 @@ function UserDashboard() {
 	const [activeSection, setActiveSection] = useState("dashboard");
 	const [submittedCode, setSubmittedCode] = useState(""); 
 	const [fileExt, setFileExt] = useState("");
+	const [isSubscribed, setIsSubscribed] = useState(true); 
+
+	// Fetch subscription status when component mounts
+	useEffect(() => {
+		const checkSubscription = async () => {
+			try {
+				const response = await fetch("/api/check-subscription", { credentials: "include" });
+				const result = await response.json();
+
+				if (result.isSubscribed) {
+					setIsSubscribed(true);
+				}
+			} catch (err) {
+				console.error("Error checking subscription:", err);
+			}
+		};
+
+		checkSubscription();
+	}, []);
 
 	// Handle code submission from CodeUploader and GitHubPull
 	const handleCodeSubmit = (code, fileExt) => {
@@ -35,13 +54,17 @@ function UserDashboard() {
 						>
 							Code Upload
 						</button>
-						<button onClick={() => setActiveSection("GitHub Pull")}
-							className={`w-full p-3 rounded-md text-left pl-4 ${
-								activeSection === "GitHub Pull" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
-							}`}
-						>
-							GitHub Pull
-						</button>
+
+						{isSubscribed && ( 
+							<button onClick={() => setActiveSection("GitHub Pull")}
+								className={`w-full p-3 rounded-md text-left pl-4 ${
+									activeSection === "GitHub Pull" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+								}`}
+							>
+								GitHub Pull
+							</button>
+						)}
+
 						<button onClick={() => setActiveSection("View Results")}
 							className={`w-full p-3 rounded-md text-left pl-4 ${
 								activeSection === "View Results" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
@@ -63,6 +86,8 @@ function UserDashboard() {
 				<main className="flex-1 p-6 overflow-y-auto">
 					{activeSection === "dashboard" ? (
 						<CodeUploader onSubmit={handleCodeSubmit} />
+					) : activeSection === "profile" ? (
+						<UserProfile />
 					) : activeSection === "View Reports" ? (
 						<ViewReports />
 					) : activeSection === "View Results" ? (
