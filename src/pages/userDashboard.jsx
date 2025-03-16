@@ -12,6 +12,13 @@ function UserDashboard() {
 	const [activeSection, setActiveSection] = useState("dashboard");
 	// For the subscriptions section, we also keep track of the sub-tab.
 	const [activeSubTab, setActiveSubTab] = useState("all");  
+	const [submittedCode, setSubmittedCode] = useState(""); // Store submitted code
+
+	// Handle code submission from CodeUploader
+	const handleCodeSubmit = (code) => {
+		setSubmittedCode(code);
+		setActiveSection("View Results"); // Switch to results after submission
+	};
 
 	return (
 		<div className="w-screen h-screen flex flex-col bg-gray-50">
@@ -60,13 +67,13 @@ function UserDashboard() {
 				<main className="flex-1 p-6 overflow-y-auto">
 					{/* Render the main content based on activeSection */}
 					{activeSection === "dashboard" ? (
-						<CodeUploader/>
+						<CodeUploader onSubmit={handleCodeSubmit}/>
 					) : activeSection === "profile" ? (
 						<Profile />
 					) : activeSection === "View Reports" ? (
 						<ViewReports/>
 					) : activeSection === "View Results" ? (
-						<ViewResults/>
+						<ViewResults code={submittedCode}/>
 					) : (
 						<></> 
 					)} 

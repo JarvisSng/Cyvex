@@ -16,7 +16,7 @@ const recommendedMap = {
 // Define which rules are considered "insecure"
 const insecureRules = ["MD5", "SHA-1", "DES", "Hardcoded Key", "RSA (Weak Key)"];
 
-export default function ViewResults() {
+export default function ViewResults({code}) {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeButton, setActiveButton] = useState(null);
