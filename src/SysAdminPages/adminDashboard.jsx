@@ -94,16 +94,7 @@ function AdminDashboard() {
 							>
 								System Activity
 							</li>
-							<li
-								onClick={() => setActiveSection("View Reports")}
-								className={`py-1 rounded px-2 cursor-pointer ${
-									activeSection === "View Reports"
-										? "bg-gray-300"
-										: "hover:bg-gray-100"
-								}`}
-							>
-								View Reports
-							</li>
+							
 						</ul>
 					</div>
 				</aside>
@@ -121,8 +112,6 @@ function AdminDashboard() {
 						<Profile />
 					) : activeSection == "System Activity" ? (
 						<SystemActivity />
-					) : activeSection == "View Reports" ? (
-						<ViewReports />
 					) : (
 						<ManageRules />
 					)}
