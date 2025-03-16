@@ -56,7 +56,7 @@ function AdminNav({ setActiveSection }) {
 						onClick={() => navigate("/admin/dashboard")}
 						className="hover:bg-blue-700 px-3 py-2 rounded"
 					>
-						Manage
+						Dashboard
 					</a>
 					<a
 						onClick={() => navigate("/admin/contacts")}
@@ -72,7 +72,6 @@ function AdminNav({ setActiveSection }) {
 					</a>
 				</div>
 				<div className="flex items-center space-x-2">
-					
 					<Link
 						ref={trigger}
 						onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -103,7 +102,7 @@ function AdminNav({ setActiveSection }) {
 					{/* <div className="w-8 h-8 bg-gray-300 rounded-full" /> */}
 				</div>
 			</nav>
-			
+
 			<div
 				ref={dropdown}
 				onFocus={() => setDropdownOpen(true)}
