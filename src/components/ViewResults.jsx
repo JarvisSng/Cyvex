@@ -64,13 +64,17 @@ export default function ViewResults({code, fileExt}) {
   const [activeButton, setActiveButton] = useState(null);
   const [activeTab, setActiveTab] = useState(""); // Set default active tab
   const [detectionRules, setDetectionRules] = useState({});
-  const [report, setReport] = useState({
+
+  // Default report
+  const defaultReport = {
     language: "",
     codeLength: 0,
     detectedCryptographicFunctions: [],
     securityWarnings: [],
     snippets: [],
-  });
+  };
+
+  const [report, setReport] = useState(defaultReport);
 
   useEffect(() => {
     const fetchRules = async () => {
@@ -96,15 +100,6 @@ export default function ViewResults({code, fileExt}) {
 
   // Debug: Log snippets to ensure they are being passed correctly
   console.log("Report snippets:", report ? report.snippets : "No report");
-
-  // If no data was passed, show a "no report" message
-  if (!report) {
-    return (
-      <div style={{ padding: "20px" }}>
-        <h2>No Report Data Available</h2>
-      </div>
-    );
-  }
 
   // Detect the programming language based on file extension or string content
   const detectLanguage = (fileExt) => {
@@ -181,8 +176,15 @@ export default function ViewResults({code, fileExt}) {
   };
 
   useEffect(() => {
-    handleScan(); // Call handleScan when component mounts
-  }, [code]); // Empty dependency array, so it runs only once on mount
+    if (code && detectionRules) {
+      handleScan();
+    }
+  }, [code, detectionRules]); // Ensure scan runs only after detectionRules is set
+
+  // Prevent rendering if report remains unchanged
+  if (JSON.stringify(report) === JSON.stringify(defaultReport)) {
+    return <p>No report detected.</p>;
+  }
 
   /**
    * Generates a .txt file containing the report data

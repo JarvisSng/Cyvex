@@ -13,6 +13,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const userManagementRoutes = require("./routes/userMangementRoutes");
 const rulesRoutes = require("./routes/rulesRoutes");
 const rulesMangementRoutes = require("./routes/rulesManagementRoutes");
+const getUserRoutes = require("./routes/getUserRoutes");
 
 // Initialize the Express application
 const app = express();
@@ -45,6 +46,7 @@ app.use("/api/rules", rulesRoutes);
 app.use("/api/rules-management", rulesMangementRoutes);
 app.use("/api/blockchain", blockchainRoutes);
 app.use("/api/analyze", analyzeRoutes);
+app.use("/api/getUser", getUserRoutes);
 
 // Serve static files from the React build folder
 app.use(express.static(path.join(__dirname, "..", "dist"))); // Adjust the path if needed

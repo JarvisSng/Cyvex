@@ -188,3 +188,25 @@ export const deleteUser = async (userId) => {
 		return { error: error.message };
 	}
 };
+
+// 4. Fetch user profiles based on username criteria
+export const getUserProfileNoAuth = async (username) => {
+	try {
+		// Send request to get user profiles that match the given username
+		const response = await fetch(
+			`http://localhost:3000/api/getUser/user-profiles?username=${username}`
+		);
+		if (!response.ok) {
+			// If response is not ok, parse error message and throw error
+			const result = await response.json();
+			throw new Error(result.error || "Failed to fetch admin profiles");
+		}
+
+		// Parse the JSON response and return it
+		const resultData = await response.json();
+		return resultData;
+	} catch (error) {
+		// Return an error object with the error message
+		return { error: error.message };
+	}
+};
