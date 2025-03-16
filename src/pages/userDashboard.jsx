@@ -13,10 +13,14 @@ function UserDashboard() {
 	// For the subscriptions section, we also keep track of the sub-tab.
 	const [activeSubTab, setActiveSubTab] = useState("all");  
 	const [submittedCode, setSubmittedCode] = useState(""); // Store submitted code
+	const [fileExt, setFileExt] = useState("");
 
 	// Handle code submission from CodeUploader
-	const handleCodeSubmit = (code) => {
+	const handleCodeSubmit = (code, fileExt) => {
 		setSubmittedCode(code);
+		setFileExt(fileExt);
+		console.log(code);
+		console.log(fileExt);
 		setActiveSection("View Results"); // Switch to results after submission
 	};
 
@@ -73,7 +77,7 @@ function UserDashboard() {
 					) : activeSection === "View Reports" ? (
 						<ViewReports/>
 					) : activeSection === "View Results" ? (
-						<ViewResults code={submittedCode}/>
+						<ViewResults code={submittedCode} fileExt={fileExt}/>
 					) : (
 						<></> 
 					)} 

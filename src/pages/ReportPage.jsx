@@ -41,14 +41,14 @@ export default function ReportPage() {
 	};
 
   // The analysis data from navigate("/report", { state: { report, rules } })
-  const reportData = location.state?.report || null;
+  const report = location.state?.report || null;
   const rules = location.state?.rules || [];
 
   // Debug: Log snippets to ensure they are being passed correctly
-  console.log("Report snippets:", reportData ? reportData.snippets : "No reportData");
+  console.log("Report snippets:", report ? report.snippets : "No report");
 
   // If no data was passed, show a "no report" message
-  if (!reportData) {
+  if (!report) {
     return (
       <div style={{ padding: "20px" }}>
         <h2>No Report Data Available</h2>
@@ -75,17 +75,17 @@ export default function ReportPage() {
    */
   const downloadReport = () => {
     let reportContent = `Analysis Report\n\n`;
-    reportContent += `Language Detected: ${reportData.language}\n`;
-    reportContent += `Code Length: ${reportData.codeLength} characters\n\n`;
+    reportContent += `Language Detected: ${report.language}\n`;
+    reportContent += `Code Length: ${report.codeLength} characters\n\n`;
 
     reportContent += `Detected Cryptographic Functions:\n`;
-    reportData.detectedCryptographicFunctions.forEach((func) => {
+    report.detectedCryptographicFunctions.forEach((func) => {
       reportContent += `- ${func}\n`;
     });
 
     reportContent += `\nSecurity Warnings:\n`;
-    if (reportData.securityWarnings.length > 0) {
-      reportData.securityWarnings.forEach((warning) => {
+    if (report.securityWarnings.length > 0) {
+      report.securityWarnings.forEach((warning) => {
         reportContent += `- ${warning}\n`;
       });
     } else {
@@ -93,25 +93,25 @@ export default function ReportPage() {
     }
 
     reportContent += `\nRecommended Alternatives:\n`;
-    if (reportData.detectedCryptographicFunctions.includes("MD5")) {
+    if (report.detectedCryptographicFunctions.includes("MD5")) {
       reportContent += `- Use SHA-256 instead of MD5\n`;
     }
-    if (reportData.detectedCryptographicFunctions.includes("SHA-1")) {
+    if (report.detectedCryptographicFunctions.includes("SHA-1")) {
       reportContent += `- Use SHA-256 instead of SHA-1\n`;
     }
-    if (reportData.detectedCryptographicFunctions.includes("DES")) {
+    if (report.detectedCryptographicFunctions.includes("DES")) {
       reportContent += `- Use AES instead of DES\n`;
     }
-    if (reportData.detectedCryptographicFunctions.includes("Hardcoded Key")) {
+    if (report.detectedCryptographicFunctions.includes("Hardcoded Key")) {
       reportContent += `- Use environment variables or a secure key management system instead of hardcoded keys\n`;
     }
-    if (reportData.detectedCryptographicFunctions.includes("RSA (Weak Key)")) {
+    if (report.detectedCryptographicFunctions.includes("RSA (Weak Key)")) {
       reportContent += `- Use RSA with at least 2048 bits\n`;
     }
 
     reportContent += `\nCode Snippets:\n`;
-    if (reportData.snippets && reportData.snippets.length > 0) {
-      reportData.snippets.forEach((snippet) => {
+    if (report.snippets && report.snippets.length > 0) {
+      report.snippets.forEach((snippet) => {
         reportContent += `Line ${snippet.line}: ${snippet.code}\n`;
       });
     } else {
@@ -134,18 +134,18 @@ export default function ReportPage() {
 
       <h3>Code Details:</h3>
       <p>
-        <strong>Language Detected:</strong> {reportData.language}
+        <strong>Language Detected:</strong> {report.language}
       </p>
       <p>
-        <strong>Code Length:</strong> {reportData.codeLength} characters
+        <strong>Code Length:</strong> {report.codeLength} characters
       </p>
 
       <h3>
         <strong>Detected Cryptographic Functions:</strong>
       </h3>
-      {reportData.detectedCryptographicFunctions.length > 0 ? (
+      {report.detectedCryptographicFunctions.length > 0 ? (
         <ul>
-          {reportData.detectedCryptographicFunctions.map((func, index) => (
+          {report.detectedCryptographicFunctions.map((func, index) => (
             <li
               key={index}
               style={{
@@ -163,9 +163,9 @@ export default function ReportPage() {
       <h3>
         <strong>Security Warnings:</strong>
       </h3>
-      {reportData.securityWarnings.length > 0 ? (
+      {report.securityWarnings.length > 0 ? (
         <ul>
-          {reportData.securityWarnings.map((warning, index) => (
+          {report.securityWarnings.map((warning, index) => (
             <li key={index} style={{ color: "red" }}>
               {warning}
             </li>
@@ -179,21 +179,21 @@ export default function ReportPage() {
         <strong>Recommended Alternatives:</strong>
       </h3>
       <ul>
-        {reportData.detectedCryptographicFunctions.includes("MD5") && (
+        {report.detectedCryptographicFunctions.includes("MD5") && (
           <li>Use SHA-256 instead of MD5</li>
         )}
-        {reportData.detectedCryptographicFunctions.includes("SHA-1") && (
+        {report.detectedCryptographicFunctions.includes("SHA-1") && (
           <li>Use SHA-256 instead of SHA-1</li>
         )}
-        {reportData.detectedCryptographicFunctions.includes("DES") && (
+        {report.detectedCryptographicFunctions.includes("DES") && (
           <li>Use AES instead of DES</li>
         )}
-        {reportData.detectedCryptographicFunctions.includes("Hardcoded Key") && (
+        {report.detectedCryptographicFunctions.includes("Hardcoded Key") && (
           <li>
             Use environment variables or a secure key management system instead of hardcoded keys
           </li>
         )}
-        {reportData.detectedCryptographicFunctions.includes("RSA (Weak Key)") && (
+        {report.detectedCryptographicFunctions.includes("RSA (Weak Key)") && (
           <li>Use RSA with at least 2048 bits</li>
         )}
       </ul>
@@ -214,8 +214,8 @@ export default function ReportPage() {
       <h3 style={{ marginTop: 0 }}>
         <strong>Code Snippets:</strong>
       </h3>
-      {reportData.snippets && reportData.snippets.length > 0 ? (
-        reportData.snippets.map((snippet, index) => {
+      {report.snippets && report.snippets.length > 0 ? (
+        report.snippets.map((snippet, index) => {
           // Determine if snippet rule is insecure or safe
           const isInsecure = insecureRules.includes(snippet.rule);
 

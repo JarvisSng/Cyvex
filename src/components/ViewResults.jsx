@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { getDetectionRules } from "../controller/rulesController";
 
 /**
  * A small map of recommended actions for insecure rules
@@ -16,39 +17,88 @@ const recommendedMap = {
 // Define which rules are considered "insecure"
 const insecureRules = ["MD5", "SHA-1", "DES", "Hardcoded Key", "RSA (Weak Key)"];
 
-export default function ViewResults({code}) {
-  const location = useLocation();
+// 1) Skip lines that start with // or #
+function isCommentLine(line) {
+	const trimmed = line.trim();
+	return trimmed.startsWith("//") || trimmed.startsWith("#");
+}
+
+// 2) Strip inline comments (everything after //)
+function stripInlineComment(line) {
+	const index = line.indexOf("//");
+	return index !== -1 ? line.substring(0, index) : line;
+}
+
+// 3) Detection rules for each language, using word boundaries (\b)
+const Rules = {
+	JavaScript: {
+		AES: /\bcrypto\.(?:createCipheriv|createCipher)\s*\(\s*['"]aes-\d+-cbc['"]/i,
+		"RSA (Weak Key)":
+			/\bcrypto\.generateKeyPairSync\s*\(\s*['"]rsa['"]\s*,\s*\{\s*[^}]*modulusLength\s*:\s*(512|1024)/i,
+		RSA: /\bcrypto\.generateKeyPairSync\s*\(\s*['"]rsa['"]\s*,\s*\{\s*[^}]*modulusLength\s*:\s*(?!.*(512|1024))\d+/i,
+		"SHA-1": /\bcrypto\.createHash\s*\(\s*['"]sha1['"]\s*\)/i,
+		"SHA-256": /\bcrypto\.createHash\s*\(\s*['"]sha256['"]\s*\)/i,
+		MD5: /\bcrypto\.createHash\s*\(\s*['"]md5['"]\s*\)/i,
+		HMAC: /\bcrypto\.createHmac\s*\(\s*['"]sha\d+['"]\s*,/i,
+		DES: /\bcrypto\.createCipher\s*\(\s*['"]des(?:-\d+)?-cbc['"]\s*,/i,
+		"Hardcoded Key":
+			/\b(?:const|let|var)\s+\w*(?:key|password|secret)\w*\s*=\s*['"][^'"]{5,}['"]/i,
+	},
+
+	Python: {
+		"RSA (Weak Key)": /\bRSA\.generate\s*\(\s*(512|1024)(?:[^)]*)\)/i,
+		RSA: /\bRSA\.generate\s*\(\s*(?!512|1024)\d+(?:[^)]*)\)/i,
+		AES: /\bAES\.new\(/i,
+		"SHA-1": /\bhashlib\.sha1\(|\bhashlib\.new\(['"]sha1['"]\)/i,
+		"SHA-256": /\bhashlib\.sha256\(|\bhashlib\.new\(['"]sha256['"]\)/i,
+		MD5: /\bhashlib\.md5\(|\bhashlib\.new\(['"]md5['"]\)/i,
+		HMAC: /\bhmac\.new\(\s*.*,\s*hashlib\.sha\d+/i,
+		DES: /\bDES\.new\(/i,
+		"Hardcoded Key":
+			/\b\w*(?:key|password|secret)\w*\s*=\s*['"][^'"]{5,}['"]/i,
+	},
+};
+
+export default function ViewResults({code, fileExt}) {
   const navigate = useNavigate();
   const [activeButton, setActiveButton] = useState(null);
-  const [activeTab, setActiveTab] = useState("/report"); // Set default active tab
+  const [activeTab, setActiveTab] = useState(""); // Set default active tab
+  const [detectionRules, setDetectionRules] = useState({});
+  const [report, setReport] = useState({
+    language: "",
+    codeLength: 0,
+    detectedCryptographicFunctions: [],
+    securityWarnings: [],
+    snippets: [],
+  });
+
+  useEffect(() => {
+    const fetchRules = async () => {
+      const result = await getDetectionRules();
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setDetectionRules(result);
+      }
+    };
+
+    fetchRules();
+  }, []);
+
+  useEffect(() => {
+    console.log("Received code:", code);
+    console.log("Received file extension:", fileExt);
+  }, [code, fileExt]);
 
   const handleButtonClick = (button) => {
     setActiveButton(button);
   };
 
-  const login = () => {
-    navigate("/login/email");
-  }
-
-  const detector = () => {
-    navigate("/detector");
-  }
-
-	// Highlights which tab is active
-	const handleTabClick = (path) => {
-		setActiveTab(path);
-		navigate(path);
-	};
-
-  // The analysis data from navigate("/report", { state: { report, rules } })
-  const reportData = location.state?.report || null;
-  const rules = location.state?.rules || [];
-
   // Debug: Log snippets to ensure they are being passed correctly
-  console.log("Report snippets:", reportData ? reportData.snippets : "No reportData");
+  console.log("Report snippets:", report ? report.snippets : "No report");
 
   // If no data was passed, show a "no report" message
-  if (!reportData) {
+  if (!report) {
     return (
       <div style={{ padding: "20px" }}>
         <h2>No Report Data Available</h2>
@@ -56,22 +106,100 @@ export default function ViewResults({code}) {
     );
   }
 
+  // Detect the programming language based on file extension or string content
+  const detectLanguage = (fileExt) => {
+    if (typeof fileExt === 'string') {
+      if (fileExt.includes("py")) {
+        return "Python";
+      }
+      if (fileExt.includes("js")) {
+        return "JavaScript";
+      }
+      if (fileExt.includes("cpp") || fileExt.includes("c++")) {
+        return "C++";
+      }
+    }
+    return "Unknown";
+  };
+
+  const handleScan = () => {
+    if (!code) return;
+
+    const language = detectLanguage(fileExt);
+    const rulesForLanguage = detectionRules[language] || {};
+
+    const lines = code.split("\n");
+    const detectedCryptographicFunctions = [];
+    const securityWarnings = [];
+    const snippets = [];
+
+    lines.forEach((lineContent, index) => {
+      if (isCommentLine(lineContent)) return;
+
+      const processedLine = stripInlineComment(lineContent);
+      if (!processedLine.includes("(")) return;
+
+      Object.entries(rulesForLanguage).forEach(([ruleName, regex]) => {
+        if (regex.test(processedLine)) {
+          if (!detectedCryptographicFunctions.includes(ruleName)) {
+            detectedCryptographicFunctions.push(ruleName);
+          }
+          snippets.push({
+            line: index + 1,
+            code: lineContent,
+            rule: ruleName,
+          });
+        }
+      });
+    });
+
+    // Security Warnings
+    if (detectedCryptographicFunctions.includes("SHA-1")) {
+      securityWarnings.push("SHA-1 is weak.");
+    }
+    if (detectedCryptographicFunctions.includes("MD5")) {
+      securityWarnings.push("MD5 is vulnerable to hash collisions.");
+    }
+    if (detectedCryptographicFunctions.includes("RSA (Weak Key)")) {
+      securityWarnings.push("Weak RSA key detected. Use 2048 bits or more.");
+    }
+    if (detectedCryptographicFunctions.includes("Hardcoded Key")) {
+      securityWarnings.push("Avoid storing keys in source code.");
+    }
+
+    // Create report object
+    const Report = {
+      language,
+      codeLength: code.length,
+      detectedCryptographicFunctions,
+      securityWarnings,
+      snippets,
+    };
+
+    console.log(Report);
+    setReport(Report);
+  };
+
+  useEffect(() => {
+    handleScan(); // Call handleScan when component mounts
+  }, [code]); // Empty dependency array, so it runs only once on mount
+
   /**
    * Generates a .txt file containing the report data
    */
   const downloadReport = () => {
     let reportContent = `Analysis Report\n\n`;
-    reportContent += `Language Detected: ${reportData.language}\n`;
-    reportContent += `Code Length: ${reportData.codeLength} characters\n\n`;
+    reportContent += `Language Detected: ${report.language}\n`;
+    reportContent += `Code Length: ${report.codeLength} characters\n\n`;
 
     reportContent += `Detected Cryptographic Functions:\n`;
-    reportData.detectedCryptographicFunctions.forEach((func) => {
+    report.detectedCryptographicFunctions.forEach((func) => {
       reportContent += `- ${func}\n`;
     });
 
     reportContent += `\nSecurity Warnings:\n`;
-    if (reportData.securityWarnings.length > 0) {
-      reportData.securityWarnings.forEach((warning) => {
+    if (report.securityWarnings.length > 0) {
+      report.securityWarnings.forEach((warning) => {
         reportContent += `- ${warning}\n`;
       });
     } else {
@@ -79,25 +207,25 @@ export default function ViewResults({code}) {
     }
 
     reportContent += `\nRecommended Alternatives:\n`;
-    if (reportData.detectedCryptographicFunctions.includes("MD5")) {
+    if (report.detectedCryptographicFunctions.includes("MD5")) {
       reportContent += `- Use SHA-256 instead of MD5\n`;
     }
-    if (reportData.detectedCryptographicFunctions.includes("SHA-1")) {
+    if (report.detectedCryptographicFunctions.includes("SHA-1")) {
       reportContent += `- Use SHA-256 instead of SHA-1\n`;
     }
-    if (reportData.detectedCryptographicFunctions.includes("DES")) {
+    if (report.detectedCryptographicFunctions.includes("DES")) {
       reportContent += `- Use AES instead of DES\n`;
     }
-    if (reportData.detectedCryptographicFunctions.includes("Hardcoded Key")) {
+    if (report.detectedCryptographicFunctions.includes("Hardcoded Key")) {
       reportContent += `- Use environment variables or a secure key management system instead of hardcoded keys\n`;
     }
-    if (reportData.detectedCryptographicFunctions.includes("RSA (Weak Key)")) {
+    if (report.detectedCryptographicFunctions.includes("RSA (Weak Key)")) {
       reportContent += `- Use RSA with at least 2048 bits\n`;
     }
 
     reportContent += `\nCode Snippets:\n`;
-    if (reportData.snippets && reportData.snippets.length > 0) {
-      reportData.snippets.forEach((snippet) => {
+    if (report.snippets && report.snippets.length > 0) {
+      report.snippets.forEach((snippet) => {
         reportContent += `Line ${snippet.line}: ${snippet.code}\n`;
       });
     } else {
@@ -116,22 +244,19 @@ export default function ViewResults({code}) {
   // Separate the summary from the code snippet display
   const summarySection = (
     <div>
-      <h1>Analysis Report</h1>
-
-      <h3>Code Details:</h3>
       <p>
-        <strong>Language Detected:</strong> {reportData.language}
+        <strong>Language Detected:</strong> {report.language}
       </p>
       <p>
-        <strong>Code Length:</strong> {reportData.codeLength} characters
+        <strong>Code Length:</strong> {report.codeLength} characters
       </p>
 
       <h3>
         <strong>Detected Cryptographic Functions:</strong>
       </h3>
-      {reportData.detectedCryptographicFunctions.length > 0 ? (
+      {report.detectedCryptographicFunctions.length > 0 ? (
         <ul>
-          {reportData.detectedCryptographicFunctions.map((func, index) => (
+          {report.detectedCryptographicFunctions.map((func, index) => (
             <li
               key={index}
               style={{
@@ -149,9 +274,9 @@ export default function ViewResults({code}) {
       <h3>
         <strong>Security Warnings:</strong>
       </h3>
-      {reportData.securityWarnings.length > 0 ? (
+      {report.securityWarnings.length > 0 ? (
         <ul>
-          {reportData.securityWarnings.map((warning, index) => (
+          {report.securityWarnings.map((warning, index) => (
             <li key={index} style={{ color: "red" }}>
               {warning}
             </li>
@@ -165,21 +290,21 @@ export default function ViewResults({code}) {
         <strong>Recommended Alternatives:</strong>
       </h3>
       <ul>
-        {reportData.detectedCryptographicFunctions.includes("MD5") && (
+        {report.detectedCryptographicFunctions.includes("MD5") && (
           <li>Use SHA-256 instead of MD5</li>
         )}
-        {reportData.detectedCryptographicFunctions.includes("SHA-1") && (
+        {report.detectedCryptographicFunctions.includes("SHA-1") && (
           <li>Use SHA-256 instead of SHA-1</li>
         )}
-        {reportData.detectedCryptographicFunctions.includes("DES") && (
+        {report.detectedCryptographicFunctions.includes("DES") && (
           <li>Use AES instead of DES</li>
         )}
-        {reportData.detectedCryptographicFunctions.includes("Hardcoded Key") && (
+        {report.detectedCryptographicFunctions.includes("Hardcoded Key") && (
           <li>
             Use environment variables or a secure key management system instead of hardcoded keys
           </li>
         )}
-        {reportData.detectedCryptographicFunctions.includes("RSA (Weak Key)") && (
+        {report.detectedCryptographicFunctions.includes("RSA (Weak Key)") && (
           <li>Use RSA with at least 2048 bits</li>
         )}
       </ul>
@@ -200,8 +325,8 @@ export default function ViewResults({code}) {
       <h3 style={{ marginTop: 0 }}>
         <strong>Code Snippets:</strong>
       </h3>
-      {reportData.snippets && reportData.snippets.length > 0 ? (
-        reportData.snippets.map((snippet, index) => {
+      {report.snippets && report.snippets.length > 0 ? (
+        report.snippets.map((snippet, index) => {
           // Determine if snippet rule is insecure or safe
           const isInsecure = insecureRules.includes(snippet.rule);
 
@@ -263,21 +388,6 @@ export default function ViewResults({code}) {
       {/* Bottom buttons */}
       <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
         <button
-          onClick={() => navigate("/detector")}
-          style={{
-            padding: "10px",
-            backgroundColor: "navy",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-            flex: 1,
-          }}
-        >
-          Back to Detector
-        </button>
-
-        <button
           onClick={downloadReport}
           style={{
             padding: "10px",
@@ -297,64 +407,8 @@ export default function ViewResults({code}) {
 
   return (
     <>
-      {/* Header (Fixed at the Top) */}
-      <header className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md z-50 h-20">
-        <div className="flex items-center justify-between w-full h-full">
-          
-          {/* Logo (Left) */}
-          <h2 className="text-stone-50 text-4xl font-bold flex items-center">cyvex</h2>
-  
-          {/* Navigation Links (Centered) */}
-          <nav className="flex items-center gap-8">
-            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">solutions</h2>
-            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">customers</h2>
-            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">services</h2>
-            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">insights</h2>
-            <h2 className="text-stone-50 text-2xl font-bold cursor-pointer">company</h2>
-          </nav>
-  
-          {/* Buttons (Right) */}
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={login}
-              className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
-            >
-              Login
-            </button>
-            <button 
-              onClick={detector}
-              className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
-            >
-              Try It
-            </button>
-          </div>
-        </div>
-      </header>
-  
       {/* ====== Layout: Sidebar + Main Content ====== */}
       <div className="flex pt-20"> {/* Adding pt-20 to make space for the fixed header */}
-        {/* Left Sidebar */}
-				<aside className="w-64 h-screen bg-gray-200 p-6 fixed top-20 left-0">
-					<nav className="flex flex-col gap-4">
-						<button
-							onClick={() => handleTabClick("/detector")}
-							className={`p-2 rounded-md text-left ${
-								activeTab === "/detector" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
-							}`}
-						>
-							Upload Code
-						</button>
-						<button
-							onClick={() => handleTabClick("/report")}
-							className={`p-2 rounded-md text-left ${
-								activeTab === "/report" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
-							}`}
-						>
-							View Results
-						</button>
-					</nav>
-				</aside>
-
         {/* Main Content => Two-Column Design */}
         <main className="flex flex-col ml-64 p-6"> {/* Adding ml-64 to give space for sidebar */}
           {/* Buttons (Positioned at the top of the content) */}
