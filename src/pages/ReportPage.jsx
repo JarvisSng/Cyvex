@@ -20,6 +20,7 @@ export default function ReportPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeButton, setActiveButton] = useState(null);
+  const [activeTab, setActiveTab] = useState("/report"); // Set default active tab
 
   const handleButtonClick = (button) => {
     setActiveButton(button);
@@ -32,6 +33,12 @@ export default function ReportPage() {
   const detector = () => {
     navigate("/detector");
   }
+
+	// Highlights which tab is active
+	const handleTabClick = (path) => {
+		setActiveTab(path);
+		navigate(path);
+	};
 
   // The analysis data from navigate("/report", { state: { report, rules } })
   const reportData = location.state?.report || null;
@@ -341,16 +348,26 @@ export default function ReportPage() {
       {/* ====== Layout: Sidebar + Main Content ====== */}
       <div className="flex pt-20"> {/* Adding pt-20 to make space for the fixed header */}
         {/* Left Sidebar */}
-        <aside className="w-64 h-screen bg-gray-200 text-white p-6 fixed top-20 left-0">
-          <nav className="flex flex-col gap-4">
-            <a href="/detector" className="hover:bg-gray-300 p-2 rounded-md">
-              Upload Code
-            </a>
-            <a href="/report" className="hover:bg-gray-300 p-2 rounded-md">
-              View Results
-            </a>
-          </nav>
-        </aside>
+				<aside className="w-64 h-screen bg-gray-200 p-6 fixed top-20 left-0">
+					<nav className="flex flex-col gap-4">
+						<button
+							onClick={() => handleTabClick("/detector")}
+							className={`p-2 rounded-md text-left ${
+								activeTab === "/detector" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+							}`}
+						>
+							Upload Code
+						</button>
+						<button
+							onClick={() => handleTabClick("/report")}
+							className={`p-2 rounded-md text-left ${
+								activeTab === "/report" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+							}`}
+						>
+							View Results
+						</button>
+					</nav>
+				</aside>
 
         {/* Main Content => Two-Column Design */}
         <main className="flex flex-col ml-64 p-6"> {/* Adding ml-64 to give space for sidebar */}

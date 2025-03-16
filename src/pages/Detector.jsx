@@ -50,6 +50,7 @@ function stripInlineComment(line) {
 function Detector() {
 	const navigate = useNavigate();
 	const location = useLocation();
+	const [activeTab, setActiveTab] = useState("/detector"); // Set default active tab
 
 	// Retrieve pulled code (if available)
 	const pulledCode = location.state?.pulledCode || "";
@@ -80,6 +81,12 @@ function Detector() {
 
 	const detector = () => {
 		navigate("/detector");
+	};
+
+	// Highlights which tab is active
+	const handleTabClick = (path) => {
+		setActiveTab(path);
+		navigate(path);
 	};
 
 	// Placeholder function to detect language
@@ -192,36 +199,29 @@ function Detector() {
 			{/* Sidebar + Main Content Wrapper */}
 			<div className="flex">
 				{/* Sidebar */}
-				<aside className="w-64 h-screen bg-gray-200 text-white p-6 fixed top-20 left-0">
+				<aside className="w-64 h-screen bg-gray-200 border-r border-gray-300 p-6 fixed top-20 left-0">
 					<nav className="flex flex-col gap-4">
-						<a
-							href="/detector"
-							className="hover:bg-gray-300 p-2 rounded-md"
+						<button
+							onClick={() => handleTabClick("/detector")}
+							className={`p-2 rounded-md text-left ${
+								activeTab === "/detector" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+							}`}
 						>
 							Upload Code
-						</a>
-						<div className="ml-4">
-							<a
-								href="/github-pull"
-								className="hover:bg-gray-400 p-2 rounded-md text-blue-700"
-							>
-								● Git Pull
-							</a>
-						</div>
-						<a
-							href="/report"
-							className="hover:bg-gray-300 p-2 rounded-md"
+						</button>
+						<button
+							onClick={() => handleTabClick("/report")}
+							className={`p-2 rounded-md text-left ${
+								activeTab === "/report" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+							}`}
 						>
 							View Results
-						</a>
+						</button>
 					</nav>
 				</aside>
 
 				{/* Main Content */}
 				<main className="ml-64 mt-20 p-6 w-full">
-					<h1 className="text-2xl font-bold text-gray-800">
-						Detector
-					</h1>
 					<p className="text-lg">
 						{fileName !== "No file chosen"
 							? `Analyzing file: ${fileName}`
@@ -236,7 +236,7 @@ function Detector() {
 					/>
 					<button
 						onClick={handleScan}
-						className="mt-4 px-6 py-2 bg-blue-900 text-black rounded-md hover:bg-blue-600 focus:outline-none transition duration-200"
+						className="mt-4 px-6 py-2 !bg-blue-950 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-200"
 					>
 						Scan
 					</button>
