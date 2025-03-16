@@ -1,11 +1,26 @@
+// Import express and create a router instance
 const express = require("express");
 const router = express.Router();
-const supabase = require("../../src/config/supabaseAdminClient"); // Centralized Supabase client
+
+// Import the centralized Supabase client with admin privileges
+const supabase = require("../../src/config/supabaseAdminClient");
+
+// Import authentication verification middleware
 const verifyAuth = require("../middleware/verifyAuth");
 
+// Apply authentication middleware to all routes defined in this file
 router.use(verifyAuth);
 
-// Endpoint to reset a user's password using their userId (unchanged)
+/*
+ * POST /user/:userId/reset-password
+ *
+ * Resets a user's password by sending a password reset email.
+ * Steps:
+ * 1. Extract userId from the URL parameters.
+ * 2. Fetch the user details using Supabase admin method.
+ * 3. Retrieve the user's email.
+ * 4. Trigger the password reset email with a redirection URL specified in environment variables or default.
+ */
 router.post("/user/:userId/reset-password", async (req, res) => {
 	try {
 		const { userId } = req.params;
@@ -17,6 +32,7 @@ router.post("/user/:userId/reset-password", async (req, res) => {
 			console.error("Error fetching user data:", getUserError);
 			return res.status(400).json({ error: getUserError.message });
 		}
+
 		const email = userData.user.email;
 		console.log("User email retrieved:", email);
 
@@ -29,6 +45,7 @@ router.post("/user/:userId/reset-password", async (req, res) => {
 			console.error("Error resetting password:", error);
 			return res.status(400).json({ error: error.message });
 		}
+
 		console.log("Password reset email sent successfully.");
 		res.json({ message: "Password reset email sent successfully." });
 	} catch (err) {
@@ -37,6 +54,19 @@ router.post("/user/:userId/reset-password", async (req, res) => {
 	}
 });
 
+/*
+ * POST /user/:userId/suspend
+ *
+ * Suspends or unsuspends a user based on the provided banDuration in the request body.
+ * Steps:
+ * 1. Extract userId from URL and banDuration from request body.
+ * 2. If banDuration is provided and is greater than zero:
+ *     - Set status as "Suspended".
+ *     - Calculate banned_until timestamp by adding banDuration hours to current time.
+ * 3. Otherwise, set the user's status to "Active" and banned_until to null.
+ * 4. Update the user's profile in the "profiles" table.
+ * 5. Return the updated status and banned_until values.
+ */
 router.post("/user/:userId/suspend", async (req, res) => {
 	try {
 		const { userId } = req.params;
@@ -53,7 +83,8 @@ router.post("/user/:userId/suspend", async (req, res) => {
 			status = "Active";
 			bannedUntil = null;
 		}
-		// Update the profiles table with new status and banned_until
+
+		// Update the profiles table with the new status and banned_until timestamp
 		const { data, error } = await supabase
 			.from("profiles")
 			.update({ status, banned_until: bannedUntil })
@@ -62,7 +93,8 @@ router.post("/user/:userId/suspend", async (req, res) => {
 			console.error("Error updating profile:", error);
 			return res.status(400).json({ error: error.message });
 		}
-		// Fetch the updated profile to verify changes
+
+		// Fetch the updated profile to confirm the changes
 		const { data: updatedProfile, error: fetchError } = await supabase
 			.from("profiles")
 			.select("status, banned_until")
@@ -72,6 +104,7 @@ router.post("/user/:userId/suspend", async (req, res) => {
 			console.error("Error fetching updated profile:", fetchError);
 			return res.status(400).json({ error: fetchError.message });
 		}
+
 		res.json({
 			message:
 				updatedProfile.status === "Active"
@@ -86,16 +119,25 @@ router.post("/user/:userId/suspend", async (req, res) => {
 	}
 });
 
-// Endpoint to ban a user for 200 years (without deleting their account).
-// 200 years in hours = 200 * 365 * 24 = 1,752,000 hours.
-// Sets status to "Banned" and banned_until accordingly.
+/*
+ * POST /user/:userId/delete
+ *
+ * Bans (deletes) a user by modifying their status to "Deleted".
+ * Instead of permanently deleting the account, it marks the user as deleted.
+ * Steps:
+ * 1. Extract userId from URL parameters.
+ * 2. Set the user's status to "Deleted" and banned_until to null.
+ * 3. Update the user's profile in the "profiles" table.
+ * 4. Return the updated status to confirm the deletion.
+ */
 router.post("/user/:userId/delete", async (req, res) => {
 	try {
 		const { userId } = req.params;
 		// For permanent ban, update the status to "Deleted" and clear banned_until.
 		const status = "Deleted";
 		const bannedUntil = null;
-		// Update the profiles table with status "Deleted" and banned_until as null
+
+		// Update the profiles table with new status "Deleted"
 		const { data, error } = await supabase
 			.from("profiles")
 			.update({ status, banned_until: bannedUntil })
@@ -104,7 +146,8 @@ router.post("/user/:userId/delete", async (req, res) => {
 			console.error("Error banning user:", error);
 			return res.status(400).json({ error: error.message });
 		}
-		// Fetch the updated profile to verify changes
+
+		// Fetch the updated profile to verify the changes
 		const { data: updatedProfile, error: fetchError } = await supabase
 			.from("profiles")
 			.select("status, banned_until")
@@ -114,6 +157,7 @@ router.post("/user/:userId/delete", async (req, res) => {
 			console.error("Error fetching updated profile:", fetchError);
 			return res.status(400).json({ error: fetchError.message });
 		}
+
 		res.json({
 			message: "User deleted successfully.",
 			status: updatedProfile.status,
@@ -125,4 +169,5 @@ router.post("/user/:userId/delete", async (req, res) => {
 	}
 });
 
+// Export the router to be used in other parts of the app
 module.exports = router;

@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDetectionRules } from "../controller/rulesController";
 
-
 // 1) Skip lines that start with // or #
 function isCommentLine(line) {
 	const trimmed = line.trim();
@@ -17,34 +16,34 @@ function stripInlineComment(line) {
 }
 
 // 3) Detection rules for each language, using word boundaries (\b)
- const Rules = {
- 	JavaScript: {
+const Rules = {
+	JavaScript: {
 		AES: /\bcrypto\.(?:createCipheriv|createCipher)\s*\(\s*['"]aes-\d+-cbc['"]/i,
 		"RSA (Weak Key)":
- 			/\bcrypto\.generateKeyPairSync\s*\(\s*['"]rsa['"]\s*,\s*\{\s*[^}]*modulusLength\s*:\s*(512|1024)/i,
- 		RSA: /\bcrypto\.generateKeyPairSync\s*\(\s*['"]rsa['"]\s*,\s*\{\s*[^}]*modulusLength\s*:\s*(?!.*(512|1024))\d+/i,
- 		"SHA-1": /\bcrypto\.createHash\s*\(\s*['"]sha1['"]\s*\)/i,
- 		"SHA-256": /\bcrypto\.createHash\s*\(\s*['"]sha256['"]\s*\)/i,
- 		MD5: /\bcrypto\.createHash\s*\(\s*['"]md5['"]\s*\)/i,
- 		HMAC: /\bcrypto\.createHmac\s*\(\s*['"]sha\d+['"]\s*,/i,
- 		DES: /\bcrypto\.createCipher\s*\(\s*['"]des(?:-\d+)?-cbc['"]\s*,/i,
+			/\bcrypto\.generateKeyPairSync\s*\(\s*['"]rsa['"]\s*,\s*\{\s*[^}]*modulusLength\s*:\s*(512|1024)/i,
+		RSA: /\bcrypto\.generateKeyPairSync\s*\(\s*['"]rsa['"]\s*,\s*\{\s*[^}]*modulusLength\s*:\s*(?!.*(512|1024))\d+/i,
+		"SHA-1": /\bcrypto\.createHash\s*\(\s*['"]sha1['"]\s*\)/i,
+		"SHA-256": /\bcrypto\.createHash\s*\(\s*['"]sha256['"]\s*\)/i,
+		MD5: /\bcrypto\.createHash\s*\(\s*['"]md5['"]\s*\)/i,
+		HMAC: /\bcrypto\.createHmac\s*\(\s*['"]sha\d+['"]\s*,/i,
+		DES: /\bcrypto\.createCipher\s*\(\s*['"]des(?:-\d+)?-cbc['"]\s*,/i,
 		"Hardcoded Key":
- 			/\b(?:const|let|var)\s+\w*(?:key|password|secret)\w*\s*=\s*['"][^'"]{5,}['"]/i,
- 	},
+			/\b(?:const|let|var)\s+\w*(?:key|password|secret)\w*\s*=\s*['"][^'"]{5,}['"]/i,
+	},
 
- 	Python: {
+	Python: {
 		"RSA (Weak Key)": /\bRSA\.generate\s*\(\s*(512|1024)(?:[^)]*)\)/i,
- 		RSA: /\bRSA\.generate\s*\(\s*(?!512|1024)\d+(?:[^)]*)\)/i,
+		RSA: /\bRSA\.generate\s*\(\s*(?!512|1024)\d+(?:[^)]*)\)/i,
 		AES: /\bAES\.new\(/i,
 		"SHA-1": /\bhashlib\.sha1\(|\bhashlib\.new\(['"]sha1['"]\)/i,
 		"SHA-256": /\bhashlib\.sha256\(|\bhashlib\.new\(['"]sha256['"]\)/i,
 		MD5: /\bhashlib\.md5\(|\bhashlib\.new\(['"]md5['"]\)/i,
 		HMAC: /\bhmac\.new\(\s*.*,\s*hashlib\.sha\d+/i,
-	DES: /\bDES\.new\(/i,
+		DES: /\bDES\.new\(/i,
 		"Hardcoded Key":
 			/\b\w*(?:key|password|secret)\w*\s*=\s*['"][^'"]{5,}['"]/i,
- 	},
- };
+	},
+};
 
 // Detector Component
 function Detector() {
@@ -74,6 +73,24 @@ function Detector() {
 
 		fetchRules();
 	}, []);
+
+	useEffect(() => {
+		if (Notification.permission !== "granted") {
+			Notification.requestPermission();
+		}
+	}, []);
+
+	const sendNotification = () => {
+		// Check if notifications are permitted
+		if (Notification.permission === "granted") {
+			console.log("notification sent");
+			new Notification("Cyvex: The Crypto Graphic Detection tool", {
+				body: "Your code has been successfully scanned, and your report is ready",
+			});
+		} else {
+			alert("Please allow notifications to use this feature.");
+		}
+	};
 
 	const login = () => {
 		navigate("/login/email");
@@ -146,6 +163,8 @@ function Detector() {
 			snippets,
 		};
 
+		// Send notification
+		sendNotification();
 		// Navigate to Report Page with report data
 		navigate("/report", { state: { report } });
 	};
