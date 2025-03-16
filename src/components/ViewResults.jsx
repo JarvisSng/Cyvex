@@ -72,28 +72,6 @@ export default function ViewResults({code, fileExt}) {
     snippets: [],
   });
 
-  const [isSubscribed, setIsSubscribed] = useState(false); 
-   
-  // Fetch subscription status when component mounts
-  useEffect(() => {
-    const checkSubscription = async () => {
-      try {
-        const response = await fetch("/api/check-subscription", { credentials: "include" });
-        const result = await response.json();
-
-        //console.log("Subscription status:", result.isSubscribed); // Debugging
-
-        if (result.isSubscribed) {
-          setIsSubscribed(true);
-        }
-      } catch (err) {
-        console.error("Error checking subscription:", err);
-      }
-    };
-
-    checkSubscription();
-  }, []);
-
   useEffect(() => {
     const fetchRules = async () => {
       const result = await getDetectionRules();
@@ -431,28 +409,6 @@ export default function ViewResults({code, fileExt}) {
     <>
       {/* ====== Layout: Sidebar + Main Content ====== */}
       <div className="flex pt-20"> {/* Adding pt-20 to make space for the fixed header */}
-        {/* Left Sidebar */}
-				<aside className="w-64 h-screen bg-gray-200 p-6 fixed top-20 left-0">
-					<nav className="flex flex-col gap-4">
-						<button
-							onClick={() => handleTabClick("/detector")}
-							className={`p-2 rounded-md text-left ${
-								activeTab === "/detector" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
-							}`}
-						>
-							Upload Code
-						</button>
-						<button
-							onClick={() => handleTabClick("/report")}
-							className={`p-2 rounded-md text-left ${
-								activeTab === "/report" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
-							}`}
-						>
-							View Results
-						</button>
-					</nav>
-				</aside>
-
         {/* Main Content => Two-Column Design */}
         <main className="flex flex-col ml-64 p-6"> {/* Adding ml-64 to give space for sidebar */}
           {/* Buttons (Positioned at the top of the content) */}
