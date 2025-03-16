@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import exampleImage from '../assets/blockchain.svg';
 
 const LandingPage = () => {
 
@@ -16,6 +17,7 @@ const LandingPage = () => {
   }
 
   return (
+  <>
     <header className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md">
       {/* Header Container */}
       <div className="flex items-center justify-between w-full h-20">
@@ -50,6 +52,29 @@ const LandingPage = () => {
   
       </div>
     </header>
+
+    {/* Content Section */}
+    <main className="mt-24 p-8">
+      <div className="flex items-center justify-between">
+        {/* Left Text */}
+        <div className="w-1/2 pr-8">
+          <h1 className="text-3xl font-bold">Welcome to Cyvex</h1>
+          <p className="text-lg mt-4">
+            We provide cutting-edge solutions to help businesses thrive. Explore our services and see how we can help you grow.
+          </p>
+        </div>
+
+        {/* Right Image */}
+        <div className="w-1/2">
+          <img 
+            src={exampleImage} 
+            alt="Description of the image" 
+            className="w-full h-auto rounded-lg"
+          />
+        </div>
+      </div>
+    </main>
+  </>
   );  
 };
 

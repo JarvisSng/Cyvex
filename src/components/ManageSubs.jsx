@@ -64,7 +64,7 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 			<Toaster />
 			{/* Header tabs for Manage Subscriptions */}
 			<div className="border-b border-gray-300 mb-4">
-				<h3 className="text-xl font-semibold text-black dark:text-white mb-4">
+				<h3 className="text-xl font-semibold text-black mb-4">
 					Manage Subscriptions
 				</h3>
 				<ul className="flex space-x-4">
@@ -132,26 +132,7 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 								<th className="px-4 py-2 text-right text-sm font-semibold text-gray-700">
 									Actions
 								</th>
-								<th>
-									<select
-										defaultValue={
-											filteredProfiles[0]?.status
-										}
-										onChange={(e) =>
-											changeStatus(
-												filteredProfiles[0]?.id,
-												filteredProfiles[0]?.username,
-												e.target.value
-											)
-										}
-										className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block p-2.5"
-									>
-										<option value="Active">Activate</option>
-										<option value="Suspended">
-											Deactivate
-										</option>
-									</select>
-								</th>
+								<th></th>
 							</tr>
 						</thead>
 						<tbody>
@@ -195,7 +176,7 @@ const ManageSubs = ({ activeSubTab, setActiveSubTab }) => {
 														`/admin/dashboard/${profile.id}`
 													)
 												}
-												className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+												className="!bg-blue-950 text-white px-3 py-1 rounded hover:bg-blue-600"
 											>
 												Details
 											</button>

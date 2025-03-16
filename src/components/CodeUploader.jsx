@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 
-const CodeUploader = ({ onFileUpload, onPaste }) => {
+const CodeUploader = ({ onFileUpload, onPaste, onSubmit }) => {
   const [fileName, setFileName] = useState("No file chosen");
   const [pastedCode, setPastedCode] = useState("");
   const [dragging, setDragging] = useState(false);
+  const [fileContent, setFileContent] = useState(""); // Store content before submitting
+  const [fileExt, setFileExt] = useState(""); // Store file extension
 
   // Handle file upload via file input
   const handleFileChange = (event) => {
@@ -15,7 +17,8 @@ const CodeUploader = ({ onFileUpload, onPaste }) => {
       reader.onload = (e) => {
         const content = e.target.result;
         const ext = file.name.split('.').pop();
-        onFileUpload(content, ext);
+        setFileContent(content); // Store locally, not submit yet
+        setFileExt(ext);
       };
       reader.readAsText(file);
     }
@@ -50,14 +53,13 @@ const CodeUploader = ({ onFileUpload, onPaste }) => {
     }
   };
 
-  // Handle code pasted into the textarea
+  // Handle code pasted into the text area
   const handlePaste = (event) => {
     const text = event.target.value;
     setPastedCode(text);
-    if (text.trim() !== "") {
-      setFileName("No file chosen"); // Clear uploaded file name when pasting
-      onPaste(text);
-    }
+    setFileName("No file chosen"); // Reset file
+    setFileContent(text); // Store locally, not submit yet
+    setFileExt("txt");
   };
 
   // Clear uploaded file
@@ -119,6 +121,7 @@ const CodeUploader = ({ onFileUpload, onPaste }) => {
             
             <button
               onClick={handleSubmit}
+              disabled={!fileContent.trim()} // Disable if no content
               className="px-6 py-3 !bg-blue-950 text-white rounded-md transition disabled:bg-gray-500 disabled:cursor-not-allowed"
             >
               Submit

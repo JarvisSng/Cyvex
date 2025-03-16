@@ -53,19 +53,19 @@ function AdminNav({ setActiveSection }) {
 				<div className="flex items-center space-x-6 hori-nav">
 					<span className="text-3xl font-bold">cyvex</span>
 					<a
-						href="#manage"
+						onClick={() => navigate("/admin/dashboard")}
 						className="hover:bg-blue-700 px-3 py-2 rounded"
 					>
 						Manage
 					</a>
 					<a
-						href="#contacts"
+						onClick={() => navigate("/admin/contacts")}
 						className="hover:bg-blue-700 px-3 py-2 rounded"
 					>
 						Contacts
 					</a>
 					<a
-						href="#help"
+						onClick={() => navigate("/admin/help")}
 						className="hover:bg-blue-700 px-3 py-2 rounded"
 					>
 						Help

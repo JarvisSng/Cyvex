@@ -1,5 +1,6 @@
 import React from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import GitHubPull from "./components/GitHubPull.jsx";
 import "./index.css"; // Global styles
 import LoginEmail from "./LoginPages/loginEmail.jsx";
 import LoginPassword from "./LoginPages/loginPassword.jsx";
@@ -8,6 +9,9 @@ import Detector from "./pages/Detector.jsx";
 import LandingPage from "./pages/landingPage.jsx";
 import ReportPage from "./pages/ReportPage.jsx"; // Importing Report Page
 import UserDashboard from "./pages/userDashboard.jsx";
+import ResendEmail from "./ResetEmailPages/resendEmail.jsx";
+import ResetEmail from "./ResetEmailPages/resetAccount.jsx";
+import ResetUserPassword from "./ResetEmailPages/resetUserPassword.jsx";
 import SignUpConfirmation from "./SignUpPages/signUpConfirmation.jsx";
 import SignUpEmail from "./SignUpPages/signUpEmail.jsx";
 import SignUpPassword from "./SignUpPages/signUpPassword.jsx";
@@ -19,10 +23,6 @@ import AdminProtectedRoute from "./SysAdminPages/AdminProtectedRoute.jsx";
 import NoAccess from "./SysAdminPages/NoAccess.jsx";
 import ResetPassword from "./SysAdminPages/resetPassword.jsx";
 import UserDetails from "./SysAdminPages/UserDetails.jsx";
-import GitHubPull from "./components/GitHubPull.jsx";
-import ResetEmail from "./ResetEmailPages/resetAccount.jsx";
-import ResendEmail from "./ResetEmailPages/resendEmail.jsx";
-import ResetUserPassword from "./ResetEmailPages/resetUserPassword.jsx";
 
 function App() {
 	return (
@@ -49,9 +49,15 @@ function App() {
 						element={<SignUpConfirmation />}
 					/>
 					{/* Routes for User Account Reset page */}
-					<Route path="/reset/email" element={<ResetEmail />} />		
-					<Route path="/reset/resendEmail" element={<ResendEmail />} />		
-					<Route path="/resetAccount/password" element={<ResetUserPassword />} />	
+					<Route path="/reset/email" element={<ResetEmail />} />
+					<Route
+						path="/reset/resendEmail"
+						element={<ResendEmail />}
+					/>
+					<Route
+						path="/resetAccount/password"
+						element={<ResetUserPassword />}
+					/>
 					"/reset/resendEmail"
 					{/* Route for Report page */}
 					<Route path="/report" element={<ReportPage />} />
@@ -61,7 +67,6 @@ function App() {
 					<Route path="/user-dashboard" element={<UserDashboard />} />
 					<Route path="/github-pull" element={<GitHubPull />} />
 					{/* Routes for SysAdmin pages */}
-
 					<Route
 						path="/admin/dashboard"
 						element={
@@ -96,7 +101,6 @@ function App() {
 					/>
 					<Route path="/noaccess" element={<NoAccess />} />
 					{/*End of Routes for SysAdmin pages */}
-
 					<Route path="/reset-password" element={<ResetPassword />} />
 				</Routes>
 			</Router>
