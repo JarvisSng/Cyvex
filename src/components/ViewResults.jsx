@@ -109,7 +109,7 @@ export default function ViewResults({code, fileExt}) {
       }
       if (fileExt.includes("js")) {
         return "JavaScript";
-      }
+      sx}
       if (fileExt.includes("cpp") || fileExt.includes("c++")) {
         return "C++";
       }

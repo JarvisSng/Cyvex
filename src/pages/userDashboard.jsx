@@ -11,7 +11,7 @@ function UserDashboard() {
 	const [submittedCode, setSubmittedCode] = useState(""); 
 	const [fileExt, setFileExt] = useState("");
 	const [isSubscribed, setIsSubscribed] = useState(true); 
-
+	console.log("activeSection == ", activeSection);
 	// Fetch subscription status when component mounts
 	useEffect(() => {
 		const checkSubscription = async () => {
@@ -39,8 +39,8 @@ function UserDashboard() {
 
 	return (
 		<div className="w-screen h-screen flex flex-col bg-gray-50">
-			<UserNav setActiveSection={setActiveSection} />
-
+			<UserNav setActiveSection={setActiveSection} /> 
+ 
 			{/* Main content area */}
 			<div className="flex flex-1 overflow-hidden pt-70">
 				{/* Sidebar */}
@@ -89,7 +89,7 @@ function UserDashboard() {
 					) : activeSection === "profile" ? (
 						<UserProfile />
 					) : activeSection === "View Reports" ? (
-						<ViewReports />
+						<ViewReports code={submittedCode} fileExt={fileExt} />
 					) : activeSection === "View Results" ? (
 						<ViewResults code={submittedCode} fileExt={fileExt} />
 					) : activeSection === "GitHub Pull" ? (

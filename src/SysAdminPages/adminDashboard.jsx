@@ -21,82 +21,48 @@ function AdminDashboard() {
 			{/* Main content area */}
 			<div className="flex flex-1 overflow-hidden pt-70">
 				{/* Sidebar */}
-				<aside className="w-64 bg-gray-500 border-r border-gray-200 p-4 overflow-y-auto">
-					<div className="mb-6">
-						<h2 className="font-bold mb-2">Manage Subscriptions</h2>
-						<ul>
-							<li
-								onClick={() => {
-									setActiveSection("subscriptions");
-									setActiveSubTab("all");
-								}}
-								className={`py-1 rounded px-2 cursor-pointer ${
-									activeSection === "subscriptions" &&
-									activeSubTab === "all"
-										? "bg-gray-300"
-										: "hover:bg-gray-400"
-								}`}
-							>
-								All Users
-							</li>
-							<li
-								onClick={() => {
-									setActiveSection("subscriptions");
-									setActiveSubTab("subscribed");
-								}}
-								className={`py-1 rounded px-2 cursor-pointer ${
-									activeSection === "subscriptions" &&
-									activeSubTab === "subscribed"
-										? "bg-gray-300"
-										: "hover:bg-gray-400"
-								}`}
-							>
-								Subscribed Users
-							</li>
-							<li
-								onClick={() => {
-									setActiveSection("subscriptions");
-									setActiveSubTab("pending");
-								}}
-								className={`py-1 rounded px-2 cursor-pointer ${
-									activeSection === "subscriptions" &&
-									activeSubTab === "pending"
-										? "bg-gray-300"
-										: "hover:bg-gray-400"
-								}`}
-							>
-								Pending Payment
-							</li>
-						</ul>
+				<aside className="w-64 bg-gray-200 border-r border-gray-300 p-4 overflow-y-auto flex flex-col">
+						<h2 className="text-black font-bold mb-4">Manage Subscriptions</h2>
+					<div className="flex flex-col space-y-4">
+						<button onClick={() => { setActiveSection("subscriptions"); setActiveSubTab("all");} }
+							className={`w-full p-3 rounded-md text-left pl-4 ${
+								activeSection === "subscriptions" && activeSubTab === "all" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+							}`}
+						>
+							All Users
+						</button>
+						<button onClick={() => { setActiveSection("subscriptions"); setActiveSubTab("subscribed");} }
+							className={`w-full p-3 rounded-md text-left pl-4 ${
+								activeSection === "subscriptions" && activeSubTab === "subscribed" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+							}`}
+						>
+							Subscribed Users
+						</button>
+						<button onClick={() => { setActiveSection("subscriptions"); setActiveSubTab("pending");} }
+							className={`w-full p-3 rounded-md text-left pl-4 ${
+								activeSection === "subscriptions" && activeSubTab === "pending" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+							}`}
+						>
+							Pending Payment
+						</button> 
 					</div>
-					<div>
-						<h2 className="font-bold mb-2">Others</h2>
-						<ul>
-							<li
-								onClick={() => setActiveSection("rules")}
-								className={`py-1 rounded px-2 cursor-pointer ${
-									activeSection === "rules"
-										? "bg-gray-300"
-										: "hover:bg-gray-100"
-								}`}
-							>
-								Manage Rules
-							</li>
-							<li
-								onClick={() =>
-									setActiveSection("System Activity")
-								}
-								className={`py-1 rounded px-2 cursor-pointer ${
-									activeSection === "System Activity"
-										? "bg-gray-300"
-										: "hover:bg-gray-100"
-								}`}
-							>
-								System Activity
-							</li>
-							
-						</ul>
-					</div>
+					<h2 className="text-black font-bold mb-4 mt-4">Others</h2>
+					<div className="flex flex-col space-y-4">
+						<button onClick={() => { setActiveSection("rules"); } }
+							className={`w-full p-3 rounded-md text-left pl-4 ${
+								activeSection === "rules" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+							}`}
+						>
+							Manage Rules
+						</button>
+						<button onClick={() => { setActiveSection("System Activity"); } }
+							className={`w-full p-3 rounded-md text-left pl-4 ${
+								activeSection === "System Activity" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+							}`}
+						>
+							System Activity
+						</button>
+					</div>  
 				</aside>
 
 				{/* Main Panel */}
