@@ -3,7 +3,7 @@ import CodeUploader from "../components/CodeUploader";
 import UserProfile from "../components/UserProfile";
 import ViewReports from "../components/ViewReports";
 import ViewResults from "../components/ViewResults";
-import GitHubPull from "../components/GitHubPull";
+import RepoPull from "../components/RepoPull";
 import UserNav from "./UserNav";
 
 function UserDashboard() {
@@ -61,7 +61,7 @@ function UserDashboard() {
 									activeSection === "GitHub Pull" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
 								}`}
 							>
-								GitHub Pull
+								Repo Pull
 							</button>
 						)}
 
@@ -93,7 +93,7 @@ function UserDashboard() {
 					) : activeSection === "View Results" ? (
 						<ViewResults code={submittedCode} fileExt={fileExt} />
 					) : activeSection === "GitHub Pull" ? (
-						<GitHubPull onSubmit={handleCodeSubmit} />
+						<RepoPull onSubmit={handleCodeSubmit} />
 					) : (
 						<></>
 					)}

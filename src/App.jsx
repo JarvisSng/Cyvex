@@ -1,6 +1,6 @@
 import React from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import GitHubPull from "./components/GitHubPull.jsx";
+import RepoPull from "./components/RepoPull.jsx";
 import "./index.css"; // Global styles
 import LoginEmail from "./LoginPages/loginEmail.jsx";
 import LoginPassword from "./LoginPages/loginPassword.jsx";
@@ -65,7 +65,7 @@ function App() {
 					<Route path="/detector" element={<Detector />} />
 					<Route path="/admin-login" element={<AdminLogin />} />
 					<Route path="/user-dashboard" element={<UserDashboard />} />
-					<Route path="/github-pull" element={<GitHubPull />} />
+					<Route path="/repo-pull" element={<RepoPull />} />
 					{/* Routes for SysAdmin pages */}
 					<Route
 						path="/admin/dashboard"
