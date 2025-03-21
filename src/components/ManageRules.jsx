@@ -135,7 +135,7 @@ const ManageRules = () => {
 				</div>
 				<button
 					onClick={handleAddRule}
-					className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+					className="!bg-gray-800 hover:!bg-blue-600 text-white px-4 py-2 rounded"
 				>
 					Add Rule
 				</button>
@@ -187,13 +187,13 @@ const ManageRules = () => {
 								onClick={() =>
 									handleUpdateRule(rule.id, language)
 								}
-								className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded ml-4"
+								className="!bg-gray-800 hover:!bg-green-600 text-white px-3 py-1 rounded ml-4"
 							>
 								Update
 							</button>
 							<button
 								onClick={() => handleDeleteRule(rule.id)}
-								className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded ml-4"
+								className="!bg-gray-800 hover:!bg-red-600 text-white px-3 py-1 rounded ml-4"
 							>
 								Delete
 							</button>

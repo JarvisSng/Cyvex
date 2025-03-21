@@ -3,7 +3,6 @@ import ManageRules from "../components/ManageRules";
 import ManageSubs from "../components/ManageSubs";
 import Profile from "../components/Profile";
 import SystemActivity from "../components/SystemActivity";
-import ViewReports from "../components/ViewReports";
 import AdminNav from "./AdminNav";
 
 function AdminDashboard() {
@@ -22,47 +21,80 @@ function AdminDashboard() {
 			<div className="flex flex-1 overflow-hidden pt-70">
 				{/* Sidebar */}
 				<aside className="w-64 bg-gray-200 border-r border-gray-300 p-4 overflow-y-auto flex flex-col">
-						<h2 className="text-black font-bold mb-4">Manage Subscriptions</h2>
+					<h2 className="text-black font-bold mb-4">
+						Manage Subscriptions
+					</h2>
 					<div className="flex flex-col space-y-4">
-						<button onClick={() => { setActiveSection("subscriptions"); setActiveSubTab("all");} }
+						<button
+							onClick={() => {
+								setActiveSection("subscriptions");
+								setActiveSubTab("all");
+							}}
 							className={`w-full p-3 rounded-md text-left pl-4 ${
-								activeSection === "subscriptions" && activeSubTab === "all" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+								activeSection === "subscriptions" &&
+								activeSubTab === "all"
+									? "!bg-blue-950 text-white"
+									: "hover:!bg-gray-300"
 							}`}
 						>
 							All Users
 						</button>
-						<button onClick={() => { setActiveSection("subscriptions"); setActiveSubTab("subscribed");} }
+						<button
+							onClick={() => {
+								setActiveSection("subscriptions");
+								setActiveSubTab("subscribed");
+							}}
 							className={`w-full p-3 rounded-md text-left pl-4 ${
-								activeSection === "subscriptions" && activeSubTab === "subscribed" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+								activeSection === "subscriptions" &&
+								activeSubTab === "subscribed"
+									? "!bg-blue-950 text-white"
+									: "hover:!bg-gray-300"
 							}`}
 						>
 							Subscribed Users
 						</button>
-						<button onClick={() => { setActiveSection("subscriptions"); setActiveSubTab("pending");} }
+						<button
+							onClick={() => {
+								setActiveSection("subscriptions");
+								setActiveSubTab("pending");
+							}}
 							className={`w-full p-3 rounded-md text-left pl-4 ${
-								activeSection === "subscriptions" && activeSubTab === "pending" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+								activeSection === "subscriptions" &&
+								activeSubTab === "pending"
+									? "!bg-blue-950 text-white"
+									: "hover:!bg-gray-300"
 							}`}
 						>
 							Pending Payment
-						</button> 
+						</button>
 					</div>
 					<h2 className="text-black font-bold mb-4 mt-4">Others</h2>
 					<div className="flex flex-col space-y-4">
-						<button onClick={() => { setActiveSection("rules"); } }
+						<button
+							onClick={() => {
+								setActiveSection("rules");
+							}}
 							className={`w-full p-3 rounded-md text-left pl-4 ${
-								activeSection === "rules" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+								activeSection === "rules"
+									? "!bg-blue-950 text-white"
+									: "hover:!bg-gray-300"
 							}`}
 						>
 							Manage Rules
 						</button>
-						<button onClick={() => { setActiveSection("System Activity"); } }
+						<button
+							onClick={() => {
+								setActiveSection("System Activity");
+							}}
 							className={`w-full p-3 rounded-md text-left pl-4 ${
-								activeSection === "System Activity" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+								activeSection === "System Activity"
+									? "!bg-blue-950 text-white"
+									: "hover:!bg-gray-300"
 							}`}
 						>
 							System Activity
 						</button>
-					</div>  
+					</div>
 				</aside>
 
 				{/* Main Panel */}

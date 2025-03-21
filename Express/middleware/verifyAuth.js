@@ -24,7 +24,7 @@ const verifyAuth = async (req, res, next) => {
 	} = await supabase.auth.getUser(token);
 	if (!user) {
 		// Log error if user data retrieval fails and respond with 401 Unauthorized if token is invalid
-		console.error("Error fetching user data:", userError);
+		console.error("Error fetching user data:");
 		return res.status(401).json({ error: "Invalid token" });
 	}
 
