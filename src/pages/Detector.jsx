@@ -51,6 +51,11 @@ function Detector() {
 	const location = useLocation();
 	const [activeTab, setActiveTab] = useState("/detector"); // Set default active tab
   	const [isSubscribed, setIsSubscribed] = useState(false);
+  	const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+	const toggleMenu = () => {
+		setIsMenuOpen(!isMenuOpen);
+	};
 
 	// Retrieve pulled code (if available)
 	const pulledCode = location.state?.pulledCode || "";
@@ -195,53 +200,77 @@ function Detector() {
 	return (
 		<>
 			{/* Header (Fixed at the Top) */}
-			<header className="bg-blue-950 absolute top-0 left-0 w-full py-4 px-8 shadow-md z-50 h-20">
-				<div className="flex items-center justify-between w-full h-full">
-					<h2 className="text-stone-50 text-4xl font-bold flex items-center">
+			<header className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md z-40">
+				<div className="flex items-center justify-between w-full h-12">
+					<h2 className="text-stone-50 text-3xl font-bold whitespace-nowrap">
 						cyvex
 					</h2>
 
 					{/* Navigation Links (Centered) */}
-					<nav className="flex items-center gap-8">
-						<h2 className="text-stone-50 text-2xl font-bold cursor-pointer">
-							solutions
-						</h2>
-						<h2 className="text-stone-50 text-2xl font-bold cursor-pointer">
-							customers
-						</h2>
-						<h2 className="text-stone-50 text-2xl font-bold cursor-pointer">
-							services
-						</h2>
-						<h2 className="text-stone-50 text-2xl font-bold cursor-pointer">
-							insights
-						</h2>
-						<h2 className="text-stone-50 text-2xl font-bold cursor-pointer">
-							company
-						</h2>
+					<nav className="hidden xl:flex items-center gap-4 lg:gap-8">
+						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">solutions</h2>
+						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">customers</h2>
+						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">services</h2>
+						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">insights</h2>
+						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">company</h2>
 					</nav>
 
-					{/* Buttons (Right) */}
-					<div className="flex items-center gap-4">
-						<button
-							onClick={login}
-							className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
-						>
-							Login
-						</button>
-						<button
-							onClick={detector}
-							className="w-32 bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
-						>
-							Try It
-						</button>
+				{/* Buttons (Right) */}
+				<div className="hidden xl:flex items-center gap-4 lg:gap-8">
+					<button 
+						onClick={login}
+						className="w-24 lg:w-32 bg-stone-50 text-black px-4 lg:px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+					>
+						Login
+					</button>
+					<button 
+						onClick={detector}
+						className="w-24 lg:w-32 bg-stone-50 text-black px-4 lg:px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+					>
+						Try It
+					</button>
 					</div>
+					{/* Mobile Menu Button (Visible only on small screens) */}
+					<button 
+						className="xl:hidden text-black text-2xl"
+						onClick={toggleMenu}
+					>
+						☰
+					</button>
 				</div>
+				{/* Mobile Menu (Conditionally rendered) */}
+				{isMenuOpen && (
+					<div className="xl:hidden bg-blue-900 w-full py-4 px-8 absolute left-0 top-20 shadow-lg z-50">
+						<nav className="flex flex-col items-center gap-4">
+							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">solutions</h2>
+							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">customers</h2>
+							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">services</h2>
+							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">insights</h2>
+							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">company</h2>
+							
+							<div className="flex flex-col sm:flex-row items-center gap-4 mt-4 w-full justify-center">
+							<button 
+								onClick={login}
+								className="w-full sm:w-auto bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+							>
+								Login
+							</button>
+							<button 
+								onClick={detector}
+								className="w-full sm:w-auto bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+							>
+								Try It
+							</button>
+							</div>
+						</nav>
+					</div>
+				)}
 			</header>
 
 			{/* Sidebar + Main Content Wrapper */}
 			<div className="flex">
 				{/* Sidebar */}
-				<aside className="w-64 h-screen bg-gray-200 border-r border-gray-300 p-6 fixed top-20 left-0">
+				<aside className="w-64 h-screen bg-gray-200 border-r border-gray-300 p-6 fixed top-20 left-0 z-30">
 					<nav className="flex flex-col gap-4">
 						<button
 							onClick={() => handleTabClick("/detector")}
@@ -274,7 +303,7 @@ function Detector() {
 				</aside>
 
 				{/* Main Content */}
-				<main className="ml-64 mt-20 p-6 w-full">
+				<main className="ml-64 mt-20 p-6 w-full z-10">
 					<p className="text-lg">
 						{fileName !== "No file chosen"
 							? `Analyzing file: ${fileName}`
