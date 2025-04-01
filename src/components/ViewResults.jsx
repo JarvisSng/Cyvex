@@ -1,18 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import { getDetectionRules } from "../controller/rulesController";
-
-/**
- * A small map of recommended actions for insecure rules
- */
-const recommendedMap = {
-  MD5: "Use SHA-256 instead of MD5",
-  "SHA-1": "Use SHA-256 instead of SHA-1",
-  DES: "Use AES instead of DES",
-  "Hardcoded Key":
-    "Use environment variables or a secure key management system instead of hardcoded keys",
-  "RSA (Weak Key)": "Use RSA with at least 2048 bits",
-};
 
 // Define which rules are considered "insecure"
 const insecureRules = ["MD5", "SHA-1", "DES", "Hardcoded Key", "RSA (Weak Key)"];
@@ -29,40 +16,8 @@ function stripInlineComment(line) {
 	return index !== -1 ? line.substring(0, index) : line;
 }
 
-// 3) Detection rules for each language, using word boundaries (\b)
-const Rules = {
-	JavaScript: {
-		AES: /\bcrypto\.(?:createCipheriv|createCipher)\s*\(\s*['"]aes-\d+-cbc['"]/i,
-		"RSA (Weak Key)":
-			/\bcrypto\.generateKeyPairSync\s*\(\s*['"]rsa['"]\s*,\s*\{\s*[^}]*modulusLength\s*:\s*(512|1024)/i,
-		RSA: /\bcrypto\.generateKeyPairSync\s*\(\s*['"]rsa['"]\s*,\s*\{\s*[^}]*modulusLength\s*:\s*(?!.*(512|1024))\d+/i,
-		"SHA-1": /\bcrypto\.createHash\s*\(\s*['"]sha1['"]\s*\)/i,
-		"SHA-256": /\bcrypto\.createHash\s*\(\s*['"]sha256['"]\s*\)/i,
-		MD5: /\bcrypto\.createHash\s*\(\s*['"]md5['"]\s*\)/i,
-		HMAC: /\bcrypto\.createHmac\s*\(\s*['"]sha\d+['"]\s*,/i,
-		DES: /\bcrypto\.createCipher\s*\(\s*['"]des(?:-\d+)?-cbc['"]\s*,/i,
-		"Hardcoded Key":
-			/\b(?:const|let|var)\s+\w*(?:key|password|secret)\w*\s*=\s*['"][^'"]{5,}['"]/i,
-	},
-
-	Python: {
-		"RSA (Weak Key)": /\bRSA\.generate\s*\(\s*(512|1024)(?:[^)]*)\)/i,
-		RSA: /\bRSA\.generate\s*\(\s*(?!512|1024)\d+(?:[^)]*)\)/i,
-		AES: /\bAES\.new\(/i,
-		"SHA-1": /\bhashlib\.sha1\(|\bhashlib\.new\(['"]sha1['"]\)/i,
-		"SHA-256": /\bhashlib\.sha256\(|\bhashlib\.new\(['"]sha256['"]\)/i,
-		MD5: /\bhashlib\.md5\(|\bhashlib\.new\(['"]md5['"]\)/i,
-		HMAC: /\bhmac\.new\(\s*.*,\s*hashlib\.sha\d+/i,
-		DES: /\bDES\.new\(/i,
-		"Hardcoded Key":
-			/\b\w*(?:key|password|secret)\w*\s*=\s*['"][^'"]{5,}['"]/i,
-	},
-};
-
 export default function ViewResults({code, fileExt}) {
-  const navigate = useNavigate();
   const [activeButton, setActiveButton] = useState(null);
-  const [activeTab, setActiveTab] = useState(""); // Set default active tab
   const [detectionRules, setDetectionRules] = useState({});
 
   // Default report
@@ -109,7 +64,7 @@ export default function ViewResults({code, fileExt}) {
       }
       if (fileExt.includes("js")) {
         return "JavaScript";
-      sx}
+      }
       if (fileExt.includes("cpp") || fileExt.includes("c++")) {
         return "C++";
       }
