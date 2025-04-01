@@ -25,7 +25,7 @@ const LandingPage = () => {
   <>
     <header className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md">
       {/* Header Container */}
-      <div className="flex items-center justify-between w-full h-12">
+      <div className="flex items-center justify-between w-full h-10">
         
         {/* Logo (Left) */}
         <h2 className="text-stone-50 text-3xl font-bold whitespace-nowrap">cyvex</h2>

@@ -53,7 +53,7 @@ function UserNav({setActiveSection}) {
 		<>
 			{/* Top Navbar */}
 			<nav className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md text-white px-4 flex justify-between items-center">
-				<div className="flex items-center space-x-6 hori-nav">
+				<div className="flex items-center space-x-12 hori-nav">
 					<span className="text-3xl font-bold">cyvex</span>
 					<a
 						href="#manage"
@@ -125,7 +125,6 @@ function UserNav({setActiveSection}) {
 					</svg>
 					</Link> 
 					{/* <div className="w-8 h-8 bg-gray-300 rounded-full" /> */}
-					
 				</div>
 			</nav>
 			{/* <!-- Dropdown Start --> */}
