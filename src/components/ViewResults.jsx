@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { getDetectionRules } from "../controller/rulesController";
+import EmptyState from "./EmptyState.jsx";
 
 // Define which rules are considered "insecure" with severity levels
 const insecureRules = {
@@ -35,7 +36,27 @@ export default function ViewResults({code, fileExt}) {
   const [activeButton, setActiveButton] = useState(null);
   const [detectionRules, setDetectionRules] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isScanComplete, setIsScanComplete] = useState(false);
   const [error, setError] = useState(null);
+
+  // Empty state content definition
+  const emptyStateContent = (
+    <EmptyState 
+      title="No code to analyze"
+      description="Please upload or paste your code to begin cryptographic analysis"
+    />
+  );
+
+  // Early return for empty state
+  if (!code) {
+    return (
+      <div className="flex pt-20">
+        <main className="flex flex-col p-6 w-full">
+          {emptyStateContent}
+        </main>
+      </div>
+    );
+  }
 
   // Default report
   const defaultReport = {
@@ -96,6 +117,9 @@ export default function ViewResults({code, fileExt}) {
   };
 
   const handleScan = () => {
+    setIsScanComplete(false);
+    setActiveButton(null);
+
     if (!code || !detectionRules) {
       setReport({
         ...defaultReport,
@@ -205,6 +229,8 @@ export default function ViewResults({code, fileExt}) {
     };
 
     setReport(newReport);
+    setIsScanComplete(true);
+    setActiveButton("completed");
   };
 
   /**
