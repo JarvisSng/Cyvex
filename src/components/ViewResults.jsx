@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { getDetectionRules } from "../controller/rulesController";
+import { getUserProfileNoAuth } from "../controller/userController.js"
+import { uploadUserFile } from "../controller/uploadController.js";
 import EmptyState from "./EmptyState.jsx";
 
 // Define which rules are considered "insecure" with severity levels
@@ -33,11 +35,71 @@ function stripInlineComment(line) {
 }
 
 export default function ViewResults({code, fileExt}) {
+  const [userId, setUserId] = useState(null);
   const [activeButton, setActiveButton] = useState(null);
   const [detectionRules, setDetectionRules] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
   const [isScanComplete, setIsScanComplete] = useState(false);
   const [error, setError] = useState(null);
+
+  // Retrieve userId
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        // 1. Get username from localStorage
+        const username = localStorage.getItem('username');
+        
+        if (!username) {
+          throw new Error('Please sign in to continue');
+        }
+  
+        setIsLoading(true);
+        setError(null);
+        
+        // 2. Fetch user profile
+        const { data } = await getUserProfileNoAuth(username);
+        
+        // 3. Debug the response (remove in production)
+        console.log('Full API Response:', data);
+  
+        // 4. Handle the array response structure
+        if (!data || !Array.isArray(data) || data.length === 0) {
+          throw new Error('User profile not found');
+        }
+  
+        // 5. Extract user ID from the first array element
+        const userObject = data[0];
+        const fetchedUserId = userObject?.id;
+  
+        if (!fetchedUserId) {
+          throw new Error('User ID missing in profile data');
+        }
+  
+        // 6. Validate UUID format
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(fetchedUserId);
+        if (!isUUID) {
+          console.warn('User ID is not in standard UUID format:', fetchedUserId);
+        }
+  
+        // 7. Store the validated user ID
+        setUserId(fetchedUserId);
+        localStorage.setItem('userId', fetchedUserId);
+        console.log('Successfully set user ID:', fetchedUserId);
+        
+      } catch (err) {
+        console.error('Failed to fetch user ID:', err);
+        setError(err.message);
+        setUserId(null);
+        localStorage.removeItem('userId');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    fetchUserId();
+  }, []);
 
   // Empty state content definition
   const emptyStateContent = (
@@ -236,7 +298,7 @@ export default function ViewResults({code, fileExt}) {
   /**
    * Generates a .txt file containing the report data
    */
-  const downloadReport = () => {
+  const downloadReport = async () => {
     let reportContent = `Cryptographic Analysis Report\n`;
     reportContent += `Generated: ${new Date(report.timestamp).toLocaleString()}\n\n`;
     reportContent += `Language Detected: ${report.language}\n`;
@@ -285,12 +347,52 @@ export default function ViewResults({code, fileExt}) {
     }
 
     const blob = new Blob([reportContent], { type: "text/plain" });
+    const fileName = `Crypto_Analysis_Report_${new Date(report.timestamp).toISOString().slice(0, 10)}.txt`;
+
+    // Download button is created
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `Crypto_Analysis_Report_${new Date(report.timestamp).toISOString().slice(0, 10)}.txt`;
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+
+    // 4. Only proceed with upload if we have a userId
+    if (userId) {
+      setIsUploading(true);
+      setUploadError(null);
+      
+      try {
+        const uploadResult = await uploadUserFile(
+          userId,
+          blob,
+          {
+            filename: fileName,
+            contentType: "text/plain",
+            metadata: {
+              reportId: report.id,
+              type: "crypto_analysis"
+            }
+          }
+        );
+
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.error || "Upload failed");
+        }
+        
+        console.log("Upload successful:", uploadResult.path);
+      } catch (error) {
+        console.error("Upload error:", error);
+        setUploadError(error.message);
+      } finally {
+        setIsUploading(false);
+      }
+    }
+
+    // 5. Clean up
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }, 100);
   };
 
   // Memoized report sections for better performance

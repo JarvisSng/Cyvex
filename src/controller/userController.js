@@ -189,7 +189,7 @@ export const deleteUser = async (userId) => {
 	}
 };
 
-// 4. Fetch user profiles based on username criteria
+// 9. Fetch user profiles based on username criteria
 export const getUserProfileNoAuth = async (username) => {
 	try {
 		// Send request to get user profiles that match the given username
