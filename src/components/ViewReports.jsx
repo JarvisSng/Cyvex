@@ -1,207 +1,181 @@
 import React, { useEffect, useState } from "react";
-import { fetchAdminProfiles } from "../controller/userController";
-import deleteimg from "../images/delete.png";
-import save from "../images/save.jpg";
+import { getUserProfileNoAuth } from "../controller/userController";
+import { listUserFiles } from "../controller/uploadController";
 import search from "../images/search.jpg";
 
-const ViewReports = ({code, fileExt}) => {
-	const [profiles, setProfiles] = useState([]);
-	const [error, setError] = useState(null);
-	const [categories, setCategories] = useState([]);
-	const [data, setData] = useState([]);
+const ViewReports = () => {
+  const [error, setError] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [reports, setReports] = useState([]);
 
-	// Default report
-	const defaultReport = {
-	language: "",
-	codeLength: 0,
-	detectedCryptographicFunctions: [],
-	securityWarnings: [],
-	snippets: [],
-	};
+  // Fetch user ID and then reports
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // 1. Get username from localStorage
+        const username = localStorage.getItem('username');
+        if (!username) {
+          throw new Error('Please sign in to continue');
+        }
 
-	const [report, setReport] = useState(defaultReport);
+        setIsLoading(true);
+        setError(null);
+        
+        // 2. Fetch user profile
+        const { data } = await getUserProfileNoAuth(username);
+        
+        if (!data || !Array.isArray(data) || data.length === 0) {
+          throw new Error('User profile not found');
+        }
 
-	// Detect the programming language based on file extension or string content
-	const detectLanguage = (fileExt) => {
-		if (typeof fileExt === 'string') {
-		  if (fileExt.includes("py")) {
-			return "Python";
-		  }
-		  if (fileExt.includes("js")) {
-			return "JavaScript";
-		  sx}
-		  if (fileExt.includes("cpp") || fileExt.includes("c++")) {
-			return "C++";
-		  }
-		}
-		return "Unknown";
-	};
+        // 3. Set user ID
+        const userObject = data[0];
+        const fetchedUserId = userObject?.id;
+        if (!fetchedUserId) {
+          throw new Error('User ID missing in profile data');
+        }
 
-	const handleScan = () => {
-	if (!code) return;
+        setUserId(fetchedUserId);
+        localStorage.setItem('userId', fetchedUserId);
 
-	const language = detectLanguage(fileExt);
-	const rulesForLanguage = {};
+        // 4. Fetch reports
+        await fetchReports(fetchedUserId);
+        
+      } catch (err) {
+        console.error('Failed to fetch data:', err);
+        setError(err.message);
+        setReports([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-	const lines = code.split("\n");
-	const detectedCryptographicFunctions = [];
-	const securityWarnings = [];
-	const snippets = [];
+    fetchData();
+  }, []);
 
-	// 1) Skip lines that start with // or #
-	function isCommentLine(line) {
-		const trimmed = line.trim();
-		return trimmed.startsWith("//") || trimmed.startsWith("#");
-	}
+  // Function to fetch reports
+  const fetchReports = async (userId) => {
+    try {
+      setIsLoading(true);
+      const files = await listUserFiles(userId);
+      
+      // Filter for report files (adjust based on your needs)
+      const reportFiles = files.filter(file => file.isReport);
+      
+      setReports(reportFiles);
+    } catch (err) {
+      console.error('Failed to fetch reports:', err);
+      setError(err.message);
+      setReports([]);
+    }
+  };
 
-	// 2) Strip inline comments (everything after //)
-	function stripInlineComment(line) {
-		const index = line.indexOf("//");
-		return index !== -1 ? line.substring(0, index) : line;
-	}
+  // Handle report download
+  const handleDownload = (downloadUrl, fileName) => {
+    if (downloadUrl) {
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
-	lines.forEach((lineContent, index) => {
-		if (isCommentLine(lineContent)) return;
+  // Handle report deletion
+  const handleDelete = async (fileId, fileName) => {
+    if (window.confirm('Are you sure you want to delete this report?')) {
+      try {
+        // You'll need to implement deleteFile function in your uploadController
+        // await deleteFile(userId, fileName);
+        await fetchReports(userId); // Refresh the list
+      } catch (err) {
+        console.error('Failed to delete report:', err);
+        setError(err.message);
+      }
+    }
+  };
 
-		const processedLine = stripInlineComment(lineContent);
-		if (!processedLine.includes("(")) return;
-
-		Object.entries(rulesForLanguage).forEach(([ruleName, regex]) => {
-		if (regex.test(processedLine)) {
-			if (!detectedCryptographicFunctions.includes(ruleName)) {
-			detectedCryptographicFunctions.push(ruleName);
-			}
-			snippets.push({
-			line: index + 1,
-			code: lineContent,
-			rule: ruleName,
-			});
-		}
-		});
-	});
-
-	// Security Warnings
-	if (detectedCryptographicFunctions.includes("SHA-1")) {
-		securityWarnings.push("SHA-1 is weak.");
-	}
-	if (detectedCryptographicFunctions.includes("MD5")) {
-		securityWarnings.push("MD5 is vulnerable to hash collisions.");
-	}
-	if (detectedCryptographicFunctions.includes("RSA (Weak Key)")) {
-		securityWarnings.push("Weak RSA key detected. Use 2048 bits or more.");
-	}
-	if (detectedCryptographicFunctions.includes("Hardcoded Key")) {
-		securityWarnings.push("Avoid storing keys in source code.");
-	}
-
-	// Create report object
-	const Report = {
-		language,
-		codeLength: code.length,
-		detectedCryptographicFunctions,
-		securityWarnings,
-		snippets,
-	};
-
-	console.log(Report);
-	setReport(Report);
-	};
-
-	useEffect(() => {
-		if (code) {
-		handleScan(); 
-		}
-	}, [code]); // Ensure scan runs only after detectionRules is set
-	// Fetch profiles with related subscription data on mount
-	useEffect(() => {
-		const getProfiles = async () => {
-			var username = localStorage.getItem("username");
-			const result = await fetchAdminProfiles(username);
-			if (result.error) {
-				setError(result.error);
-			} else {
-				setProfiles(result.data);
-				console.log(" profiles == " + profiles);
-			}
-		};
-		getProfiles();
-	}, []);
-
-	return (
-		<div className="overflow-hidden rounded-sm border-stroke bg-gray-2 shadow-default dark:border-strokedark dark:bg-boxdark">
-			<div className="rounded-sm bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-				<h3 className="text-xl font-semibold text-black dark:text-white mb-4">
-					Reports
-				</h3>
-				<div className="relative mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-					<div class="flex flex-row mb-1">
-						<div className="w-14 flex-none">
-							<a href="#">
-								<img src={search} alt="Search" />
-							</a>
-						</div>
-						<div className="w-64 flex-2 text-blue-900 text-xl">
-							<p>Analysis_Report</p>
-						</div>
-					</div> 
-					<div class="flex flex-row mb-8"> 
-						<div className="w-64 flex-2 text-grey-500">
-						<p>Date & Time: {new Date().toLocaleString()}, <time datetime={new Date().toISOString()}>{new Date().toLocaleString()}</time></p>
-						</div> 
-					</div>  
-					<div class="flex flex-row"> 
-						<div class="basis-sm"><b>File:</b> blockchain_test.py</div>
-						<div class="basis-sm"><b>Language Detected:</b> {report.language}</div>
-						<div class="basis-sm"><b>Functions Detected: </b>
-						{report.detectedCryptographicFunctions.length > 0 ? (
-							<ul>
-							{report.detectedCryptographicFunctions.map((func, index) => (
-								<li
-								key={index}
-								style={{
-									color: insecureRules.includes(func) ? "red" : "green",
-								}}
-								>
-								{func}
-								</li>
-							))}
-							</ul> 
-						) : (
-							<p>1</p>
-						)}
-
-						</div>
-						<div class="basis-sm"><b>Security Warning:</b> 
-						{report.securityWarnings.length > 0 ? (
-							<ul>
-							{report.securityWarnings.map((warning, index) => (
-								<li key={index} style={{ color: "red" }}>
-								{warning}
-								</li>
-							))}
-							</ul>
-						) : (
-							<p>No security warnings.</p>
-						)}
-
-						</div> 
-						<div class="basis-sm relative">  
-							 <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex space-x-4">
-								<button className="p-2 !pl-8 !pr-8 text-left !bg-blue-950 text-white mb-4"> View </button>
-								<button className="p-2 !pl-8 !pr-8 text-left !bg-blue-950 text-white mb-4"> Delete </button>
-							</div>
-							
-						</div>
-					</div>
-					{/* <div class="absolute bottom-4 right-2 p-4">
-						<button className="p-2 rounded-md text-left !bg-blue-950 text-white mb-4"> View </button> <br/> 
-						<button className="p-2 rounded-md text-left !bg-blue-950 text-white"> Delete </button>
-					</div> */}
-				</div> 
- 
-			</div>
-		</div>
-	);
+  return (
+    <div className="overflow-hidden rounded-sm border-stroke bg-gray-2 shadow-default dark:border-strokedark dark:bg-boxdark">
+      <div className="rounded-sm bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="flex justify-between items-center p-4">
+          <h3 className="text-xl font-semibold text-black dark:text-white">
+            Reports
+          </h3>
+          <button 
+            onClick={() => fetchReports(userId)}
+            className="p-2 !bg-blue-950 text-white rounded hover:bg-blue-600"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Refreshing...' : 'Refresh Reports'}
+          </button>
+        </div>
+        
+        {isLoading ? (
+          <div className="p-6 text-center">Loading reports...</div>
+        ) : error ? (
+          <div className="p-6 text-red-500">{error}</div>
+        ) : reports.length === 0 ? (
+          <div className="p-6 text-center">No security reports found</div>
+        ) : (
+          <div className="space-y-4 p-4">
+            {reports.map((report) => (
+              <div key={report.id} className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <div className="flex items-start mb-2">
+                  <div className="w-12 flex-none mr-3">
+                    <img src={search} alt="Report" className="w-8 h-8" />
+                  </div>
+                  <div className="flex-grow">
+                    <h4 className="text-lg font-medium text-blue-900 dark:text-blue-200">
+                      {report.name}
+                    </h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Created: {new Date(report.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <span className="font-semibold">File:</span> {report.name}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Last Updated:</span> {new Date(report.updatedAt).toLocaleString()}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Size:</span> {(report.metadata?.size / 1024).toFixed(2)} KB
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-2">
+                  <button 
+                    onClick={() => handleDownload(report.downloadUrl, report.name)}
+                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  >
+                    Download
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(report.id, report.name)}
+                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                  <button 
+                    onClick={() => {/* Implement view functionality */}}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    View Details
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default ViewReports;

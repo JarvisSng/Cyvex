@@ -111,38 +111,50 @@ export const downloadUserFile = async (userId, filePath) => {
 
 export const listUserFiles = async (userId) => {
   try {
-    const { bucket, path, isPremium } = await getUserFolder(userId);
+    console.log('Fetching storage info for user:', userId);
+    const { bucket, path } = await getUserFolder(userId);
+    console.log('Storage location:', { bucket, path });
 
-    // 1. Get file list
+    // Get file list from Supabase storage
     const { data: files, error } = await supabase.storage
       .from(bucket)
       .list(path);
 
-    if (error) throw error;
-
-    // 2. Get metadata for premium files
-    let metadata = {};
-    if (isPremium) {
-      const { data: meta } = await supabase
-        .from('premium_metadata')
-        .select('*')
-        .eq('user_id', userId);
-      metadata = meta || {};
+    if (error) {
+      console.error('Supabase storage error:', error);
+      throw error;
+    }
+  
+    console.log('Raw files from storage:', files);
+    
+    // Return empty array if no files found
+    if (!files || files.length === 0) {
+      return [];
     }
 
-    // 3. Format response
-    return files.map(file => ({
-      name: file.name,
-      path: `${path}${file.name}`,
-      lastModified: new Date(file.created_at),
-      isPremium,
-      metadata: metadata.find(m => m.file_path === `${path}${file.name}`) || null,
-      downloadUrl: bucket === 'premium-user-files'
-        ? null // Requires signed URL at download time
-        : supabase.storage.from(bucket).getPublicUrl(`${path}${file.name}`).data.publicUrl
-    }));
+    // Process files to get download URLs and metadata
+    const processedFiles = await Promise.all(
+      files.map(async (file) => {
+        const { data: urlData } = await supabase.storage
+          .from(bucket)
+          .createSignedUrl(`${path}/${file.name}`, 3600); // 1 hour expiry
+
+        return {
+          id: file.id,
+          name: file.name,
+          createdAt: file.created_at,
+          updatedAt: file.updated_at,
+          metadata: file.metadata,
+          downloadUrl: urlData?.signedUrl,
+          isReport: file.name.endsWith('.json') // Example: identify report files
+        };
+      })
+    );
+
+    return processedFiles;
+
   } catch (error) {
     console.error('File listing failed:', error);
-    return [];
+    throw error; // Re-throw to handle in component
   }
 };
