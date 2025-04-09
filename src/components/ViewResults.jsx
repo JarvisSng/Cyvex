@@ -347,7 +347,11 @@ export default function ViewResults({code, fileExt}) {
     }
 
     const blob = new Blob([reportContent], { type: "text/plain" });
-    const fileName = `Crypto_Analysis_Report_${new Date(report.timestamp).toISOString().slice(0, 10)}.txt`;
+    const defaultName = `CryptoReport_${new Date(report.timestamp).toISOString().slice(0, 10)}`;
+    const customName = prompt("Enter report name (without extension):", defaultName) || defaultName;
+    
+    // Ensure filename is safe and has .txt extension
+    const fileName = `${customName.replace(/[^a-z0-9_-]/gi, '_').trim()}.txt`;
 
     // Download button is created
     const link = document.createElement("a");

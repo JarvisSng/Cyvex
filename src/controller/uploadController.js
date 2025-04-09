@@ -1,7 +1,7 @@
 import supabase from "../config/supabaseClient";
 
 // Helper function to get user folder based on subscription status
-const getUserFolder = async (userId) => {
+export const getUserFolder = async (userId) => {
   // 1. Fetch user profile with subscription status
   const { data: userData, error } = await supabase
     .from('subscription')
@@ -70,42 +70,84 @@ export const uploadUserFile = async (userId, fileContent, options = {}) => {
   }
 };
 
-export const downloadUserFile = async (userId, filePath) => {
+export const downloadFile = async (downloadUrl, fileName) => {
   try {
-    // 1. Verify user has access to this file
-    const { bucket } = await getUserFolder(userId);
-    const userFolder = `user_${userId}/`;
+    if (!downloadUrl) {
+      throw new Error('No download URL available');
+    }
+
+    const response = await fetch(downloadUrl);
     
-    if (!filePath.startsWith(userFolder)) {
-      throw new Error('Access denied: Invalid file path');
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.statusText}`);
     }
 
-    // 2. Generate download URL
-    let downloadUrl;
-    if (bucket === 'premium-user-files') {
-      const { data: signedUrl } = await supabase.storage
-        .from(bucket)
-        .createSignedUrl(filePath, 3600); // 1-hour expiry
-      downloadUrl = signedUrl.signedUrl;
-    } else {
-      const { data: publicUrl } = await supabase.storage
-        .from(bucket)
-        .getPublicUrl(filePath);
-      downloadUrl = publicUrl.publicUrl;
-    }
-
-    // 3. Trigger download
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    
     const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = filePath.split('/').pop();
+    link.href = blobUrl;
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    
+    // Clean up
+    setTimeout(() => {
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    }, 100);
 
     return { success: true };
   } catch (error) {
-    console.error('Download failed:', error);
-    return { success: false, error };
+    console.error('Download error:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Failed to download file' 
+    };
+  }
+};
+
+export const deleteUserFile = async (userId, filePath) => {
+  try {
+    // 1. Get user's folder information
+    const { bucket, path: userFolderPath } = await getUserFolder(userId);
+    
+    // 2. Construct and normalize the full file path (not folder)
+    const fullFilePath = `${userFolderPath}/${filePath}`
+      .replace(/\/+/g, '/')      // Normalize multiple slashes
+      .replace(/\/$/, '');       // Remove trailing slash
+
+    // 3. Validate it's a file path (not ending with slash)
+    if (fullFilePath.endsWith('/')) {
+      throw new Error('Cannot delete folders - path ends with slash');
+    }
+
+    // 4. Verify path belongs to user
+    if (!fullFilePath.startsWith(`user_${userId}/`)) {
+      throw new Error('Unauthorized file access');
+    }
+
+    console.log('Deleting file:', fullFilePath);
+    
+    // 5. Delete only the specific file
+    const { error: storageError } = await supabase
+      .storage
+      .from(bucket)
+      .remove([fullFilePath]);  // Array with single file path
+    
+    if (storageError) throw storageError;
+
+    return { success: true };
+  } catch (error) {
+    console.error('File deletion failed:', {
+      userId,
+      filePath,
+      error: error.message
+    });
+    return { 
+      success: false,
+      error: error.message || 'Failed to delete file' 
+    };
   }
 };
 

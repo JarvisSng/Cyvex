@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getUserProfileNoAuth } from "../controller/userController";
-import { listUserFiles } from "../controller/uploadController";
+import { listUserFiles, downloadFile, deleteUserFile } from "../controller/uploadController";
 import search from "../images/search.jpg";
 
 const ViewReports = () => {
@@ -8,6 +8,7 @@ const ViewReports = () => {
   const [userId, setUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [reports, setReports] = useState([]);
+  const [deletingId, setDeletingId] = useState(null);
 
   // Fetch user ID and then reports
   useEffect(() => {
@@ -56,46 +57,62 @@ const ViewReports = () => {
 
   // Function to fetch reports
   const fetchReports = async (userId) => {
-    try {
-      setIsLoading(true);
-      const files = await listUserFiles(userId);
-      
-      // Filter for report files (adjust based on your needs)
-      const reportFiles = files.filter(file => file.isReport);
-      
-      setReports(reportFiles);
-    } catch (err) {
-      console.error('Failed to fetch reports:', err);
-      setError(err.message);
-      setReports([]);
-    }
+	try {
+	  setIsLoading(true);
+	  const files = await listUserFiles(userId);
+	  console.log('Fetched files:', files); // Add this log
+	  
+	  setReports(files || []); // Ensure we always set an array
+	} catch (err) {
+	  console.error('Failed to fetch reports:', err);
+	  setError(err.message);
+	  setReports([]);
+	} finally {
+	  setIsLoading(false); // This MUST be called
+	  console.log('Loading completed'); // Verify this logs
+	}
   };
 
   // Handle report download
-  const handleDownload = (downloadUrl, fileName) => {
-    if (downloadUrl) {
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+  const handleDownload = async (downloadUrl, fileName) => {
+	try {
+	  setIsLoading(true);
+	  setError(null);
+  
+	  const { success, error } = await downloadFile(downloadUrl, fileName);
+	  
+	  if (!success) {
+		throw new Error(error);
+	  }
+	} catch (err) {
+	  console.error('Download error:', err);
+	  setError(err.message || 'Failed to download report');
+	} finally {
+	  setIsLoading(false);
+	}
   };
 
   // Handle report deletion
-  const handleDelete = async (fileId, fileName) => {
-    if (window.confirm('Are you sure you want to delete this report?')) {
-      try {
-        // You'll need to implement deleteFile function in your uploadController
-        // await deleteFile(userId, fileName);
-        await fetchReports(userId); // Refresh the list
-      } catch (err) {
-        console.error('Failed to delete report:', err);
-        setError(err.message);
-      }
-    }
-  };
+	const handleDelete = async (fileId, filePath) => {
+	if (!window.confirm('Are you sure you want to delete this report?')) return;
+	
+	try {
+		setDeletingId(fileId);
+		setIsLoading(true); // Add this
+		
+		const { success, error } = await deleteUserFile(userId, filePath);
+		if (!success) throw new Error(error);
+
+		await fetchReports(userId); // This will handle its own loading state
+		setError(null);
+	} catch (err) {
+		console.error('Delete failed:', err);
+		setError(err.message);
+	} finally {
+		setDeletingId(null);
+		setIsLoading(false); // Ensure loading is always turned off
+	}
+	};
 
   return (
     <div className="overflow-hidden rounded-sm border-stroke bg-gray-2 shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -134,39 +151,25 @@ const ViewReports = () => {
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       Created: {new Date(report.createdAt).toLocaleString()}
                     </p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <span className="font-semibold">File:</span> {report.name}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Last Updated:</span> {new Date(report.updatedAt).toLocaleString()}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Size:</span> {(report.metadata?.size / 1024).toFixed(2)} KB
+					<p className="text-sm text-gray-500 dark:text-gray-400">
+						Size: {(report.metadata?.size).toFixed(0)} Bytes
+                    </p>
                   </div>
                 </div>
                 
                 <div className="flex justify-end space-x-2">
-                  <button 
-                    onClick={() => handleDownload(report.downloadUrl, report.name)}
-                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                  >
-                    Download
-                  </button>
+				<button 
+					onClick={() => handleDownload(report.downloadUrl, report.name)}
+					className="px-4 py-2 !bg-blue-950 text-white rounded"
+					disabled={isLoading}
+					>
+					{isLoading ? 'Downloading...' : 'Download'}
+				</button>
                   <button 
                     onClick={() => handleDelete(report.id, report.name)}
-                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                    className="px-4 py-2 !bg-blue-950 text-white rounded"
                   >
                     Delete
-                  </button>
-                  <button 
-                    onClick={() => {/* Implement view functionality */}}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  >
-                    View Details
                   </button>
                 </div>
               </div>
