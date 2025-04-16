@@ -4,8 +4,8 @@ require("dotenv").config(); // Ensure environment variables are loaded
 const { createClient } = require("@supabase/supabase-js");
 
 // Use backend environment variables (do not use VITE_ prefix on the backend)
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const serviceRoleKey = process.env.VITE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.SUPABASE_URL;
+const serviceRoleKey = process.env.SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !serviceRoleKey) {
 	throw new Error(
