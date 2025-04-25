@@ -4,6 +4,7 @@ import UserProfile from "../components/UserProfile";
 import ViewReports from "../components/ViewReports";
 import ViewResults from "../components/ViewResults";
 import RepoPull from "../components/RepoPull";
+import EvmDecompiler from "../components/EvmDecompiler"
 import UserNav from "./UserNav";
 
 function UserDashboard() {
@@ -65,6 +66,16 @@ function UserDashboard() {
 							</button>
 						)}
 
+						{isSubscribed && ( 
+							<button onClick={() => setActiveSection("EVM Decompiler")}
+								className={`w-full p-3 rounded-md text-left pl-4 ${
+									activeSection === "EVM Decompiler" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+								}`}
+							>
+								EVM Decompiler
+							</button>
+						)}
+
 						<button onClick={() => setActiveSection("View Results")}
 							className={`w-full p-3 rounded-md text-left pl-4 ${
 								activeSection === "View Results" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
@@ -88,6 +99,8 @@ function UserDashboard() {
 						<CodeUploader onSubmit={handleCodeSubmit} />
 					) : activeSection === "profile" ? (
 						<UserProfile />
+					) : activeSection === "EVM Decompiler" ? (
+						<EvmDecompiler />
 					) : activeSection === "View Reports" ? (
 						<ViewReports code={submittedCode} fileExt={fileExt} />
 					) : activeSection === "View Results" ? (
