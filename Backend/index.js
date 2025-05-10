@@ -31,9 +31,10 @@ app.use((req, res, next) => {
 // Configure CORS for API requests
 app.use(
 	cors({
-		origin: "http://localhost:5173", // Allow requests from the specified frontend URL
+		origin: ["http://localhost:5173", "https://main.d3f5oo9uctb3zs.amplifyapp.com"], // Allow requests from the specified frontend URL
 		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
 		allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers for requests
+		credentials: true // If using cookies/auth
 	})
 );
 
@@ -56,14 +57,25 @@ app.use("/api/crypto-patterns", cryptoPatternsRouter);
 app.use("/api/opcode-patterns", opcodePatternsRouter);
 app.use("/api/evm", evmRoutes);
 
+// Handle 404 for API routes
+app.use("/api/*", (req, res) => {
+	res.status(404).json({ error: "API endpoint not found" });
+  });
+  
+// Error handling middleware
+app.use((err, req, res, next) => {
+	console.error(err.stack);
+	res.status(500).json({ error: "Internal server error" });
+});
+
 // Serve static files from the React build folder
-app.use(express.static(path.join(__dirname, "..", "dist"))); // Adjust the path if needed
+app.use(express.static(path.join(__dirname, "../Frontend/dist")));
 
 // Fallback route: Serve index.html for any request not matching an API route.
 // This supports client-side routing (e.g., /reset-password)
-app.get("/{*splat}", (req, res) => {
-	res.sendFile(path.join(__dirname, "../../Frontend", "dist", "index.html"));
-});
+app.get("*", (req, res) => {
+	res.sendFile(path.join(__dirname, "../../Frontend/dist/index.html"));
+  });
 
 // Set port from environment variables or default to 3000, and start the server
 const PORT = process.env.PORT || 3000;
