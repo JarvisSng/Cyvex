@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ManageEVM from "../components/ManageEVM";
 import ManageRules from "../components/ManageRules";
 import ManageSubs from "../components/ManageSubs";
 import Profile from "../components/Profile";
@@ -84,6 +85,18 @@ function AdminDashboard() {
 						</button>
 						<button
 							onClick={() => {
+								setActiveSection("evm");
+							}}
+							className={`w-full p-3 rounded-md text-left pl-4 ${
+								activeSection === "evm"
+									? "!bg-blue-950 text-white"
+									: "hover:!bg-gray-300"
+							}`}
+						>
+							EVM Detector
+						</button>
+						<button
+							onClick={() => {
 								setActiveSection("System Activity");
 							}}
 							className={`w-full p-3 rounded-md text-left pl-4 ${
@@ -110,8 +123,10 @@ function AdminDashboard() {
 						<Profile />
 					) : activeSection == "System Activity" ? (
 						<SystemActivity />
-					) : (
+					) : activeSection == "rules" ? (
 						<ManageRules />
+					) : (
+						<ManageEVM />
 					)}
 				</main>
 			</div>
