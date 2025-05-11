@@ -36,6 +36,10 @@ export default function ReportPage() {
 	};
 
 	useEffect(() => {
+		const username = localStorage.getItem("username");
+		// only run the subscription check if we have a username
+		if (!username) return;
+
 		const checkSubscription = async () => {
 			try {
 				const subscribed = await checkCurrentUserSubscription();
