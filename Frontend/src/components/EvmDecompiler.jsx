@@ -1,182 +1,11 @@
 import { useEffect, useState } from "react";
+import { decompile } from "like-panoramix";
 import { getCryptoPatterns } from "../controller/cryptoPatternsController";
 import { getEvmOpcodes } from "../controller/evmOpcodesController";
 import { getOpcodePatterns } from "../controller/opcodePatternsController";
 
-// Complete EVM opcode mapping
-const opcode_map = {
-	"00": "STOP",
-	"01": "ADD",
-	"02": "MUL",
-	"03": "SUB",
-	"04": "DIV",
-	"05": "SDIV",
-	"06": "MOD",
-	"07": "SMOD",
-	"08": "ADDMOD",
-	"09": "MULMOD",
-	"0a": "EXP",
-	"0b": "SIGNEXTEND",
-	10: "LT",
-	11: "GT",
-	12: "SLT",
-	13: "SGT",
-	14: "EQ",
-	15: "ISZERO",
-	20: "SHA3",
-	30: "ADDRESS",
-	31: "BALANCE",
-	32: "ORIGIN",
-	33: "CALLER",
-	34: "CALLVALUE",
-	35: "CALLDATALOAD",
-	36: "CALLDATASIZE",
-	37: "CALLDATACOPY",
-	38: "CODESIZE",
-	39: "CODECOPY",
-	"3a": "GASPRICE",
-	"3b": "EXTCODESIZE",
-	"3c": "EXTCODECOPY",
-	"3d": "RETURNDATASIZE",
-	"3e": "RETURNDATACOPY",
-	40: "BLOCKHASH",
-	41: "COINBASE",
-	42: "TIMESTAMP",
-	43: "NUMBER",
-	44: "DIFFICULTY",
-	45: "GASLIMIT",
-	50: "POP",
-	51: "MLOAD",
-	52: "MSTORE",
-	53: "MSTORE8",
-	54: "SLOAD",
-	55: "SSTORE",
-	56: "JUMP",
-	57: "JUMPI",
-	58: "PC",
-	59: "MSIZE",
-	"5a": "GAS",
-	"5b": "JUMPDEST",
-	60: "PUSH1",
-	61: "PUSH2",
-	62: "PUSH3",
-	63: "PUSH4",
-	64: "PUSH5",
-	65: "PUSH6",
-	66: "PUSH7",
-	67: "PUSH8",
-	68: "PUSH9",
-	69: "PUSH10",
-	"6a": "PUSH11",
-	"6b": "PUSH12",
-	"6c": "PUSH13",
-	"6d": "PUSH14",
-	"6e": "PUSH15",
-	"6f": "PUSH16",
-	70: "PUSH17",
-	71: "PUSH18",
-	72: "PUSH19",
-	73: "PUSH20",
-	74: "PUSH21",
-	75: "PUSH22",
-	76: "PUSH23",
-	77: "PUSH24",
-	78: "PUSH25",
-	79: "PUSH26",
-	"7a": "PUSH27",
-	"7b": "PUSH28",
-	"7c": "PUSH29",
-	"7d": "PUSH30",
-	"7e": "PUSH31",
-	"7f": "PUSH32",
-	80: "DUP1",
-	81: "DUP2",
-	82: "DUP3",
-	83: "DUP4",
-	84: "DUP5",
-	85: "DUP6",
-	86: "DUP7",
-	87: "DUP8",
-	88: "DUP9",
-	89: "DUP10",
-	"8a": "DUP11",
-	"8b": "DUP12",
-	"8c": "DUP13",
-	"8d": "DUP14",
-	"8e": "DUP15",
-	"8f": "DUP16",
-	90: "SWAP1",
-	91: "SWAP2",
-	92: "SWAP3",
-	93: "SWAP4",
-	94: "SWAP5",
-	95: "SWAP6",
-	96: "SWAP7",
-	97: "SWAP8",
-	98: "SWAP9",
-	99: "SWAP10",
-	"9a": "SWAP11",
-	"9b": "SWAP12",
-	"9c": "SWAP13",
-	"9d": "SWAP14",
-	"9e": "SWAP15",
-	"9f": "SWAP16",
-	a0: "LOG0",
-	a1: "LOG1",
-	a2: "LOG2",
-	a3: "LOG3",
-	a4: "LOG4",
-	f0: "CREATE",
-	f1: "CALL",
-	f2: "CALLCODE",
-	f3: "RETURN",
-	f4: "DELEGATECALL",
-	f5: "CREATE2",
-	fa: "STATICCALL",
-	fd: "REVERT",
-	fe: "INVALID",
-	ff: "SELFDESTRUCT",
-};
-
-// Cryptographic patterns to detect
-const crypto_patterns = {
-	// Ethereum cryptographic precompiles
-	"ecrecover (signature recovery)":
-		"0000000000000000000000000000000000000001",
-	"sha256 (hashing)": "0000000000000000000000000000000000000002",
-	"ripemd160 (hashing)": "0000000000000000000000000000000000000003",
-	"identity (copying)": "0000000000000000000000000000000000000004",
-	"mod_exp (modular exponentiation)":
-		"0000000000000000000000000000000000000005",
-	"ec_add (elliptic curve addition)":
-		"0000000000000000000000000000000000000006",
-	"ec_mul (elliptic curve multiplication)":
-		"0000000000000000000000000000000000000007",
-	"ec_pairing (elliptic curve pairing)":
-		"0000000000000000000000000000000000000008",
-	"blake2f (hashing)": "0000000000000000000000000000000000000009",
-
-	// Common cryptographic function signatures
-	"transfer(address,uint256)": "a9059cbb",
-	"approve(address,uint256)": "095ea7b3",
-	"balanceOf(address)": "70a08231",
-	"verifySig(bytes32,bytes)": "1626ba7e",
-	"isValidSignature(bytes32,bytes)": "20c13b0b",
-	"setSigner(address)": "e1c7392a",
-	"mint(address,uint256)": "40c10f19",
-};
-
-// Cryptographic opcode patterns
-const opcode_patterns = {
-	"sha3 (keccak256)": /a2646970667358/,
-	signature_verification: /64792b2b34ba3c59a7a5a5f8/,
-	ecdsa_recovery: /60003560205260206000f3/,
-	"external_call (potential oracle)": /5b5f3560205b5f5ff3/,
-	"storage_access (potential key storage)": /54|55/,
-	"delegatecall_proxy (upgrade pattern)": /5f5f365f5f37/,
-};
-
 export default function CryptoDetector() {
+	const [solidityCode, setSolidityCode] = useState("");
 	const [bytecode, setBytecode] = useState("");
 	const [cryptoFindings, setCryptoFindings] = useState([]);
 	const [disassembly, setDisassembly] = useState("");
@@ -310,28 +139,39 @@ export default function CryptoDetector() {
 		setIsLoading(true);
 		setCryptoFindings([]);
 		setDisassembly("");
+		setSolidityCode(""); // Reset solidity code
 
 		try {
-			if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
+		if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
 
-			const normalizedBytecode = bytecode.startsWith("0x")
-				? bytecode
-				: `0x${bytecode}`;
+		const normalizedBytecode = bytecode.startsWith("0x")
+			? bytecode
+			: `0x${bytecode}`;
 
-			const detected = detectCryptoOperations(normalizedBytecode);
-			setCryptoFindings(detected);
+		// Existing analysis
+		const detected = detectCryptoOperations(normalizedBytecode);
+		setCryptoFindings(detected);
 
-			const opcodes = disassembleBytecode(normalizedBytecode);
-			setDisassembly(opcodes);
+		const opcodes = disassembleBytecode(normalizedBytecode);
+		setDisassembly(opcodes);
+
+		// NEW: Add decompilation
+		try {
+			const decompiled = await decompile(normalizedBytecode);
+			setSolidityCode(decompiled);
+		} catch (decompileError) {
+			console.error("Decompilation failed:", decompileError);
+			setSolidityCode("Decompilation failed - see console for details");
+		}
 		} catch (err) {
-			setCryptoFindings([
-				{
-					type: "error",
-					message: err.message,
-				},
-			]);
+		setCryptoFindings([
+			{
+			type: "error",
+			message: err.message,
+			},
+		]);
 		} finally {
-			setIsLoading(false);
+		setIsLoading(false);
 		}
 	};
 
@@ -432,6 +272,17 @@ export default function CryptoDetector() {
 						<pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60 !text-gray-800">
 							{disassembly.split("\n").slice(0, 100).join("\n")}
 						</pre>
+					</div>
+				)}
+
+				{solidityCode && (
+					<div className="mt-6">
+					<h2 className="text-lg font-medium text-gray-800 mb-2">
+						Decompiled Solidity-like Code:
+					</h2>
+					<pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-96 !text-gray-800">
+						{solidityCode}
+					</pre>
 					</div>
 				)}
 			</div>
