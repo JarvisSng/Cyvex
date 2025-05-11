@@ -139,34 +139,106 @@ export default function CryptoDetector() {
 
 	// Convert opcodes to pseudocode
 	const generatePseudocode = (functions) => {
+	// Track variables and labels
+	const storageVars = {};
+	let varCount = 1;
+	let labelCount = 1;
+
 	return functions.map(fn => {
-		const lines = [];
-		lines.push(`function ${fn.name}() {`);
+		let code = [];
+		let indentLevel = 1;
+		const stack = [];
+		const labels = {};
+
+		// Function header
+		code.push(`function ${fn.name}() {`);
 		
 		fn.ops.forEach(op => {
-		// Convert to readable statements
-		if (op.opcode.startsWith("PUSH")) {
-			lines.push(`  ${op.opcode} 0x${op.operand}`);
-		} else if (op.opcode === "SSTORE") {
-			lines.push("  storage[stack[-1]] = stack[-2]");
-		} else if (op.opcode === "SLOAD") {
-			lines.push("  stack.push(storage[stack.pop()])");
-		} else if (op.opcode === "JUMPI") {
-			lines.push("  if (stack.pop()) goto label_" + op.operand);
-		} else if (op.isJump) {
-			lines.push(`  goto label_${op.operand}`);
-		} else if (op.opcode === "CALL") {
-			lines.push("  call(stack.pop(), stack.pop(), ...)");
-		} else {
-			lines.push(`  ${op.opcode}`);
-		}
-		});
+		const indent = '  '.repeat(indentLevel);
 		
-		lines.push("}");
-		return lines.join("\n");
-	}).join("\n\n");
-	};
+		// Handle PUSH operations
+		if (op.opcode.startsWith('PUSH')) {
+			stack.push(`0x${op.operand}`);
+			return;
+		}
 
+		// Handle storage operations
+		if (op.opcode === 'SSTORE') {
+			const value = stack.pop();
+			const slot = stack.pop();
+			
+			if (!storageVars[slot]) {
+			storageVars[slot] = `storageVar${varCount++}`;
+			code.unshift(`// Storage variable at slot ${slot}`);
+			code.unshift(`let ${storageVars[slot]};`);
+			}
+			
+			code.push(`${indent}${storageVars[slot]} = ${value};`);
+			return;
+		}
+
+		if (op.opcode === 'SLOAD') {
+			const slot = stack.pop();
+			if (storageVars[slot]) {
+			stack.push(storageVars[slot]);
+			} else {
+			stack.push(`storage[${slot}]`);
+			}
+			return;
+		}
+
+		// Handle control flow
+		if (op.opcode === 'JUMPI') {
+			const condition = stack.pop();
+			const dest = stack.pop();
+			
+			if (!labels[dest]) {
+			labels[dest] = `label${labelCount++}`;
+			}
+			
+			code.push(`${indent}if (${condition}) goto ${labels[dest]};`);
+			return;
+		}
+
+		if (op.opcode === 'JUMP') {
+			const dest = stack.pop();
+			if (!labels[dest]) {
+			labels[dest] = `label${labelCount++}`;
+			}
+			code.push(`${indent}goto ${labels[dest]};`);
+			return;
+		}
+
+		if (op.opcode === 'JUMPDEST') {
+			if (!labels[op.pc]) {
+			labels[op.pc] = `label${labelCount++}`;
+			}
+			code.push(`${'  '.repeat(indentLevel-1)}${labels[op.pc]}:`);
+			return;
+		}
+
+		// Handle calls
+		if (op.opcode === 'CALL') {
+			const gas = stack.pop();
+			const address = stack.pop();
+			const value = stack.pop();
+			const argsOffset = stack.pop();
+			const argsSize = stack.pop();
+			const retOffset = stack.pop();
+			const retSize = stack.pop();
+			
+			code.push(`${indent}call(${address}, ${value}, ${gas});`);
+			return;
+		}
+
+		// Default case
+		code.push(`${indent}${op.opcode};`);
+		});
+
+		code.push('}');
+		return code.join('\n');
+	}).join('\n\n');
+	};
 
 	const detectCryptoOperations = (code) => {
 		const findings = [];
@@ -380,43 +452,22 @@ export default function CryptoDetector() {
 						</pre>
 					</div>
 				)}
-
-				{controlFlow.length > 0 && (
-				<div className="mt-6">
-					<h2 className="text-lg font-medium text-gray-800 mb-2">
-					Detected Functions:
-					</h2>
-					<div className="bg-gray-100 p-4 rounded-md">
-					<table className="min-w-full divide-y divide-gray-200">
-						<thead>
-						<tr>
-							<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-							<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start</th>
-							<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opcodes</th>
-						</tr>
-						</thead>
-						<tbody className="bg-white divide-y divide-gray-200">
-						{controlFlow.map((fn, i) => (
-							<tr key={i}>
-							<td className="px-4 py-2 whitespace-nowrap">{fn.name}</td>
-							<td className="px-4 py-2 whitespace-nowrap font-mono text-sm">0x{fn.start.toString(16)}</td>
-							<td className="px-4 py-2">{fn.ops.length} opcodes</td>
-							</tr>
-						))}
-						</tbody>
-					</table>
-					</div>
-				</div>
-				)}
-
+				
 				{pseudocode && (
 				<div className="mt-6">
 					<h2 className="text-lg font-medium text-gray-800 mb-2">
-					Generated Pseudocode:
+					Reconstructed Code:
 					</h2>
-					<pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60 !text-gray-800">
-					{pseudocode}
+					<div className="bg-gray-800 rounded-md overflow-hidden">
+					<pre className="!m-0 !p-4 max-h-[500px] overflow-auto">
+						<code className="language-solidity">
+						{pseudocode}
+						</code>
 					</pre>
+					</div>
+					<div className="mt-2 text-sm text-gray-500">
+					<p>Note: This is reconstructed pseudocode, not original source.</p>
+					</div>
 				</div>
 				)}
 			</div>
