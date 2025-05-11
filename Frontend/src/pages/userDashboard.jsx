@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import CodeUploader from "../components/CodeUploader";
 import UserProfile from "../components/UserProfile";
 import ViewReports from "../components/ViewReports";
@@ -12,7 +12,6 @@ function UserDashboard() {
 	const [submittedCode, setSubmittedCode] = useState(""); 
 	const [fileExt, setFileExt] = useState("");
 	const [isSubscribed, setIsSubscribed] = useState(true); 
-	console.log("activeSection == ", activeSection);
 	// Fetch subscription status when component mounts
 	useEffect(() => {
 		const checkSubscription = async () => {
