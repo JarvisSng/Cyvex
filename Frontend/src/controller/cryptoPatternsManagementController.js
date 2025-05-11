@@ -1,4 +1,5 @@
 // src/controller/cryptoPatternsManagementController.js
+import path from "../config/expressPath";
 import { fetchWithAuth } from "./authHelper";
 
 /**
@@ -6,9 +7,7 @@ import { fetchWithAuth } from "./authHelper";
  */
 export const getCryptoPatterns = async () => {
 	try {
-		const response = await fetchWithAuth(
-			"http://localhost:3000/api/crypto-patterns"
-		);
+		const response = await fetchWithAuth(`${path}/api/crypto-patterns`);
 		if (!response.ok) {
 			const err = await response.json();
 			throw new Error(err.error || "Failed to fetch crypto patterns");
@@ -25,7 +24,7 @@ export const getCryptoPatterns = async () => {
 export const getCryptoPatternById = async (id) => {
 	try {
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/crypto-patterns/${id}`
+			`${path}/api/crypto-patterns/${id}`
 		);
 		if (!response.ok) {
 			const err = await response.json();
@@ -42,14 +41,11 @@ export const getCryptoPatternById = async (id) => {
  */
 export const createCryptoPattern = async (entry) => {
 	try {
-		const response = await fetchWithAuth(
-			"http://localhost:3000/api/crypto-patterns",
-			{
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(entry),
-			}
-		);
+		const response = await fetchWithAuth(`${path}/api/crypto-patterns`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(entry),
+		});
 		if (!response.ok) {
 			const err = await response.json();
 			throw new Error(err.error || "Failed to create crypto pattern");
@@ -66,7 +62,7 @@ export const createCryptoPattern = async (entry) => {
 export const updateCryptoPattern = async (id, entry) => {
 	try {
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/crypto-patterns/${id}`,
+			`${path}/api/crypto-patterns/${id}`,
 			{
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
@@ -89,7 +85,7 @@ export const updateCryptoPattern = async (id, entry) => {
 export const deleteCryptoPattern = async (id) => {
 	try {
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/crypto-patterns/${id}`,
+			`${path}/api/crypto-patterns/${id}`,
 			{
 				method: "DELETE",
 				headers: { "Content-Type": "application/json" },

@@ -1,4 +1,5 @@
 // src/controller/detectionRulesController.js
+import path from "../config/expressPath";
 
 /**
  * Helper function to convert a regex string in literal form to a RegExp object.
@@ -52,9 +53,7 @@ const convertDetectionRules = (rulesObj) => {
 export const getDetectionRules = async () => {
 	try {
 		// Make an API call to fetch detection rules.
-		const response = await fetch(
-			"http://localhost:3000/api/rules/detection-rules"
-		);
+		const response = await fetch(`${path}/api/rules/detection-rules`);
 		// If the response is not OK, throw an error with a message.
 		if (!response.ok) {
 			const result = await response.json();

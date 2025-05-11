@@ -1,4 +1,5 @@
 // src/controller/evmOpcodesManagementController.js
+import path from "../config/expressPath";
 import { fetchWithAuth } from "./authHelper";
 
 /**
@@ -6,9 +7,7 @@ import { fetchWithAuth } from "./authHelper";
  */
 export const getEvmOpcodes = async () => {
 	try {
-		const response = await fetchWithAuth(
-			"http://localhost:3000/api/evm-opcodes"
-		);
+		const response = await fetchWithAuth(`${path}/api/evm-opcodes`);
 		if (!response.ok) {
 			const err = await response.json();
 			throw new Error(err.error || "Failed to fetch EVM opcodes");
@@ -25,9 +24,7 @@ export const getEvmOpcodes = async () => {
  */
 export const getEvmOpcodeByCode = async (code) => {
 	try {
-		const response = await fetchWithAuth(
-			`http://localhost:3000/api/evm-opcodes/${code}`
-		);
+		const response = await fetchWithAuth(`${path}/api/evm-opcodes/${code}`);
 		if (!response.ok) {
 			const err = await response.json();
 			throw new Error(err.error || "Failed to fetch EVM opcode");
@@ -44,14 +41,11 @@ export const getEvmOpcodeByCode = async (code) => {
  */
 export const createEvmOpcode = async (entry) => {
 	try {
-		const response = await fetchWithAuth(
-			"http://localhost:3000/api/evm-opcodes",
-			{
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(entry),
-			}
-		);
+		const response = await fetchWithAuth(`${path}/api/evm-opcodes`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(entry),
+		});
 		if (!response.ok) {
 			const err = await response.json();
 			throw new Error(err.error || "Failed to create EVM opcode");
@@ -70,7 +64,7 @@ export const createEvmOpcode = async (entry) => {
 export const updateEvmOpcode = async (code, fields) => {
 	try {
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/evm-opcodes/${code}`,
+			`${path}/api/evm-opcodes/${code}`,
 			{
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
@@ -94,7 +88,7 @@ export const updateEvmOpcode = async (code, fields) => {
 export const deleteEvmOpcode = async (code) => {
 	try {
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/evm-opcodes/${code}`,
+			`${path}/api/evm-opcodes/${code}`,
 			{
 				method: "DELETE",
 				headers: { "Content-Type": "application/json" },

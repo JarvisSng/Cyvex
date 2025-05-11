@@ -1,4 +1,5 @@
 // src/controller/rulesManagementController.js
+import path from "../config/expressPath";
 
 // Import fetchWithAuth helper to make authenticated HTTP requests.
 import { fetchWithAuth } from "./authHelper";
@@ -10,9 +11,7 @@ import { fetchWithAuth } from "./authHelper";
 export const getDetectionRules = async () => {
 	try {
 		// Make a GET request to the API endpoint for rules management.
-		const response = await fetchWithAuth(
-			"http://localhost:3000/api/rules-management/"
-		);
+		const response = await fetchWithAuth(`${path}/api/rules-management/`);
 		// If the response is not OK, parse the error message.
 		if (!response.ok) {
 			const result = await response.json();
@@ -35,7 +34,7 @@ export const getDetectionRuleById = async (id) => {
 	try {
 		// Make a GET request to the API endpoint for a specific detection rule.
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/rules-management/${id}`
+			`${path}/api/rules-management/${id}`
 		);
 		// If the response is not OK, parse the error message.
 		if (!response.ok) {
@@ -58,14 +57,11 @@ export const getDetectionRuleById = async (id) => {
 export const createDetectionRule = async (rule) => {
 	try {
 		// Make a POST request to the API endpoint to create a new detection rule.
-		const response = await fetchWithAuth(
-			"http://localhost:3000/api/rules-management",
-			{
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(rule),
-			}
-		);
+		const response = await fetchWithAuth(`${path}/api/rules-management`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(rule),
+		});
 		// If the response is not OK, parse the error message.
 		if (!response.ok) {
 			const result = await response.json();
@@ -89,7 +85,7 @@ export const updateDetectionRule = async (id, rule) => {
 	try {
 		// Make a PUT request to the API endpoint to update the detection rule.
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/rules-management/${id}`,
+			`${path}/api/rules-management/${id}`,
 			{
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
@@ -118,7 +114,7 @@ export const deleteDetectionRule = async (id) => {
 	try {
 		// Make a DELETE request to the API endpoint to remove the detection rule.
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/rules-management/${id}`,
+			`${path}/api/rules-management/${id}`,
 			{
 				method: "DELETE",
 				headers: { "Content-Type": "application/json" },

@@ -1,4 +1,5 @@
 // src/controller/opcodePatternsManagementController.js
+import path from "../config/expressPath";
 import { fetchWithAuth } from "./authHelper";
 
 /**
@@ -6,9 +7,7 @@ import { fetchWithAuth } from "./authHelper";
  */
 export const getOpcodePatterns = async () => {
 	try {
-		const response = await fetchWithAuth(
-			"http://localhost:3000/api/opcode-patterns"
-		);
+		const response = await fetchWithAuth(`${path}/api/opcode-patterns`);
 		if (!response.ok) {
 			const err = await response.json();
 			throw new Error(err.error || "Failed to fetch opcode patterns");
@@ -25,7 +24,7 @@ export const getOpcodePatterns = async () => {
 export const getOpcodePatternById = async (id) => {
 	try {
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/opcode-patterns/${id}`
+			`${path}/api/opcode-patterns/${id}`
 		);
 		if (!response.ok) {
 			const err = await response.json();
@@ -42,14 +41,11 @@ export const getOpcodePatternById = async (id) => {
  */
 export const createOpcodePattern = async (entry) => {
 	try {
-		const response = await fetchWithAuth(
-			"http://localhost:3000/api/opcode-patterns",
-			{
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(entry),
-			}
-		);
+		const response = await fetchWithAuth(`${path}/api/opcode-patterns`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(entry),
+		});
 		if (!response.ok) {
 			const err = await response.json();
 			throw new Error(err.error || "Failed to create opcode pattern");
@@ -66,7 +62,7 @@ export const createOpcodePattern = async (entry) => {
 export const updateOpcodePattern = async (id, entry) => {
 	try {
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/opcode-patterns/${id}`,
+			`${path}/api/opcode-patterns/${id}`,
 			{
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
@@ -89,7 +85,7 @@ export const updateOpcodePattern = async (id, entry) => {
 export const deleteOpcodePattern = async (id) => {
 	try {
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/opcode-patterns/${id}`,
+			`${path}/api/opcode-patterns/${id}`,
 			{
 				method: "DELETE",
 				headers: { "Content-Type": "application/json" },

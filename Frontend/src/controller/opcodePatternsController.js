@@ -1,4 +1,5 @@
 // src/controller/opcodePatternsController.js
+import path from "../config/expressPath";
 
 /**
  * Parse a literal‐style regex string into a RegExp object.
@@ -23,9 +24,7 @@ const parseRegex = (patternStr) => {
  */
 export const getOpcodePatterns = async () => {
 	try {
-		const response = await fetch(
-			"http://localhost:3000/api/evm/opcode-patterns"
-		);
+		const response = await fetch(`${path}/api/evm/opcode-patterns`);
 		if (!response.ok) {
 			const result = await response.json();
 			throw new Error(result.error || "Failed to fetch opcode patterns");

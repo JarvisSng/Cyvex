@@ -208,9 +208,9 @@ export const logoutUser = async () => {
 
 // Function to handle account reset
 export const AccountResetEmail = async (email) => {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "http://localhost:5173/resetAccount/password",
-    });
+	const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+		redirectTo: "https://cyvex.onrender.com/resetAccount/password",
+	});
 
 	if (error) {
 		console.error("Error updating password:", error.message);
@@ -218,17 +218,19 @@ export const AccountResetEmail = async (email) => {
 		console.log("Password updated successfully.");
 	}
 	console.log("Password reset email sent successfully.");
-    return { success: true };  // ✅ Return success object
+	return { success: true }; // ✅ Return success object
 };
 
 export const AccountResetPassword = async (newPassword) => {
-    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+	const { data, error } = await supabase.auth.updateUser({
+		password: newPassword,
+	});
 
-    if (error) {
-        console.error("Error updating password:", error.message);
-        return { success: false, message: error.message };
-    } else {
-        console.log("Password updated successfully.");
-        return { success: true, message: "Password updated successfully." };
-    }
+	if (error) {
+		console.error("Error updating password:", error.message);
+		return { success: false, message: error.message };
+	} else {
+		console.log("Password updated successfully.");
+		return { success: true, message: "Password updated successfully." };
+	}
 };

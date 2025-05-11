@@ -1,6 +1,7 @@
 // controller/subscriptionController.js
 
 // Import your initialized Supabase client
+import path from "../config/expressPath";
 import supabase from "../config/supabaseClient";
 
 /**
@@ -27,7 +28,7 @@ export async function checkCurrentUserSubscription() {
 
 		// 2. Call your Express route
 		const resp = await fetch(
-			`http://localhost:3000/api/check/check-subscription/${user.id}`
+			`${path}/api/check/check-subscription/${user.id}`
 		);
 		if (!resp.ok) {
 			throw new Error(`Subscription API error: ${resp.status}`);

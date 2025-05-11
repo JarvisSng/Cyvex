@@ -2,15 +2,14 @@
 // This file contains functions for communicating with the backend API related to user operations
 // including fetching user profiles, updating subscriptions, admin profile operations, and user management.
 
+import path from "../config/expressPath";
 import { fetchWithAuth } from "./authHelper";
 
 // 1. Get all user profiles with subscription details (for role "user")
 export const getUserProfilesWithSubscriptions = async () => {
 	try {
 		// Send request to get profiles
-		const response = await fetchWithAuth(
-			"http://localhost:3000/api/user/profiles"
-		);
+		const response = await fetchWithAuth(`${path}/api/user/profiles`);
 		if (!response.ok) {
 			// If response is not ok, parse error message and throw error
 			const result = await response.json();
@@ -29,7 +28,7 @@ export const getUserProfile = async (userId) => {
 	try {
 		// Send request to get a specific user profile using the provided userId
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/user/profile/${userId}`
+			`${path}/api/user/profile/${userId}`
 		);
 		if (!response.ok) {
 			// If response is not ok, parse error message and throw error
@@ -49,7 +48,7 @@ export const updateSubscription = async (userId, subscription) => {
 	try {
 		// Send a POST request to update the subscription details for a specific user
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/user/profile/${userId}/subscription`,
+			`${path}/api/user/profile/${userId}/subscription`,
 			{
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -74,7 +73,7 @@ export const fetchAdminProfiles = async (username) => {
 	try {
 		// Send request to get admin profiles that match the given username
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/user/admin-profiles?username=${username}`
+			`${path}/api/user/admin-profiles?username=${username}`
 		);
 		if (!response.ok) {
 			// If response is not ok, parse error message and throw error
@@ -95,14 +94,11 @@ export const fetchAdminProfiles = async (username) => {
 export const updateData = async (id, username, status) => {
 	try {
 		// Send a POST request to update the status of an admin profile
-		const response = await fetchWithAuth(
-			`http://localhost:3000/api/user/${id}/status`,
-			{
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ username, status }),
-			}
-		);
+		const response = await fetchWithAuth(`${path}/api/user/${id}/status`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ username, status }),
+		});
 		if (!response.ok) {
 			// If response is not ok, parse error message and throw error
 			const result = await response.json();
@@ -121,7 +117,7 @@ export const resetUserPassword = async (userId) => {
 	try {
 		// Send a POST request to initiate password reset for the specified user
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/admin/user/${userId}/reset-password`,
+			`${path}/api/admin/user/${userId}/reset-password`,
 			{
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -145,7 +141,7 @@ export const suspendUser = async (userId, banDuration) => {
 	try {
 		// Send a POST request to suspend a user or update the ban duration
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/admin/user/${userId}/suspend`,
+			`${path}/api/admin/user/${userId}/suspend`,
 			{
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -170,7 +166,7 @@ export const deleteUser = async (userId) => {
 	try {
 		// Send a POST request to delete (ban) a user by setting the user's status to "Deleted"
 		const response = await fetchWithAuth(
-			`http://localhost:3000/api/admin/user/${userId}/delete`,
+			`${path}/api/admin/user/${userId}/delete`,
 			{
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -194,7 +190,7 @@ export const getUserProfileNoAuth = async (username) => {
 	try {
 		// Send request to get user profiles that match the given username
 		const response = await fetch(
-			`http://localhost:3000/api/getUser/user-profiles?username=${username}`
+			`${path}/api/getUser/user-profiles?username=${username}`
 		);
 		if (!response.ok) {
 			// If response is not ok, parse error message and throw error

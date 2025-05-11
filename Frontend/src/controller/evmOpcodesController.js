@@ -1,4 +1,5 @@
 // src/controller/evmOpcodesController.js
+import path from "../config/expressPath";
 
 /**
  * Fetches all EVM opcodes (no auth).
@@ -6,9 +7,7 @@
  */
 export const getEvmOpcodes = async () => {
 	try {
-		const response = await fetch(
-			"http://localhost:3000/api/evm/evm-opcodes"
-		);
+		const response = await fetch(`${path}/api/evm/evm-opcodes`);
 		if (!response.ok) {
 			const result = await response.json();
 			throw new Error(result.error || "Failed to fetch EVM opcodes");

@@ -1,4 +1,5 @@
 // src/controller/cryptoPatternsController.js
+import path from "../config/expressPath";
 
 /**
  * Fetches all crypto patterns (no auth).
@@ -6,9 +7,7 @@
  */
 export const getCryptoPatterns = async () => {
 	try {
-		const response = await fetch(
-			"http://localhost:3000/api/evm/crypto-patterns"
-		);
+		const response = await fetch(`${path}/api/evm/crypto-patterns`);
 		if (!response.ok) {
 			const result = await response.json();
 			throw new Error(result.error || "Failed to fetch crypto patterns");
