@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { checkCurrentUserSubscription } from "../controller/userController";
+import { checkCurrentUserSubscription } from "../controller/checkSub";
 
 /**
  * A small map of recommended actions for insecure rules
