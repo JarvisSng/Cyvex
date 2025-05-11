@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 // Configure CORS for API requests
 app.use(
 	cors({
-		origin: ["http://localhost:5173", "https://cyvex-zhxk.onrender.com"], // Allow requests from the specified frontend URL
+		origin: ["http://localhost:5173", "https://cyvex.onrender.com"], // Allow requests from the specified frontend URL
 		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
 		allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers for requests
 		credentials: true // If using cookies/auth
