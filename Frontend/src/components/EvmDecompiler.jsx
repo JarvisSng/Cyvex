@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-import { decompile } from "like-panoramix";
 import { getCryptoPatterns } from "../controller/cryptoPatternsController";
 import { getEvmOpcodes } from "../controller/evmOpcodesController";
 import { getOpcodePatterns } from "../controller/opcodePatternsController";
 
 export default function CryptoDetector() {
-	const [solidityCode, setSolidityCode] = useState("");
 	const [bytecode, setBytecode] = useState("");
 	const [cryptoFindings, setCryptoFindings] = useState([]);
 	const [disassembly, setDisassembly] = useState("");
@@ -139,39 +137,28 @@ export default function CryptoDetector() {
 		setIsLoading(true);
 		setCryptoFindings([]);
 		setDisassembly("");
-		setSolidityCode(""); // Reset solidity code
 
 		try {
-		if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
+			if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
 
-		const normalizedBytecode = bytecode.startsWith("0x")
-			? bytecode
-			: `0x${bytecode}`;
+			const normalizedBytecode = bytecode.startsWith("0x")
+				? bytecode
+				: `0x${bytecode}`;
 
-		// Existing analysis
-		const detected = detectCryptoOperations(normalizedBytecode);
-		setCryptoFindings(detected);
+			const detected = detectCryptoOperations(normalizedBytecode);
+			setCryptoFindings(detected);
 
-		const opcodes = disassembleBytecode(normalizedBytecode);
-		setDisassembly(opcodes);
-
-		// NEW: Add decompilation
-		try {
-			const decompiled = await decompile(normalizedBytecode);
-			setSolidityCode(decompiled);
-		} catch (decompileError) {
-			console.error("Decompilation failed:", decompileError);
-			setSolidityCode("Decompilation failed - see console for details");
-		}
+			const opcodes = disassembleBytecode(normalizedBytecode);
+			setDisassembly(opcodes);
 		} catch (err) {
-		setCryptoFindings([
-			{
-			type: "error",
-			message: err.message,
-			},
-		]);
+			setCryptoFindings([
+				{
+					type: "error",
+					message: err.message,
+				},
+			]);
 		} finally {
-		setIsLoading(false);
+			setIsLoading(false);
 		}
 	};
 
@@ -272,17 +259,6 @@ export default function CryptoDetector() {
 						<pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60 !text-gray-800">
 							{disassembly.split("\n").slice(0, 100).join("\n")}
 						</pre>
-					</div>
-				)}
-
-				{solidityCode && (
-					<div className="mt-6">
-					<h2 className="text-lg font-medium text-gray-800 mb-2">
-						Decompiled Solidity-like Code:
-					</h2>
-					<pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-96 !text-gray-800">
-						{solidityCode}
-					</pre>
 					</div>
 				)}
 			</div>
