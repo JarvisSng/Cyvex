@@ -1,7 +1,8 @@
 // detector.jsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDetectionRules } from "../controller/rulesController";
+import { checkCurrentUserSubscription } from "../controller/userController";
 
 // 1) Skip lines that start with // or #
 function isCommentLine(line) {
@@ -50,8 +51,8 @@ function Detector() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [activeTab, setActiveTab] = useState("/detector"); // Set default active tab
-  	const [isSubscribed, setIsSubscribed] = useState(false);
-  	const [isMenuOpen, setIsMenuOpen] = useState(false);
+	const [isSubscribed, setIsSubscribed] = useState(false);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 
 	const toggleMenu = () => {
 		setIsMenuOpen(!isMenuOpen);
@@ -80,26 +81,21 @@ function Detector() {
 		fetchRules();
 	}, []);
 
-	  // Fetch subscription status when component mounts
-	  useEffect(() => {
+	// Fetch subscription status when component mounts
+	useEffect(() => {
 		const checkSubscription = async () => {
-		  try {
-			const response = await fetch("/api/check-subscription", { credentials: "include" });
-			const result = await response.json();
-	
-			//console.log("Subscription status:", result.isSubscribed); // Debugging
-	
-			if (result.isSubscribed) {
-			  setIsSubscribed(true);
+			try {
+				const subscribed = await checkCurrentUserSubscription();
+				if (subscribed) {
+					setIsSubscribed(true);
+				}
+			} catch (err) {
+				console.error("Error checking subscription:", err);
 			}
-		  } catch (err) {
-			console.error("Error checking subscription:", err);
-		  }
 		};
-	
+
 		checkSubscription();
-	  }, []);
-	
+	}, []);
 
 	useEffect(() => {
 		if (Notification.permission !== "granted") {
@@ -196,7 +192,6 @@ function Detector() {
 		navigate("/report", { state: { report } });
 	};
 
-
 	return (
 		<>
 			{/* Header (Fixed at the Top) */}
@@ -208,30 +203,40 @@ function Detector() {
 
 					{/* Navigation Links (Centered) */}
 					<nav className="hidden xl:flex items-center gap-4 lg:gap-8">
-						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">solutions</h2>
-						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">customers</h2>
-						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">services</h2>
-						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">insights</h2>
-						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">company</h2>
+						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
+							solutions
+						</h2>
+						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
+							customers
+						</h2>
+						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
+							services
+						</h2>
+						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
+							insights
+						</h2>
+						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
+							company
+						</h2>
 					</nav>
 
-				{/* Buttons (Right) */}
-				<div className="hidden xl:flex items-center gap-4 lg:gap-8">
-					<button 
-						onClick={login}
-						className="w-24 lg:w-32 bg-stone-50 text-black px-4 lg:px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
-					>
-						Login
-					</button>
-					<button 
-						onClick={detector}
-						className="w-24 lg:w-32 bg-stone-50 text-black px-4 lg:px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
-					>
-						Try It
-					</button>
+					{/* Buttons (Right) */}
+					<div className="hidden xl:flex items-center gap-4 lg:gap-8">
+						<button
+							onClick={login}
+							className="w-24 lg:w-32 bg-stone-50 text-black px-4 lg:px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+						>
+							Login
+						</button>
+						<button
+							onClick={detector}
+							className="w-24 lg:w-32 bg-stone-50 text-black px-4 lg:px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+						>
+							Try It
+						</button>
 					</div>
 					{/* Mobile Menu Button (Visible only on small screens) */}
-					<button 
+					<button
 						className="xl:hidden text-black text-2xl"
 						onClick={toggleMenu}
 					>
@@ -242,25 +247,35 @@ function Detector() {
 				{isMenuOpen && (
 					<div className="xl:hidden bg-blue-900 w-full py-4 px-8 absolute left-0 top-20 shadow-lg z-50">
 						<nav className="flex flex-col items-center gap-4">
-							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">solutions</h2>
-							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">customers</h2>
-							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">services</h2>
-							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">insights</h2>
-							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">company</h2>
-							
+							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
+								solutions
+							</h2>
+							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
+								customers
+							</h2>
+							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
+								services
+							</h2>
+							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
+								insights
+							</h2>
+							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
+								company
+							</h2>
+
 							<div className="flex flex-col sm:flex-row items-center gap-4 mt-4 w-full justify-center">
-							<button 
-								onClick={login}
-								className="w-full sm:w-auto bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
-							>
-								Login
-							</button>
-							<button 
-								onClick={detector}
-								className="w-full sm:w-auto bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
-							>
-								Try It
-							</button>
+								<button
+									onClick={login}
+									className="w-full sm:w-auto bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+								>
+									Login
+								</button>
+								<button
+									onClick={detector}
+									className="w-full sm:w-auto bg-stone-50 text-black px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+								>
+									Try It
+								</button>
 							</div>
 						</nav>
 					</div>
@@ -275,26 +290,32 @@ function Detector() {
 						<button
 							onClick={() => handleTabClick("/detector")}
 							className={`p-2 rounded-md text-left ${
-								activeTab === "/detector" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+								activeTab === "/detector"
+									? "!bg-blue-950 text-white"
+									: "hover:bg-gray-300"
 							}`}
 						>
 							Upload Code
 						</button>
 						{/* Show or Hide "Git Pull" Based on Subscription */}
 						{isSubscribed && (
-						<button
-							onClick={() => navigate("/github-pull")}
-							className={`p-2 rounded-md text-left ${
-							window.location.pathname === "/github-pull" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
-							}`}
-						>
-							Git Pull
-						</button>
+							<button
+								onClick={() => navigate("/github-pull")}
+								className={`p-2 rounded-md text-left ${
+									window.location.pathname === "/github-pull"
+										? "!bg-blue-950 text-white"
+										: "hover:bg-gray-300"
+								}`}
+							>
+								Git Pull
+							</button>
 						)}
 						<button
 							onClick={() => handleTabClick("/report")}
 							className={`p-2 rounded-md text-left ${
-								activeTab === "/report" ? "!bg-blue-950 text-white" : "hover:bg-gray-300"
+								activeTab === "/report"
+									? "!bg-blue-950 text-white"
+									: "hover:bg-gray-300"
 							}`}
 						>
 							View Results
