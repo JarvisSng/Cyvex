@@ -1,3 +1,3 @@
-const path = process.env.EXPRESS_PATH;
+const path = import.meta.env.VITE_EXPRESS_PATH;
 
 export default path;
