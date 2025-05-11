@@ -4,626 +4,433 @@ import { getEvmOpcodes } from "../controller/evmOpcodesController";
 import { getOpcodePatterns } from "../controller/opcodePatternsController";
 
 export default function CryptoDetector() {
-	const [bytecode, setBytecode] = useState("");
-	const [cryptoFindings, setCryptoFindings] = useState([]);
-	const [disassembly, setDisassembly] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
-	const [pseudocode, setPseudocode] = useState("");
-	const [controlFlow, setControlFlow] = useState([]);
+  const [bytecode, setBytecode] = useState("");
+  const [cryptoFindings, setCryptoFindings] = useState([]);
+  const [disassembly, setDisassembly] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [pseudocode, setPseudocode] = useState("");
+  const [controlFlow, setControlFlow] = useState([]);
 
-	const [OPCODE_MAP, setOpcodeMap] = useState({});
-	const [CRYPTO_PATTERNS, setCryptoPatternsState] = useState({});
-	const [OPCODE_PATTERNS, setOpcodePatternsState] = useState({});
+  const [OPCODE_MAP, setOpcodeMap] = useState({});
+  const [CRYPTO_PATTERNS, setCryptoPatternsState] = useState({});
+  const [OPCODE_PATTERNS, setOpcodePatternsState] = useState({});
 
-	const [evmError, setEvmError] = useState("");
-	const [opcodeError, setOpcodeError] = useState("");
-	const [cryptoError, setCryptoError] = useState("");
+  const [evmError, setEvmError] = useState("");
+  const [opcodeError, setOpcodeError] = useState("");
+  const [cryptoError, setCryptoError] = useState("");
 
-	// On mount, fetch all mappings & patterns
-	useEffect(() => {
-		const loadAll = async () => {
-			// EVM opcodes
-			const evm = await getEvmOpcodes();
-			if (evm.error) {
-				setEvmError(evm.error);
-			} else {
-				const map = {};
-				evm.forEach(({ opcode, mnemonic }) => {
-					map[opcode.toLowerCase()] = mnemonic;
-				});
-				setOpcodeMap(map);
-			}
+  // Load opcodes and patterns on mount
+  useEffect(() => {
+    const loadAll = async () => {
+      try {
+        const [evm, crypto, ops] = await Promise.all([
+          getEvmOpcodes(),
+          getCryptoPatterns(),
+          getOpcodePatterns()
+        ]);
 
-			// Crypto patterns
-			const crypto = await getCryptoPatterns();
-			if (crypto.error) {
-				setCryptoError(crypto.error);
-			} else {
-				const map = {};
-				crypto.forEach(({ pattern_name, signature }) => {
-					map[pattern_name] = signature.toLowerCase();
-				});
-				setCryptoPatternsState(map);
-			}
+        if (!evm.error) {
+          const map = {};
+          evm.forEach(({ opcode, mnemonic }) => {
+            map[opcode.toLowerCase()] = mnemonic;
+          });
+          setOpcodeMap(map);
+        } else {
+          setEvmError(evm.error);
+        }
 
-			// Opcode regex patterns
-			const ops = await getOpcodePatterns();
-			if (ops.error) {
-				setOpcodeError(ops.error);
-			} else {
-				const map = {};
-				ops.forEach(({ pattern_name, regex }) => {
-					map[pattern_name] = regex;
-				});
-				setOpcodePatternsState(map);
-			}
-		};
+        if (!crypto.error) {
+          const map = {};
+          crypto.forEach(({ pattern_name, signature }) => {
+            map[pattern_name] = signature.toLowerCase();
+          });
+          setCryptoPatternsState(map);
+        } else {
+          setCryptoError(crypto.error);
+        }
 
-		loadAll();
-	}, []);
+        if (!ops.error) {
+          const map = {};
+          ops.forEach(({ pattern_name, regex }) => {
+            map[pattern_name] = regex;
+          });
+          setOpcodePatternsState(map);
+        } else {
+          setOpcodeError(ops.error);
+        }
+      } catch (err) {
+        console.error("Failed to load data:", err);
+      }
+    };
 
-	// Enhanced disassembler with control flow tracking
-	const enhancedDisassemble = (bytecode) => {
-		const cleanCode = bytecode.startsWith("0x") ? bytecode.slice(2) : bytecode;
-		const ops = [];
-		let i = 0;
-		const jumpdests = new Set();
-		const calls = [];
-		
-		// First pass: identify all jump destinations
-		while (i < cleanCode.length) {
-			const byte = cleanCode.substr(i, 2);
-			if (byte === "5b") { // JUMPDEST
-			jumpdests.add(i/2);
-			}
-			i += 2;
-		}
-		
-		// Second pass: full disassembly
-		i = 0;
-		while (i < cleanCode.length) {
-			const pc = i/2;
-			const byte = cleanCode.substr(i, 2);
-			const opcode = OPCODE_MAP[byte] || `0x${byte}`;
-			const op = { pc, opcode };
-			
-			if (byte >= "60" && byte <= "7f") { // PUSH
-			const pushSize = parseInt(byte, 16) - 0x5f;
-			op.operand = cleanCode.substr(i + 2, pushSize * 2);
-			i += 2 + pushSize * 2;
-			} else {
-			i += 2;
-			}
-			
-			// Track control flow
-			if (byte === "56" || byte === "57") { // JUMP/JUMPI
-			op.isJump = true;
-			} else if (byte === "f1" || byte === "f2" || byte === "f4") { // CALL variants
-			calls.push(pc);
-			}
-			
-			ops.push(op);
-		}
-		
-		return { ops, jumpdests, calls };
-	};
+    loadAll();
+  }, []);
 
-	// Basic control flow analysis
-	const analyzeControlFlow = (ops, jumpdests) => {
-	const functions = [];
-	let currentFunction = null;
-	
-	ops.forEach(op => {
-		// Detect function starts (JUMPDEST with no incoming jumps)
-		if (op.opcode === "JUMPDEST" && !currentFunction) {
-		currentFunction = {
-			start: op.pc,
-			ops: [],
-			name: `function_${op.pc.toString(16)}`
-		};
-		functions.push(currentFunction);
-		}
-		
-		if (currentFunction) {
-		currentFunction.ops.push(op);
-		
-		// End function at RETURN or STOP
-		if (op.opcode === "RETURN" || op.opcode === "STOP") {
-			currentFunction = null;
-		}
-		}
-	});
-	
-	return functions;
-	};
+  // Enhanced disassembler with control flow tracking
+  const enhancedDisassemble = (bytecode) => {
+    const cleanCode = bytecode.startsWith("0x") ? bytecode.slice(2) : bytecode;
+    const ops = [];
+    let i = 0;
+    const jumpdests = new Set();
+    const calls = [];
+    
+    // First pass: identify all jump destinations
+    while (i < cleanCode.length) {
+      const byte = cleanCode.substr(i, 2);
+      if (byte === "5b") { // JUMPDEST
+        jumpdests.add(i/2);
+      }
+      i += 2;
+    }
+    
+    // Second pass: full disassembly
+    i = 0;
+    while (i < cleanCode.length) {
+      const pc = i/2;
+      const byte = cleanCode.substr(i, 2);
+      const opcode = OPCODE_MAP[byte] || `0x${byte}`;
+      const op = { pc, opcode };
+      
+      if (byte >= "60" && byte <= "7f") { // PUSH
+        const pushSize = parseInt(byte, 16) - 0x5f;
+        op.operand = cleanCode.substr(i + 2, pushSize * 2);
+        i += 2 + pushSize * 2;
+      } else {
+        i += 2;
+      }
+      
+      // Track control flow
+      if (byte === "56" || byte === "57") { // JUMP/JUMPI
+        op.isJump = true;
+      } else if (byte === "f1" || byte === "f2" || byte === "f4") { // CALL variants
+        calls.push(pc);
+      }
+      
+      ops.push(op);
+    }
+    
+    return { ops, jumpdests, calls };
+  };
 
-	// Convert opcodes to pseudocode
-	const generatePseudocode = (functions) => {
-	// Track variables and labels
-	const storageVars = {};
-	let varCount = 1;
-	let labelCount = 1;
+  // Basic control flow analysis
+  const analyzeControlFlow = (ops, jumpdests) => {
+    const functions = [];
+    let currentFunction = null;
+    
+    ops.forEach(op => {
+      // Detect function starts (JUMPDEST with no incoming jumps)
+      if (op.opcode === "JUMPDEST" && !currentFunction) {
+        currentFunction = {
+          start: op.pc,
+          ops: [],
+          name: `function_${op.pc.toString(16)}`
+        };
+        functions.push(currentFunction);
+      }
+      
+      if (currentFunction) {
+        currentFunction.ops.push(op);
+        
+        // End function at RETURN or STOP
+        if (op.opcode === "RETURN" || op.opcode === "STOP") {
+          currentFunction = null;
+        }
+      }
+    });
+    
+    return functions;
+  };
 
-	return functions.map(fn => {
-		let code = [];
-		let indentLevel = 1;
-		const stack = [];
-		const labels = {};
+  // Convert bytecode to disassembly
+  const disassembleBytecode = (code) => {
+    try {
+      const cleanCode = code.startsWith("0x") ? code.slice(2) : code;
+      const result = [];
+      let i = 0;
 
-		// Function header
-		code.push(`function ${fn.name}() {`);
-		
-		fn.ops.forEach(op => {
-		const indent = '  '.repeat(indentLevel);
-		
-		// Handle PUSH operations
-		if (op.opcode.startsWith('PUSH')) {
-			stack.push(`0x${op.operand}`);
-			return;
-		}
+      while (i < cleanCode.length) {
+        const byte = cleanCode.substr(i, 2);
+        const opcode = OPCODE_MAP[byte] || `0x${byte}`;
 
-		// Handle storage operations
-		if (op.opcode === 'SSTORE') {
-			const value = stack.pop();
-			const slot = stack.pop();
-			
-			if (!storageVars[slot]) {
-			storageVars[slot] = `storageVar${varCount++}`;
-			code.unshift(`// Storage variable at slot ${slot}`);
-			code.unshift(`let ${storageVars[slot]};`);
-			}
-			
-			code.push(`${indent}${storageVars[slot]} = ${value};`);
-			return;
-		}
+        if (byte >= "60" && byte <= "7f") {
+          const pushSize = parseInt(byte, 16) - 0x5f;
+          const pushData = cleanCode.substr(i + 2, pushSize * 2);
+          result.push(`${i / 2}: ${opcode} 0x${pushData}`);
+          i += 2 + pushSize * 2;
+        } else {
+          result.push(`${i / 2}: ${opcode}`);
+          i += 2;
+        }
+      }
 
-		if (op.opcode === 'SLOAD') {
-			const slot = stack.pop();
-			if (storageVars[slot]) {
-			stack.push(storageVars[slot]);
-			} else {
-			stack.push(`storage[${slot}]`);
-			}
-			return;
-		}
+      return result.join("\n");
+    } catch (err) {
+      console.error("Disassembly error:", err);
+      return `Disassembly failed: ${err.message}`;
+    }
+  };
 
-		// Handle control flow
-		if (op.opcode === 'JUMPI') {
-			const condition = stack.pop();
-			const dest = stack.pop();
-			
-			if (!labels[dest]) {
-			labels[dest] = `label${labelCount++}`;
-			}
-			
-			code.push(`${indent}if (${condition}) goto ${labels[dest]};`);
-			return;
-		}
+  // Generate readable pseudocode
+  const generatePseudocode = (functions) => {
+    const storageVars = {};
+    let varCount = 1;
+    let output = [];
 
-		if (op.opcode === 'JUMP') {
-			const dest = stack.pop();
-			if (!labels[dest]) {
-			labels[dest] = `label${labelCount++}`;
-			}
-			code.push(`${indent}goto ${labels[dest]};`);
-			return;
-		}
+    functions.forEach(fn => {
+      let fnCode = [`function ${fn.name}() {`];
+      let stack = [];
 
-		if (op.opcode === 'JUMPDEST') {
-			if (!labels[op.pc]) {
-			labels[op.pc] = `label${labelCount++}`;
-			}
-			code.push(`${'  '.repeat(indentLevel-1)}${labels[op.pc]}:`);
-			return;
-		}
+      fn.ops.forEach(op => {
+        const indent = '  ';
+        
+        // Handle PUSH operations
+        if (op.opcode.startsWith('PUSH')) {
+          stack.push(`0x${op.operand}`);
+          return;
+        }
 
-		// Handle calls
-		if (op.opcode === 'CALL') {
-			const gas = stack.pop();
-			const address = stack.pop();
-			const value = stack.pop();
-			const argsOffset = stack.pop();
-			const argsSize = stack.pop();
-			const retOffset = stack.pop();
-			const retSize = stack.pop();
-			
-			code.push(`${indent}call(${address}, ${value}, ${gas});`);
-			return;
-		}
+        // Handle storage operations
+        if (op.opcode === 'SSTORE') {
+          const value = stack.pop();
+          const slot = stack.pop();
+          
+          if (!storageVars[slot]) {
+            storageVars[slot] = `var${varCount++}`;
+            output.unshift(`// Storage variable at slot ${slot}`);
+            output.unshift(`let ${storageVars[slot]};`);
+          }
+          
+          fnCode.push(`${indent}${storageVars[slot]} = ${value};`);
+          return;
+        }
 
-		// Default case
-		code.push(`${indent}${op.opcode};`);
-		});
+        if (op.opcode === 'SLOAD') {
+          const slot = stack.pop();
+          const varName = storageVars[slot] || `storage[${slot}]`;
+          stack.push(varName);
+          return;
+        }
 
-		code.push('}');
-		return code.join('\n');
-	}).join('\n\n');
-	};
+        // Handle control flow
+        if (op.opcode === 'JUMPI') {
+          const condition = stack.pop();
+          const dest = stack.pop();
+          fnCode.push(`${indent}if (${condition}) goto label_${dest};`);
+          return;
+        }
 
-	const detectCryptoOperations = (code) => {
-		const findings = [];
-		const cleanCode = code.toLowerCase().replace(/^0x/, "");
+        if (op.opcode === 'JUMP') {
+          const dest = stack.pop();
+          fnCode.push(`${indent}goto label_${dest};`);
+          return;
+        }
 
-		// Detect cryptographic patterns
-		for (const [name, pattern] of Object.entries(CRYPTO_PATTERNS)) {
-			if (typeof pattern === "string") {
-				const index = cleanCode.indexOf(pattern);
-				if (index !== -1) {
-					findings.push({
-						type:
-							pattern.length === 8
-								? "function_sig"
-								: "precompile",
-						name,
-						pattern,
-						location: `0x${index.toString(16)}`,
-						risk: getRiskLevel(name),
-					});
-				}
-			}
-		}
+        if (op.opcode === 'JUMPDEST') {
+          fnCode.push(`label_${op.pc}:`);
+          return;
+        }
 
-		// Detect opcode patterns
-		for (const [name, regex] of Object.entries(OPCODE_PATTERNS)) {
-			const match = cleanCode.match(regex);
-			if (match) {
-				findings.push({
-					type: "opcode_pattern",
-					name,
-					location: `0x${match.index.toString(16)}`,
-					risk: getRiskLevel(name),
-				});
-			}
-		}
+        // Handle calls
+        if (op.opcode === 'CALL') {
+          const [gas, addr, value] = [stack.pop(), stack.pop(), stack.pop()];
+          fnCode.push(`${indent}// External call to ${addr} with ${value} ETH`);
+          return;
+        }
 
-		return findings.sort((a, b) => b.risk - a.risk);
-	};
+        // Default case
+        fnCode.push(`${indent}${op.opcode};`);
+      });
 
-	const getRiskLevel = (name) => {
-		if (name.includes("ec_") || name.includes("ecrecover")) return 3;
-		if (name.includes("sig") || name.includes("verify")) return 2;
-		return 1;
-	};
+      fnCode.push("}");
+      output.push(fnCode.join("\n"));
+    });
 
-	const disassembleBytecode = (code) => {
-		try {
-			const cleanCode = code.startsWith("0x") ? code.slice(2) : code;
-			const result = [];
-			let i = 0;
+    return output.join("\n\n");
+  };
 
-			while (i < cleanCode.length) {
-				const byte = cleanCode.substr(i, 2);
-				const opcode = OPCODE_MAP[byte] || `0x${byte}`;
+  // Detect cryptographic patterns
+  const detectCryptoOperations = (code) => {
+    const findings = [];
+    const cleanCode = code.toLowerCase().replace(/^0x/, "");
 
-				if (byte >= "60" && byte <= "7f") {
-					const pushSize = parseInt(byte, 16) - 0x5f;
-					const pushData = cleanCode.substr(i + 2, pushSize * 2);
-					result.push(`${i / 2}: ${opcode} 0x${pushData}`);
-					i += 2 + pushSize * 2;
-				} else {
-					result.push(`${i / 2}: ${opcode}`);
-					i += 2;
-				}
-			}
+    // Detect cryptographic patterns
+    for (const [name, pattern] of Object.entries(CRYPTO_PATTERNS)) {
+      if (typeof pattern === "string") {
+        const index = cleanCode.indexOf(pattern);
+        if (index !== -1) {
+          findings.push({
+            type: pattern.length === 8 ? "function_sig" : "precompile",
+            name,
+            pattern,
+            location: `0x${index.toString(16)}`,
+            risk: getRiskLevel(name),
+          });
+        }
+      }
+    }
 
-			return result.join("\n");
-		} catch (err) {
-			console.error("Disassembly error:", err);
-			return `Disassembly failed: ${err.message}`;
-		}
-	};
+    // Detect opcode patterns
+    for (const [name, regex] of Object.entries(OPCODE_PATTERNS)) {
+      const match = cleanCode.match(regex);
+      if (match) {
+        findings.push({
+          type: "opcode_pattern",
+          name,
+          location: `0x${match.index.toString(16)}`,
+          risk: getRiskLevel(name),
+        });
+      }
+    }
 
-	const generateReadablePseudocode = (functions) => {
-		const context = {
-		storageVars: {},
-		memoryVars: {},
-		varCount: 1,
-		labelCount: 1,
-		contracts: [],
-		currentContract: null
-		};
+    return findings.sort((a, b) => b.risk - a.risk);
+  };
 
-		// First pass: detect contracts and functions
-		functions.forEach(fn => {
-		if (isConstructor(fn.ops)) {
-			context.currentContract = {
-			name: `Contract${context.contracts.length + 1}`,
-			functions: [],
-			storageLayout: []
-			};
-			context.contracts.push(context.currentContract);
-		}
-		
-		if (context.currentContract) {
-			context.currentContract.functions.push(fn);
-		}
-		});
+  const getRiskLevel = (name) => {
+    if (name.includes("ec_") || name.includes("ecrecover")) return 3;
+    if (name.includes("sig") || name.includes("verify")) return 2;
+    return 1;
+  };
 
-		// Generate contract code
-		return context.contracts.map(contract => {
-		let contractCode = [`contract ${contract.name} {`];
-		
-		// Add storage variables
-		Object.entries(context.storageVars).forEach(([slot, varInfo]) => {
-			contractCode.push(`  ${varInfo.type} ${varInfo.name}; // slot ${slot}`);
-		});
-		
-		// Process functions
-		contract.functions.forEach(fn => {
-			contractCode.push(processFunction(fn, context));
-		});
-		
-		contractCode.push("}");
-		return contractCode.join("\n");
-		}).join("\n\n");
-	};
+  // Main analysis function
+  const analyzeBytecode = async () => {
+    setIsLoading(true);
+    setCryptoFindings([]);
+    setDisassembly("");
+    setPseudocode("");
+    setControlFlow([]);
 
-	const isConstructor = (ops) => {
-		return ops.some(op => op.opcode === 'CODECOPY' && 
-		ops.some(o => o.opcode === 'CALLVALUE'));
-	};
+    try {
+      if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
 
-	const processFunction = (fn, context) => {
-		const lines = [];
-		let indent = "  ";
-		const stack = [];
-		
-		// Determine function type
-		const fnType = detectFunctionType(fn.ops);
-		const visibility = fnType === 'external' ? 'public' : 'internal';
-		const mutability = fnType === 'view' ? ' view' : (fnType === 'pure' ? ' pure' : '');
-		const returns = fnType === 'view' ? ' returns (bool)' : '';
-		
-		lines.push(`${indent}function ${fn.name}() ${visibility}${mutability}${returns} {`);
-		
-		fn.ops.forEach(op => {
-		const result = processOperation(op, stack, context, indent + "  ");
-		if (result.code) {
-			if (Array.isArray(result.code)) {
-			lines.push(...result.code);
-			} else {
-			lines.push(result.code);
-			}
-		}
-		});
-		
-		lines.push(`${indent}}`);
-		return lines.join("\n");
-	};
+      const normalizedBytecode = bytecode.startsWith("0x") 
+        ? bytecode 
+        : `0x${bytecode}`;
 
-	const processOperation = (op, stack, context, indent) => {
-		switch(op.opcode) {
-		case 'PUSH1':
-		case 'PUSH2':
-		case 'PUSH32':
-			stack.push(`0x${op.operand}`);
-			return { stack };
-			
-		case 'MSTORE':
-			if (op.operand === '0x40') {
-			return { 
-				code: `${indent}// Initialize memory pointer`,
-				stack 
-			};
-			}
-			break;
-			
-		case 'SSTORE': {
-			const value = stack.pop();
-			const slot = stack.pop();
-			
-			if (!context.storageVars[slot]) {
-			const type = guessStorageType(value);
-			context.storageVars[slot] = {
-				name: `storage_${context.varCount++}`,
-				type
-			};
-			}
-			
-			return {
-			code: `${indent}${context.storageVars[slot].name} = ${value};`,
-			stack
-			};
-		}
-		
-		case 'JUMPI': {
-			const dest = stack.pop();
-			const condition = stack.pop();
-			return {
-			code: [
-				`${indent}if (${condition}) {`,
-				`${indent}  // Jump to ${dest}`,
-				`${indent}}`
-			],
-			stack
-			};
-		}
-		
-		case 'CALL': {
-			const [gas, addr, value] = [stack.pop(), stack.pop(), stack.pop()];
-			return {
-			code: `${indent}// External call to ${addr} with ${value} ETH`,
-			stack
-			};
-		}
-		
-		default:
-			return {
-			code: `${indent}${op.opcode};`,
-			stack
-			};
-		}
-	};
+      // 1. Generate disassembly
+      const disassembly = disassembleBytecode(normalizedBytecode);
+      setDisassembly(disassembly);
 
-	const detectFunctionType = (ops) => {
-		if (ops.some(op => op.opcode === 'DELEGATECALL')) return 'proxy';
-		if (ops.some(op => op.opcode === 'CALL' && !op.operand?.startsWith('0x'))) return 'external';
-		if (ops.some(op => op.opcode === 'RETURN' && ops.length < 10)) return 'view';
-		return 'internal';
-	};
+      // 2. Analyze control flow
+      const { ops, jumpdests } = enhancedDisassemble(normalizedBytecode);
+      const functions = analyzeControlFlow(ops, jumpdests);
+      setControlFlow(functions);
 
-	const guessStorageType = (value) => {
-		if (value === '0x00') return 'bool';
-		if (value?.startsWith('0x0000')) return 'address';
-		return 'uint256';
-	};
-	
-	const analyzeBytecode = async () => {
-		setIsLoading(true);
-		setCryptoFindings([]);
-		setDisassembly("");
-		setPseudocode("");
-		setControlFlow([]);
+      // 3. Generate pseudocode
+      const code = generatePseudocode(functions);
+      setPseudocode(code);
 
-		try {
-		if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
+      // 4. Detect crypto patterns
+      const findings = detectCryptoOperations(normalizedBytecode);
+      setCryptoFindings(findings);
 
-		const normalizedBytecode = bytecode.startsWith("0x")
-			? bytecode
-			: `0x${bytecode}`;
+    } catch (err) {
+      setCryptoFindings([{
+        type: "error",
+        message: err.message,
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-		// 1. Enhanced disassembly
-		const { ops, jumpdests, calls } = enhancedDisassemble(normalizedBytecode);
-		setDisassembly(ops.map(op => `${op.pc}: ${op.opcode}${op.operand ? ' ' + op.operand : ''}`).join("\n"));
+  return (
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          EVM Bytecode to Analyze:
+        </label>
+        <textarea
+          value={bytecode}
+          onChange={(e) => setBytecode(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+                   focus:outline-none focus:ring-2 focus:ring-blue-500
+                   focus:border-blue-500 font-mono text-sm !text-gray-800"
+          rows={8}
+          placeholder="Paste contract bytecode (with or without 0x)"
+          disabled={isLoading}
+        />
+      </div>
 
-		// 2. Control flow analysis
-		const functions = analyzeControlFlow(ops, jumpdests);
-		setControlFlow(functions);
+      <button
+        onClick={analyzeBytecode}
+        disabled={isLoading || !bytecode.trim()}
+        className={`px-4 py-2 rounded-md text-white font-medium ${
+          isLoading || !bytecode.trim()
+            ? "!bg-gray-400 cursor-not-allowed"
+            : "!bg-blue-950 hover:bg-blue-700"
+        }`}
+      >
+        {isLoading ? "Analyzing..." : "Detect Cryptographic Operations"}
+      </button>
 
-		// 3. Generate high-quality pseudocode
-		const code = generateReadablePseudocode(functions);
-		setPseudocode(code);
+      <div className="mt-6 space-y-6">
+        <div>
+          <h2 className="text-lg font-medium text-gray-800 mb-2">
+            Cryptographic Findings:
+          </h2>
+          {cryptoFindings.length > 0 ? (
+            <div className="space-y-3">
+              {cryptoFindings.map((finding, index) => (
+                <div
+                  key={index}
+                  className={`p-3 rounded-md border-l-4 ${
+                    finding.type === "error"
+                      ? "bg-red-50 border-red-500 text-red-700"
+                      : finding.risk === 3
+                      ? "bg-orange-50 border-orange-500 text-orange-700"
+                      : finding.risk === 2
+                      ? "bg-yellow-50 border-yellow-500 text-yellow-700"
+                      : "bg-green-50 border-green-500 text-green-700"
+                  }`}
+                >
+                  {finding.type === "error" ? (
+                    <p>{finding.message}</p>
+                  ) : (
+                    <>
+                      <p className="font-bold">{finding.name}</p>
+                      <p>Type: {finding.type.replace("_", " ")}</p>
+                      {finding.pattern && <p>Pattern: {finding.pattern}</p>}
+                      <p>Location: {finding.location}</p>
+                      <p>Risk: {"❗".repeat(finding.risk)}</p>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">
+              {isLoading ? "Analyzing..." : "No cryptographic operations detected yet"}
+            </p>
+          )}
+        </div>
 
-		// 4. Detect crypto patterns
-		const detected = detectCryptoOperations(normalizedBytecode);
-		setCryptoFindings(detected);
+        {disassembly && (
+          <div>
+            <h2 className="text-lg font-medium text-gray-800 mb-2">
+              Disassembly (First 100 lines):
+            </h2>
+            <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60 !text-gray-800">
+              {disassembly.split("\n").slice(0, 100).join("\n")}
+            </pre>
+          </div>
+        )}
 
-		} catch (err) {
-		setCryptoFindings([{
-			type: "error",
-			message: err.message,
-		}]);
-		} finally {
-		setIsLoading(false);
-		}
-	};
-
-	return (
-		<div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
-			<div className="mb-4">
-				<label className="block text-sm font-medium text-gray-700 mb-2">
-					EVM Bytecode to Analyze:
-				</label>
-				<textarea
-					value={bytecode}
-					onChange={(e) => setBytecode(e.target.value)}
-					className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                     focus:outline-none focus:ring-2 focus:ring-blue-500
-                     focus:border-blue-500 font-mono text-sm !text-gray-800"
-					rows={8}
-					placeholder="Paste contract bytecode (with or without 0x)"
-					disabled={isLoading}
-				/>
-			</div>
-
-			<button
-				onClick={analyzeBytecode}
-				disabled={isLoading || !bytecode.trim()}
-				className={`px-4 py-2 rounded-md text-white font-medium ${
-					isLoading || !bytecode.trim()
-						? "!bg-gray-400 cursor-not-allowed"
-						: "!bg-blue-950 hover:bg-blue-700"
-				}`}
-			>
-				{isLoading ? "Analyzing..." : "Detect Cryptographic Operations"}
-			</button>
-
-			<div className="mt-6 space-y-6">
-				<div>
-					<h2 className="text-lg font-medium text-gray-800 mb-2">
-						Cryptographic Findings:
-					</h2>
-
-					{cryptoFindings.length > 0 ? (
-						<div className="space-y-3">
-							{cryptoFindings.map((finding, index) => (
-								<div
-									key={index}
-									className={`
-                  p-3 rounded-md border-l-4
-                  ${
-						finding.type === "error"
-							? "bg-red-50 border-red-500 text-red-700"
-							: finding.risk === 3
-							? "bg-orange-50 border-orange-500 text-orange-700"
-							: finding.risk === 2
-							? "bg-yellow-50 border-yellow-500 text-yellow-700"
-							: "bg-green-50 border-green-500 text-green-700"
-					}
-                `}
-								>
-									{finding.type === "error" ? (
-										<p>{finding.message}</p>
-									) : (
-										<>
-											<p className="font-bold">
-												{finding.name}
-											</p>
-											<p>
-												Type:{" "}
-												{finding.type.replace("_", " ")}
-											</p>
-											{finding.pattern && (
-												<p>
-													Pattern: {finding.pattern}
-												</p>
-											)}
-											<p>Location: {finding.location}</p>
-											<p>
-												Risk:{" "}
-												{"❗".repeat(finding.risk)}
-											</p>
-										</>
-									)}
-								</div>
-							))}
-						</div>
-					) : (
-						<p className="text-gray-500">
-							{isLoading
-								? "Analyzing..."
-								: "No cryptographic operations detected yet"}
-						</p>
-					)}
-				</div>
-
-				{disassembly && (
-					<div>
-						<h2 className="text-lg font-medium text-gray-800 mb-2">
-							Disassembly (First 100 lines):
-						</h2>
-						<pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60 !text-gray-800">
-							{disassembly.split("\n").slice(0, 100).join("\n")}
-						</pre>
-					</div>
-				)}
-
-				{pseudocode && (
-					<div className="mt-6">
-					<h2 className="text-lg font-medium text-gray-800 mb-2">
-					Reconstructed Code:
-					</h2>
-					<div className="bg-gray-100 p-4 rounded-md overflow-auto">
-						<pre className="text-sm font-mono whitespace-pre-wrap">
-						{pseudocode}
-						</pre>
-					</div>
-					<div className="mt-2 text-sm text-gray-500">
-					<p>Note: This is reconstructed pseudocode, not original source.</p>
-					</div>
-					</div>
-				)}
-			</div>
-		</div>
-	);
+        {pseudocode && (
+          <div className="mt-6">
+            <h2 className="text-lg font-medium text-gray-800 mb-2">
+              Reconstructed Pseudocode
+            </h2>
+            <div className="bg-gray-100 p-4 rounded-md overflow-auto max-h-96">
+              <pre className="text-sm font-mono whitespace-pre-wrap">
+                {pseudocode}
+              </pre>
+            </div>
+            <div className="mt-2 text-sm text-gray-500">
+              <p>Note: This is reconstructed pseudocode, not original source.</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
