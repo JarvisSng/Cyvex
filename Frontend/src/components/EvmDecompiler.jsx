@@ -346,7 +346,7 @@ export default function CryptoDetector() {
 					onChange={(e) => setBytecode(e.target.value)}
 					className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                      focus:outline-none focus:ring-2 focus:ring-blue-500
-                     focus:border-blue-500 font-mono text-sm"
+                     focus:border-blue-500 font-mono text-sm text-gray-800"
 					rows={8}
 					placeholder="Paste contract bytecode (with or without 0x)"
 					disabled={isLoading}
@@ -429,7 +429,7 @@ export default function CryptoDetector() {
 						<h2 className="text-lg font-medium text-gray-800 mb-2">
 							Disassembly (First 100 lines):
 						</h2>
-						<pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60">
+						<pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60 text-gray-800">
 							{disassembly.split("\n").slice(0, 100).join("\n")}
 						</pre>
 					</div>
