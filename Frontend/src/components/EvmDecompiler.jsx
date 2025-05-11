@@ -8,6 +8,8 @@ export default function CryptoDetector() {
 	const [cryptoFindings, setCryptoFindings] = useState([]);
 	const [disassembly, setDisassembly] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+	const [pseudocode, setPseudocode] = useState("");
+	const [controlFlow, setControlFlow] = useState([]);
 
 	const [OPCODE_MAP, setOpcodeMap] = useState({});
 	const [CRYPTO_PATTERNS, setCryptoPatternsState] = useState({});
@@ -59,6 +61,112 @@ export default function CryptoDetector() {
 
 		loadAll();
 	}, []);
+
+	// Enhanced disassembler with control flow tracking
+	const enhancedDisassemble = (bytecode) => {
+	const cleanCode = bytecode.startsWith("0x") ? bytecode.slice(2) : bytecode;
+	const ops = [];
+	let i = 0;
+	const jumpdests = new Set();
+	const calls = [];
+	
+	// First pass: identify all jump destinations
+	while (i < cleanCode.length) {
+		const byte = cleanCode.substr(i, 2);
+		if (byte === "5b") { // JUMPDEST
+		jumpdests.add(i/2);
+		}
+		i += 2;
+	}
+	
+	// Second pass: full disassembly
+	i = 0;
+	while (i < cleanCode.length) {
+		const pc = i/2;
+		const byte = cleanCode.substr(i, 2);
+		const opcode = OPCODE_MAP[byte] || `0x${byte}`;
+		const op = { pc, opcode };
+		
+		if (byte >= "60" && byte <= "7f") { // PUSH
+		const pushSize = parseInt(byte, 16) - 0x5f;
+		op.operand = cleanCode.substr(i + 2, pushSize * 2);
+		i += 2 + pushSize * 2;
+		} else {
+		i += 2;
+		}
+		
+		// Track control flow
+		if (byte === "56" || byte === "57") { // JUMP/JUMPI
+		op.isJump = true;
+		} else if (byte === "f1" || byte === "f2" || byte === "f4") { // CALL variants
+		calls.push(pc);
+		}
+		
+		ops.push(op);
+	}
+	
+	return { ops, jumpdests, calls };
+	};
+
+	// Basic control flow analysis
+	const analyzeControlFlow = (ops, jumpdests) => {
+	const functions = [];
+	let currentFunction = null;
+	
+	ops.forEach(op => {
+		// Detect function starts (JUMPDEST with no incoming jumps)
+		if (op.opcode === "JUMPDEST" && !currentFunction) {
+		currentFunction = {
+			start: op.pc,
+			ops: [],
+			name: `function_${op.pc.toString(16)}`
+		};
+		functions.push(currentFunction);
+		}
+		
+		if (currentFunction) {
+		currentFunction.ops.push(op);
+		
+		// End function at RETURN or STOP
+		if (op.opcode === "RETURN" || op.opcode === "STOP") {
+			currentFunction = null;
+		}
+		}
+	});
+	
+	return functions;
+	};
+
+	// Convert opcodes to pseudocode
+	const generatePseudocode = (functions) => {
+	return functions.map(fn => {
+		const lines = [];
+		lines.push(`function ${fn.name}() {`);
+		
+		fn.ops.forEach(op => {
+		// Convert to readable statements
+		if (op.opcode.startsWith("PUSH")) {
+			lines.push(`  ${op.opcode} 0x${op.operand}`);
+		} else if (op.opcode === "SSTORE") {
+			lines.push("  storage[stack[-1]] = stack[-2]");
+		} else if (op.opcode === "SLOAD") {
+			lines.push("  stack.push(storage[stack.pop()])");
+		} else if (op.opcode === "JUMPI") {
+			lines.push("  if (stack.pop()) goto label_" + op.operand);
+		} else if (op.isJump) {
+			lines.push(`  goto label_${op.operand}`);
+		} else if (op.opcode === "CALL") {
+			lines.push("  call(stack.pop(), stack.pop(), ...)");
+		} else {
+			lines.push(`  ${op.opcode}`);
+		}
+		});
+		
+		lines.push("}");
+		return lines.join("\n");
+	}).join("\n\n");
+	};
+
 
 	const detectCryptoOperations = (code) => {
 		const findings = [];
@@ -137,26 +245,37 @@ export default function CryptoDetector() {
 		setIsLoading(true);
 		setCryptoFindings([]);
 		setDisassembly("");
+		setPseudocode("");
+		setControlFlow([]);
 
 		try {
 			if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
 
 			const normalizedBytecode = bytecode.startsWith("0x")
-				? bytecode
-				: `0x${bytecode}`;
+			? bytecode
+			: `0x${bytecode}`;
 
+			// 1. Enhanced disassembly
+			const { ops, jumpdests, calls } = enhancedDisassemble(normalizedBytecode);
+			setDisassembly(ops.map(op => `${op.pc}: ${op.opcode}${op.operand ? ' ' + op.operand : ''}`).join("\n"));
+
+			// 2. Control flow analysis
+			const functions = analyzeControlFlow(ops, jumpdests);
+			setControlFlow(functions);
+
+			// 3. Generate pseudocode
+			const code = generatePseudocode(functions);
+			setPseudocode(code);
+
+			// 4. Detect crypto patterns (your existing function)
 			const detected = detectCryptoOperations(normalizedBytecode);
 			setCryptoFindings(detected);
 
-			const opcodes = disassembleBytecode(normalizedBytecode);
-			setDisassembly(opcodes);
 		} catch (err) {
-			setCryptoFindings([
-				{
-					type: "error",
-					message: err.message,
-				},
-			]);
+			setCryptoFindings([{
+			type: "error",
+			message: err.message,
+			}]);
 		} finally {
 			setIsLoading(false);
 		}
@@ -260,6 +379,45 @@ export default function CryptoDetector() {
 							{disassembly.split("\n").slice(0, 100).join("\n")}
 						</pre>
 					</div>
+				)}
+
+				{controlFlow.length > 0 && (
+				<div className="mt-6">
+					<h2 className="text-lg font-medium text-gray-800 mb-2">
+					Detected Functions:
+					</h2>
+					<div className="bg-gray-100 p-4 rounded-md">
+					<table className="min-w-full divide-y divide-gray-200">
+						<thead>
+						<tr>
+							<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+							<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start</th>
+							<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opcodes</th>
+						</tr>
+						</thead>
+						<tbody className="bg-white divide-y divide-gray-200">
+						{controlFlow.map((fn, i) => (
+							<tr key={i}>
+							<td className="px-4 py-2 whitespace-nowrap">{fn.name}</td>
+							<td className="px-4 py-2 whitespace-nowrap font-mono text-sm">0x{fn.start.toString(16)}</td>
+							<td className="px-4 py-2">{fn.ops.length} opcodes</td>
+							</tr>
+						))}
+						</tbody>
+					</table>
+					</div>
+				</div>
+				)}
+
+				{pseudocode && (
+				<div className="mt-6">
+					<h2 className="text-lg font-medium text-gray-800 mb-2">
+					Generated Pseudocode:
+					</h2>
+					<pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60 !text-gray-800">
+					{pseudocode}
+					</pre>
+				</div>
 				)}
 			</div>
 		</div>
