@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { checkCurrentUserSubscription } from "../controller/checkSub";
 import { getDetectionRules } from "../controller/rulesController";
-import { checkCurrentUserSubscription } from "../controller/userController"
 
 // 1) Skip lines that start with // or #
 function isCommentLine(line) {
@@ -90,7 +89,7 @@ function Detector() {
 
 		const checkSubscription = async () => {
 			try {
-				const subscribed = await getUserProfilesWithSubscriptions();
+				const subscribed = await checkCurrentUserSubscription();
 				if (subscribed) {
 					setIsSubscribed(true);
 				}
