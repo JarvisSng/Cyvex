@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { Route, HashRouter as Router, Routes } from "react-router-dom";
 import RepoPull from "./components/RepoPull.jsx";
 import "./index.css"; // Global styles
 import LoginEmail from "./LoginPages/loginEmail.jsx";
