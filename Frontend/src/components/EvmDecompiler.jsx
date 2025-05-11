@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { ethers } from "ethers";
 import { getCryptoPatterns } from "../controller/cryptoPatternsController";
 import { getEvmOpcodes } from "../controller/evmOpcodesController";
 import { getOpcodePatterns } from "../controller/opcodePatternsController";
@@ -9,7 +8,6 @@ export default function CryptoDetector() {
 	const [cryptoFindings, setCryptoFindings] = useState([]);
 	const [disassembly, setDisassembly] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
-	const [decompiledCode, setDecompiledCode] = useState("");
 
 	const [OPCODE_MAP, setOpcodeMap] = useState({});
 	const [CRYPTO_PATTERNS, setCryptoPatternsState] = useState({});
@@ -135,50 +133,33 @@ export default function CryptoDetector() {
 		}
 	};
 
-	const decompileBytecode = async (bytecode) => {
-	try {
-		// This is a basic approach - consider using a more sophisticated decompiler
-		const iface = new ethers.utils.Interface([]);
-		const decompiled = iface.decompile(bytecode);
-		return decompiled || "Decompilation not available";
-	} catch (err) {
-		console.error("Decompilation error:", err);
-		return `Decompilation failed: ${err.message}`;
-	}
-	};
-
-	// Update your analyzeBytecode function
 	const analyzeBytecode = async () => {
-	setIsLoading(true);
-	setCryptoFindings([]);
-	setDisassembly("");
-	setDecompiledCode("");
+		setIsLoading(true);
+		setCryptoFindings([]);
+		setDisassembly("");
 
-	try {
-		if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
+		try {
+			if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
 
-		const normalizedBytecode = bytecode.startsWith("0x")
-		? bytecode
-		: `0x${bytecode}`;
+			const normalizedBytecode = bytecode.startsWith("0x")
+				? bytecode
+				: `0x${bytecode}`;
 
-		const detected = detectCryptoOperations(normalizedBytecode);
-		setCryptoFindings(detected);
+			const detected = detectCryptoOperations(normalizedBytecode);
+			setCryptoFindings(detected);
 
-		const opcodes = disassembleBytecode(normalizedBytecode);
-		setDisassembly(opcodes);
-
-		const decompiled = await decompileBytecode(normalizedBytecode);
-		setDecompiledCode(decompiled);
-	} catch (err) {
-		setCryptoFindings([
-		{
-			type: "error",
-			message: err.message,
-		},
-		]);
-	} finally {
-		setIsLoading(false);
-	}
+			const opcodes = disassembleBytecode(normalizedBytecode);
+			setDisassembly(opcodes);
+		} catch (err) {
+			setCryptoFindings([
+				{
+					type: "error",
+					message: err.message,
+				},
+			]);
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	return (
@@ -279,17 +260,6 @@ export default function CryptoDetector() {
 							{disassembly.split("\n").slice(0, 100).join("\n")}
 						</pre>
 					</div>
-				)}
-
-				{decompiledCode && (
-				<div>
-					<h2 className="text-lg font-medium text-gray-800 mb-2">
-					Decompiled Code:
-					</h2>
-					<pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60 !text-gray-800">
-					{decompiledCode}
-					</pre>
-				</div>
 				)}
 			</div>
 		</div>
