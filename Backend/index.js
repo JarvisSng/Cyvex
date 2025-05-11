@@ -18,6 +18,7 @@ const evmOpcodesRouter = require("./routes/evmOpcodes");
 const cryptoPatternsRouter = require("./routes/cryptoPatterns");
 const opcodePatternsRouter = require("./routes/opcodePatterns");
 const evmRoutes = require("./routes/evmRoutes");
+const checkSubRoute = require("./routes/checkSub");
 
 // Initialize the Express application
 const app = express();
@@ -34,7 +35,7 @@ app.use(
 		origin: ["http://localhost:5173", "https://cyvex-zhxk.onrender.com"], // Allow requests from the specified frontend URL
 		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
 		allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers for requests
-		credentials: true // If using cookies/auth
+		credentials: true, // If using cookies/auth
 	})
 );
 
@@ -56,6 +57,7 @@ app.use("/api/evm-opcodes", evmOpcodesRouter);
 app.use("/api/crypto-patterns", cryptoPatternsRouter);
 app.use("/api/opcode-patterns", opcodePatternsRouter);
 app.use("/api/evm", evmRoutes);
+app.use("/api/check", checkSubRoute);
 
 // Set port from environment variables or default to 3000, and start the server
 const PORT = process.env.PORT || 3000;
