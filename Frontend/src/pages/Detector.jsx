@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDetectionRules } from "../controller/rulesController";
-import { getUserProfilesWithSubscriptions } from "../controller/userController";
+import { checkCurrentUserSubscription } from "../controller/userController"
 
 // 1) Skip lines that start with // or #
 function isCommentLine(line) {
