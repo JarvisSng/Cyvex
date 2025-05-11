@@ -57,15 +57,6 @@ app.use("/api/crypto-patterns", cryptoPatternsRouter);
 app.use("/api/opcode-patterns", opcodePatternsRouter);
 app.use("/api/evm", evmRoutes);
 
-// Serve static files from the React build folder
-app.use(express.static(path.join(__dirname, "..", "dist"))); // Adjust the path if needed
-
-// Fallback route: Serve index.html for any request not matching an API route.
-// This supports client-side routing (e.g., /reset-password)
-app.get("/{*splat}", (req, res) => {
-	res.sendFile(path.join(__dirname, "../../Frontend", "dist", "index.html"));
-});
-
 // Set port from environment variables or default to 3000, and start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
