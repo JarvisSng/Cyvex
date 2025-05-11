@@ -57,17 +57,6 @@ app.use("/api/crypto-patterns", cryptoPatternsRouter);
 app.use("/api/opcode-patterns", opcodePatternsRouter);
 app.use("/api/evm", evmRoutes);
 
-// Handle 404 for API routes
-app.use("/api/*", (req, res) => {
-	res.status(404).json({ error: "API endpoint not found" });
-  });
-  
-// Error handling middleware
-app.use((err, req, res, next) => {
-	console.error(err.stack);
-	res.status(500).json({ error: "Internal server error" });
-});
-
 // Serve static files from the React build folder
 app.use(express.static(path.join(__dirname, "..", "dist"))); // Adjust the path if needed
 
