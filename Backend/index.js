@@ -66,6 +66,7 @@ app.post('/api/decompile', async (req, res) => {
   
   try {
     const pseudocode = await panoramix.decompile(bytecode);
+	console.log(pseudocode);
     res.json({ pseudocode });
   } catch (error) {
     res.status(500).json({ error: 'Error during decompiling' });
