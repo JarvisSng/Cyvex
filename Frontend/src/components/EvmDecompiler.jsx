@@ -157,14 +157,13 @@ export default function CryptoDetector() {
 
 			// Handle PUSH operations
 			if (byte >= "60" && byte <= "7f") {
-			const pushSize = parseInt(byte, 16) - 0x5f;
-			const value = "0x" + cleanCode.substr(i + 2, pushSize * 2);
+				const pushSize = parseInt(byte, 16) - 0x5f;
+				const value = "0x" + cleanCode.substr(i + 2, pushSize * 2);
 			i += 2 + pushSize * 2;
 			
 			if (currentFunction) {
-				currentFunction.stack.push(value);
 				if (op.solidity_function) {
-				currentFunction.code.push(`    ${op.solidity_function.replace("0x01", value)}`);
+				currentFunction.code.push(`${op.solidity_function.replace("0x01", value)}`);
 				}
 			}
 			continue;
@@ -176,7 +175,6 @@ export default function CryptoDetector() {
 			currentFunction = {
 				start: pc,
 				code: [],
-				stack: [],
 				name: `function_${pc.toString(16)}`
 			};
 			functions.push(currentFunction);
