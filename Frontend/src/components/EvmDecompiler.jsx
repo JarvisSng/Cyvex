@@ -9,15 +9,10 @@ export default function CryptoDetector() {
   const [disassembly, setDisassembly] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [pseudocode, setPseudocode] = useState("");
-  const [controlFlow, setControlFlow] = useState([]);
 
   const [OPCODE_MAP, setOpcodeMap] = useState({});
   const [CRYPTO_PATTERNS, setCryptoPatternsState] = useState({});
   const [OPCODE_PATTERNS, setOpcodePatternsState] = useState({});
-
-  const [evmError, setEvmError] = useState("");
-  const [opcodeError, setOpcodeError] = useState("");
-  const [cryptoError, setCryptoError] = useState("");
 
   // Load opcodes and patterns on mount
   useEffect(() => {
@@ -35,8 +30,6 @@ export default function CryptoDetector() {
             map[opcode.toLowerCase()] = mnemonic;
           });
           setOpcodeMap(map);
-        } else {
-          setEvmError(evm.error);
         }
 
         if (!crypto.error) {
@@ -45,8 +38,6 @@ export default function CryptoDetector() {
             map[pattern_name] = signature.toLowerCase();
           });
           setCryptoPatternsState(map);
-        } else {
-          setCryptoError(crypto.error);
         }
 
         if (!ops.error) {
@@ -55,8 +46,6 @@ export default function CryptoDetector() {
             map[pattern_name] = regex;
           });
           setOpcodePatternsState(map);
-        } else {
-          setOpcodeError(ops.error);
         }
       } catch (err) {
         console.error("Failed to load data:", err);
@@ -65,81 +54,6 @@ export default function CryptoDetector() {
 
     loadAll();
   }, []);
-
-  // Enhanced disassembler with control flow tracking
-  const enhancedDisassemble = (bytecode) => {
-    const cleanCode = bytecode.startsWith("0x") ? bytecode.slice(2) : bytecode;
-    const ops = [];
-    let i = 0;
-    const jumpdests = new Set();
-    const calls = [];
-    
-    // First pass: identify all jump destinations
-    while (i < cleanCode.length) {
-      const byte = cleanCode.substr(i, 2);
-      if (byte === "5b") { // JUMPDEST
-        jumpdests.add(i/2);
-      }
-      i += 2;
-    }
-    
-    // Second pass: full disassembly
-    i = 0;
-    while (i < cleanCode.length) {
-      const pc = i/2;
-      const byte = cleanCode.substr(i, 2);
-      const opcode = OPCODE_MAP[byte] || `0x${byte}`;
-      const op = { pc, opcode };
-      
-      if (byte >= "60" && byte <= "7f") { // PUSH
-        const pushSize = parseInt(byte, 16) - 0x5f;
-        op.operand = cleanCode.substr(i + 2, pushSize * 2);
-        i += 2 + pushSize * 2;
-      } else {
-        i += 2;
-      }
-      
-      // Track control flow
-      if (byte === "56" || byte === "57") { // JUMP/JUMPI
-        op.isJump = true;
-      } else if (byte === "f1" || byte === "f2" || byte === "f4") { // CALL variants
-        calls.push(pc);
-      }
-      
-      ops.push(op);
-    }
-    
-    return { ops, jumpdests, calls };
-  };
-
-  // Basic control flow analysis
-  const analyzeControlFlow = (ops, jumpdests) => {
-    const functions = [];
-    let currentFunction = null;
-    
-    ops.forEach(op => {
-      // Detect function starts (JUMPDEST with no incoming jumps)
-      if (op.opcode === "JUMPDEST" && !currentFunction) {
-        currentFunction = {
-          start: op.pc,
-          ops: [],
-          name: `function_${op.pc.toString(16)}`
-        };
-        functions.push(currentFunction);
-      }
-      
-      if (currentFunction) {
-        currentFunction.ops.push(op);
-        
-        // End function at RETURN or STOP
-        if (op.opcode === "RETURN" || op.opcode === "STOP") {
-          currentFunction = null;
-        }
-      }
-    });
-    
-    return functions;
-  };
 
   // Convert bytecode to disassembly
   const disassembleBytecode = (code) => {
@@ -165,108 +79,57 @@ export default function CryptoDetector() {
 
       return result.join("\n");
     } catch (err) {
-      console.error("Disassembly error:", err);
       return `Disassembly failed: ${err.message}`;
     }
   };
 
   // Generate readable pseudocode
-const generatePseudocode = (functions) => {
-  const storageVars = {};
-  let varCount = 1;
-  let output = [];
-
-  functions.forEach(fn => {
-    let fnCode = [`function ${fn.name}() public {`];
+  const generatePseudocode = (bytecode) => {
+    const cleanCode = bytecode.startsWith("0x") ? bytecode.slice(2) : bytecode;
+    const storageVars = {};
+    let varCount = 1;
+    let output = [];
     let stack = [];
 
-    fn.ops.forEach(op => {
-      const indent = '  ';
-      
-      // Handle PUSH
-      if (op.opcode.startsWith('PUSH')) {
-        stack.push(`0x${op.operand}`);
-        return;
+    for (let i = 0; i < cleanCode.length; i += 2) {
+      const byte = cleanCode.substr(i, 2);
+      const opcode = OPCODE_MAP[byte] || `0x${byte}`;
+
+      if (byte >= "60" && byte <= "7f") { // PUSH
+        const pushSize = parseInt(byte, 16) - 0x5f;
+        const value = "0x" + cleanCode.substr(i + 2, pushSize * 2);
+        i += pushSize * 2;
+        stack.push(value);
+        continue;
       }
 
-      // Handle SSTORE
-      if (op.opcode === 'SSTORE') {
+      if (opcode === "SSTORE") {
         const value = stack.pop();
         const slot = stack.pop();
-
         if (!storageVars[slot]) {
           storageVars[slot] = `var${varCount++}`;
+          output.push(`uint256 ${storageVars[slot]};`);
         }
-
-        fnCode.push(`${indent}${storageVars[slot]} = ${value};`);
-        return;
+        output.push(`${storageVars[slot]} = ${value};`);
+        continue;
       }
 
-      // Handle SLOAD
-      if (op.opcode === 'SLOAD') {
+      if (opcode === "SLOAD") {
         const slot = stack.pop();
         const varName = storageVars[slot] || `storage[${slot}]`;
         stack.push(varName);
-        return;
+        continue;
       }
+    }
 
-      // Handle JUMPI
-      if (op.opcode === 'JUMPI') {
-        const condition = stack.pop();
-        const dest = stack.pop();
-        fnCode.push(`${indent}if (${condition}) {`);
-        fnCode.push(`${indent}  goto label_${dest};`);
-        fnCode.push(`${indent}}`);
-        return;
-      }
-
-      // Handle JUMP
-      if (op.opcode === 'JUMP') {
-        const dest = stack.pop();
-        fnCode.push(`${indent}goto label_${dest};`);
-        return;
-      }
-
-      // Handle JUMPDEST
-      if (op.opcode === 'JUMPDEST') {
-        fnCode.push(`\nlabel_${op.pc}:`);
-        return;
-      }
-
-      // External calls
-      if (op.opcode === 'CALL') {
-        const [gas, to, value] = [stack.pop(), stack.pop(), stack.pop()];
-        fnCode.push(`${indent}// External call`);
-        fnCode.push(`${indent}(bool success, ) = address(${to}).call{value: ${value}}("");`);
-        return;
-      }
-
-      // Handle RETURN or STOP
-      if (op.opcode === 'RETURN' || op.opcode === 'STOP') {
-        fnCode.push(`${indent}return;`);
-        return;
-      }
-
-      // Default: add the opcode as a comment
-      fnCode.push(`${indent}// ${op.opcode}`);
-    });
-
-    fnCode.push("}");
-    output.push(fnCode.join("\n"));
-  });
-
-  // Add top-level declarations for known storage vars
-  const decls = Object.values(storageVars).map(name => `uint256 public ${name};`);
-  return decls.concat(output).join("\n\n");
-};
-
+    return output.join("\n");
+  };
 
   // Detect cryptographic patterns
   const detectCryptoOperations = (code) => {
     const findings = [];
     const cleanCode = code.toLowerCase().replace(/^0x/, "");
 
-    // Detect cryptographic patterns
     for (const [name, pattern] of Object.entries(CRYPTO_PATTERNS)) {
       if (typeof pattern === "string") {
         const index = cleanCode.indexOf(pattern);
@@ -276,13 +139,13 @@ const generatePseudocode = (functions) => {
             name,
             pattern,
             location: `0x${index.toString(16)}`,
-            risk: getRiskLevel(name),
+            risk: name.includes("ec_") || name.includes("ecrecover") ? 3 : 
+                  name.includes("sig") || name.includes("verify") ? 2 : 1,
           });
         }
       }
     }
 
-    // Detect opcode patterns
     for (const [name, regex] of Object.entries(OPCODE_PATTERNS)) {
       const match = cleanCode.match(regex);
       if (match) {
@@ -290,18 +153,12 @@ const generatePseudocode = (functions) => {
           type: "opcode_pattern",
           name,
           location: `0x${match.index.toString(16)}`,
-          risk: getRiskLevel(name),
+          risk: name.includes("ec_") ? 3 : name.includes("sig") ? 2 : 1,
         });
       }
     }
 
     return findings.sort((a, b) => b.risk - a.risk);
-  };
-
-  const getRiskLevel = (name) => {
-    if (name.includes("ec_") || name.includes("ecrecover")) return 3;
-    if (name.includes("sig") || name.includes("verify")) return 2;
-    return 1;
   };
 
   // Main analysis function
@@ -310,7 +167,6 @@ const generatePseudocode = (functions) => {
     setCryptoFindings([]);
     setDisassembly("");
     setPseudocode("");
-    setControlFlow([]);
 
     try {
       if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
@@ -319,28 +175,11 @@ const generatePseudocode = (functions) => {
         ? bytecode 
         : `0x${bytecode}`;
 
-      // 1. Generate disassembly
-      const disassembly = disassembleBytecode(normalizedBytecode);
-      setDisassembly(disassembly);
-
-      // 2. Analyze control flow
-      const { ops, jumpdests } = enhancedDisassemble(normalizedBytecode);
-      const functions = analyzeControlFlow(ops, jumpdests);
-      setControlFlow(functions);
-
-      // 3. Generate pseudocode
-      const code = generatePseudocode(functions);
-      setPseudocode(code);
-
-      // 4. Detect crypto patterns
-      const findings = detectCryptoOperations(normalizedBytecode);
-      setCryptoFindings(findings);
-
+      setDisassembly(disassembleBytecode(normalizedBytecode));
+      setPseudocode(generatePseudocode(normalizedBytecode));
+      setCryptoFindings(detectCryptoOperations(normalizedBytecode));
     } catch (err) {
-      setCryptoFindings([{
-        type: "error",
-        message: err.message,
-      }]);
+      setCryptoFindings([{ type: "error", message: err.message }]);
     } finally {
       setIsLoading(false);
     }
@@ -437,9 +276,6 @@ const generatePseudocode = (functions) => {
               <pre className="text-sm font-mono whitespace-pre-wrap">
                 {pseudocode}
               </pre>
-            </div>
-            <div className="mt-2 text-sm text-gray-500">
-              <p>Note: This is reconstructed pseudocode, not original source.</p>
             </div>
           </div>
         )}
