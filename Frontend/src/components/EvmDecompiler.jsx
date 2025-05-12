@@ -25,27 +25,32 @@ export default function CryptoDetector() {
 			]);
 
 			if (!evm.error) {
-			const map = {};
-			evm.forEach(({ opcode, mnemonic }) => {
-				map[opcode.toLowerCase()] = mnemonic;
-			});
-			setOpcodeMap(map);
+				const map = {};
+				evm.forEach(op => {
+				map[op.opcode.toLowerCase()] = {
+					opcode: op.opcode,
+					mnemonic: op.mnemonic,
+					solidity_function: op.solidity_function
+				};
+				});
+				setOpcodeMap(map);
+				console.log("OPCODE_MAP loaded with", Object.keys(newMap).length, "opcodes");
 			}
 
 			if (!crypto.error) {
-			const map = {};
-			crypto.forEach(({ pattern_name, signature }) => {
-				map[pattern_name] = signature.toLowerCase();
-			});
-			setCryptoPatternsState(map);
+				const map = {};
+				crypto.forEach(({ pattern_name, signature }) => {
+					map[pattern_name] = signature.toLowerCase();
+				});
+				setCryptoPatternsState(map);
 			}
 
 			if (!ops.error) {
-			const map = {};
-			ops.forEach(({ pattern_name, regex }) => {
-				map[pattern_name] = regex;
-			});
-			setOpcodePatternsState(map);
+				const map = {};
+				ops.forEach(({ pattern_name, regex }) => {
+					map[pattern_name] = regex;
+				});
+				setOpcodePatternsState(map);
 			}
 		} catch (err) {
 			console.error("Failed to load data:", err);
@@ -119,82 +124,60 @@ export default function CryptoDetector() {
 		return findings.sort((a, b) => b.risk - a.risk);
   	};
 
-	// Replace both generatePseudocode functions with this single version:
 	const generatePseudocode = (bytecode) => {
 		const cleanCode = bytecode.startsWith("0x") ? bytecode.slice(2) : bytecode;
-		const output = ["// Reconstructed Solidity Code", "pragma solidity ^0.8.0;", ""];
+		const output = ["// Generated from bytecode", "pragma solidity ^0.8.0;", "", "contract Reconstructed {"];
 		const storageVars = {};
 		const stack = [];
 		let varCount = 1;
-		let inFunction = false;
 		let i = 0;
 
 		while (i < cleanCode.length) {
 			const byte = cleanCode.substr(i, 2);
-			const opcode = OPCODE_MAP[byte] || `0x${byte}`;
-			const op = { pc: i/2, opcode };
-
-			if (byte >= "60" && byte <= "7f") { // PUSH
-			const pushSize = parseInt(byte, 16) - 0x5f;
-			op.operand = cleanCode.substr(i + 2, pushSize * 2);
-			i += 2 + pushSize * 2;
-			stack.push(`0x${op.operand}`);
+			const op = OPCODE_MAP[byte];
 			
-			// Use solidity pattern if available
-			const solidityPattern = OPCODE_MAP[byte]?.solidity_function;
-			if (solidityPattern) {
-				output.push(`  ${solidityPattern.replace('0x01', `0x${op.operand}`)}`);
-			}
-			continue;
-			} else {
+			if (!op) {
 			i += 2;
-			}
-
-			// Handle function starts
-			if (opcode === "JUMPDEST" && !inFunction) {
-			output.push(`function func_${op.pc.toString(16)}() public {`);
-			inFunction = true;
 			continue;
 			}
 
-			if (!inFunction) continue;
+			// PUSH operations
+			if (byte >= "60" && byte <= "7f") {
+			const pushSize = parseInt(byte, 16) - 0x5f;
+			const value = "0x" + cleanCode.substr(i + 2, pushSize * 2);
+			i += 2 + pushSize * 2;
+			
+			if (op.solidity_function) {
+				output.push(`  ${op.solidity_function.replace("0x01", value)}`);
+			}
+			stack.push(value);
+			continue;
+			}
+			i += 2;
 
-			// Handle storage operations
-			if (opcode === "SSTORE") {
+			// SSTORE handling
+			if (op.mnemonic === "SSTORE" && stack.length >= 2) {
 			const value = stack.pop();
 			const slot = stack.pop();
+			
 			if (!storageVars[slot]) {
 				storageVars[slot] = `var${varCount++}`;
-				output.unshift(`  uint256 ${storageVars[slot]};`);
+				output.splice(4, 0, `  uint256 ${storageVars[slot]};`);
 			}
-			output.push(`  ${storageVars[slot]} = ${value};`);
+			
+			output.push(`  ${op.solidity_function
+				.replace("{slot}", storageVars[slot])
+				.replace("{value}", value)}`);
 			continue;
 			}
 
-			if (opcode === "SLOAD") {
-			const slot = stack.pop();
-			const varName = storageVars[slot] || `storage[${slot}]`;
-			stack.push(varName);
-			continue;
-			}
-
-			// Handle function endings
-			if (opcode === "RETURN" || opcode === "STOP") {
-			output.push("}\n");
-			inFunction = false;
-			continue;
-			}
-
-			// Default: add the opcode as a comment
-			output.push(`  // ${opcode}`);
+			// Default output
+			output.push(op.solidity_function 
+			? `  ${op.solidity_function}`
+			: `  // ${op.mnemonic}`);
 		}
 
-		// Add contract wrapper if we found any code
-		if (output.length > 3) {
-			output.unshift("contract Reconstructed {");
-			output.push("}");
-		}
-
+		output.push("}");
 		return output.join("\n");
 	};
 
