@@ -355,13 +355,16 @@ export default function CryptoDetector() {
 			</div>
 			)}
 
-			{/* Decompiled Code */}
+			{decompiledCode && (
 			<div>
-				<h2 className="text-lg font-medium text-gray-800 mb-2">Decompiled Code:</h2>
-				<pre className="bg-gray-100 p-3 rounded-md font-mono text-sm text-gray-700 whitespace-pre-wrap">
-					{decompiledCode || "No decompiled code available."}
+				<h2 className="text-lg font-medium text-gray-800 mb-2">
+				Decompiled Code:
+				</h2>
+				<pre className="bg-gray-100 p-4 rounded text-sm overflow-x-auto">
+				{decompiledCode}
 				</pre>
 			</div>
+			)}
 		</div>
 	</div>
 	);
