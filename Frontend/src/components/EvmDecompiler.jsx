@@ -142,16 +142,16 @@ export default function CryptoDetector() {
 		let varCount = 1;
 		let i = 0;
 
-		// First pass: identify all JUMPDESTs and potential function starts
-		const jumpdests = new Set();
-		while (i < cleanCode.length) {
-			const byte = cleanCode.substr(i, 2);
-			if (byte === "5b") { // JUMPDEST
-				jumpdests.add(i / 2);
-			}
-			// If it's a PUSHn opcode (0x60 to 0x7f), skip n bytes of data
-			i += (byte >= "60" && byte <= "7f") ? (parseInt(byte, 16) - 0x5f + 1) * 2 : 2;
-		}
+				// First pass: identify all JUMPDESTs and potential function starts
+				const jumpdests = new Set();
+				while (i < cleanCode.length) {
+					const byte = cleanCode.substr(i, 2);
+					if (byte === "5b") { // JUMPDEST
+						jumpdests.add(i / 2);
+					}
+					// If it's a PUSHn opcode (0x60 to 0x7f), skip n bytes of data
+					i += (byte >= "60" && byte <= "7f") ? (parseInt(byte, 16) - 0x5f + 1) * 2 : 2;
+				}
 
 		// Second pass: analyze code with better function detection
 		i = 0;
@@ -178,39 +178,40 @@ export default function CryptoDetector() {
 			i += 2;
 
 			// Improved function detection
-			if (opcode === "JUMPDEST") {
-			// Check if this is a likely function start (has code after it)
-			if (!currentFunction && i < cleanCode.length - 2) {
-				currentFunction = {
+			if (opcode === "JUMPDEST" && !currentFunction) {
+			currentFunction = {
 				start: pc,
 				code: [],
 				stack: [],
 				name: `function_${pc.toString(16)}`
-				};
-				functions.push(currentFunction);
-				continue;
-			}
+			};
+			functions.push(currentFunction);
+			continue;
 			}
 
 			if (!currentFunction) continue;
 
 			// Handle common operations with better output
 			switch (opcode) {
-			case "SSTORE":
+			case "MSTORE":
 				if (currentFunction.stack.length >= 2) {
 				const value = currentFunction.stack.pop();
-				const slot = currentFunction.stack.pop();
-				if (!storageVars[slot]) {
-					storageVars[slot] = `storageVar${varCount++}`;
-					output.splice(2, 0, `  uint256 ${storageVars[slot]};`);
-				}
-				currentFunction.code.push(`    ${storageVars[slot]} = ${value};`);
+				const offset = currentFunction.stack.pop();
+				currentFunction.code.push(`    // Store ${value} at memory ${offset}`);
 				}
 				break;
 
-			case "RETURN":
-				currentFunction.code.push("    return;");
-				currentFunction = null;
+			case "CALLVALUE":
+				currentFunction.stack.push("msg.value");
+				currentFunction.code.push("    uint256 value = msg.value;");
+				break;
+
+			case "ISZERO":
+				if (currentFunction.stack.length >= 1) {
+				const val = currentFunction.stack.pop();
+				currentFunction.stack.push(`!(${val})`);
+				currentFunction.code.push(`    bool isZero = (${val} == 0);`);
+				}
 				break;
 
 			case "JUMPI":
@@ -223,15 +224,22 @@ export default function CryptoDetector() {
 				}
 				break;
 
-			case "CALLER":
-				currentFunction.code.push("    address sender = msg.sender;");
-				currentFunction.stack.push("msg.sender");
+			case "REVERT":
+				currentFunction.code.push("    revert();");
+				currentFunction = null;
 				break;
 
-			case "ISZERO":
-				if (currentFunction.stack.length >= 1) {
-				const val = currentFunction.stack.pop();
-				currentFunction.stack.push(`!(${val})`);
+			case "RETURN":
+				currentFunction.code.push("    return;");
+				currentFunction = null;
+				break;
+
+			case "CODECOPY":
+				if (currentFunction.stack.length >= 3) {
+				const destOffset = currentFunction.stack.pop();
+				const offset = currentFunction.stack.pop();
+				const size = currentFunction.stack.pop();
+				currentFunction.code.push(`    // Copy ${size} bytes from code position ${offset} to memory ${destOffset}`);
 				}
 				break;
 
@@ -244,7 +252,7 @@ export default function CryptoDetector() {
 			}
 		}
 
-		// Generate output with better formatting
+		// Generate output
 		functions.forEach(fn => {
 			output.push(`  function ${fn.name}() public {`);
 			output.push(...fn.code);
