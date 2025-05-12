@@ -35,6 +35,10 @@ export default function CryptoDetector() {
 			};
 			});
 			setOpcodeMap(map);
+			console.log("OPCODE_MAP loaded with", Object.keys(map).length, "opcodes");
+			
+			// Debug log to verify structure
+			console.log("Sample PUSH1 entry:", map["60"]);
 		}
 
 		if (!crypto.error) {
@@ -68,14 +72,28 @@ export default function CryptoDetector() {
 		let i = 0;
 
 		while (i < cleanCode.length) {
-			const byte = cleanCode.substr(i, 2);
-			const op = OPCODE_MAP[byte.toLowerCase()]; // Ensure lowercase match
+		const byte = cleanCode.substr(i, 2);
+		const op = OPCODE_MAP[byte.toLowerCase()]; // Ensure lowercase match
+		
+		// Format the opcode line
+		const line = `${i/2}: ${op?.mnemonic || `0x${byte}`}`;
+		
+		// Handle PUSH operations
+		if (byte >= "60" && byte <= "7f") {
+			const pushSize = parseInt(byte, 16) - 0x5f;
+			const pushData = cleanCode.substr(i + 2, pushSize * 2);
+			result.push(`${line} 0x${pushData}`);
+			i += 2 + pushSize * 2;
+		} else {
+			result.push(line);
+			i += 2;
+		}
 		}
 
 		return result.join("\n");
-		} catch (err) {
-			return `Disassembly failed: ${err.message}`;
-		}
+	} catch (err) {
+		return `Disassembly failed: ${err.message}`;
+	}
 	};
 
  	// Detect cryptographic patterns
@@ -170,9 +188,47 @@ export default function CryptoDetector() {
 			continue;
 			}
 
-			if (op.solidity_function) {
+			if (!currentFunction) continue;
+
+			// Handle operations
+			switch (opcode) {
+			case "POP":
+				if (currentFunction.stack.length > 0) {
+				currentFunction.stack.pop();
+				currentFunction.code.push("    // Clean stack");
+				}
+				break;
+
+			case "CODECOPY":
+				if (currentFunction.stack.length >= 3) {
+				const memDest = currentFunction.stack.pop();
+				const codeOffset = currentFunction.stack.pop();
+				const length = currentFunction.stack.pop();
+				currentFunction.code.push(`    assembly {`);
+				currentFunction.code.push(`      codecopy(${memDest}, ${codeOffset}, ${length})`);
+				currentFunction.code.push(`    }`);
+				}
+				break;
+
+			case "RETURN":
+				if (currentFunction.stack.length >= 2) {
+				const offset = currentFunction.stack.pop();
+				const size = currentFunction.stack.pop();
+				currentFunction.code.push(`    return(memory[${offset}:${offset}+${size}]);`);
+				} else {
+				currentFunction.code.push("    return;");
+				}
+				currentFunction = null;
+				break;
+
+
+			default:
+				if (op.solidity_function) {
 				currentFunction.code.push(`    ${op.solidity_function}`);
-			} 
+				} else {
+				currentFunction.code.push(`    // ${opcode}`);
+				}
+			}
 		}
 
 		// Generate output
