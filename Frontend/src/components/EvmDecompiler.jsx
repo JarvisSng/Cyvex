@@ -64,33 +64,37 @@ export default function CryptoDetector() {
 	loadAll();
 	}, []);
 
- 	 // Convert bytecode to disassembly
-  	const disassembleBytecode = (code) => {
-		try {
+ 	// Convert bytecode to disassembly
+	const disassembleBytecode = (code) => {
+	try {
 		const cleanCode = code.startsWith("0x") ? code.slice(2) : code;
 		const result = [];
 		let i = 0;
 
 		while (i < cleanCode.length) {
-			const byte = cleanCode.substr(i, 2);
-			const opcode = OPCODE_MAP[byte] || `0x${byte}`;
-
-			if (byte >= "60" && byte <= "7f") {
+		const byte = cleanCode.substr(i, 2);
+		const op = OPCODE_MAP[byte.toLowerCase()]; // Ensure lowercase match
+		
+		// Format the opcode line
+		const line = `${i/2}: ${op?.mnemonic || `0x${byte}`}`;
+		
+		// Handle PUSH operations
+		if (byte >= "60" && byte <= "7f") {
 			const pushSize = parseInt(byte, 16) - 0x5f;
 			const pushData = cleanCode.substr(i + 2, pushSize * 2);
-			result.push(`${i / 2}: ${opcode} 0x${pushData}`);
+			result.push(`${line} 0x${pushData}`);
 			i += 2 + pushSize * 2;
-			} else {
-			result.push(`${i / 2}: ${opcode}`);
+		} else {
+			result.push(line);
 			i += 2;
-			}
+		}
 		}
 
 		return result.join("\n");
-		} catch (err) {
+	} catch (err) {
 		return `Disassembly failed: ${err.message}`;
-		}
-  	};
+	}
+	};
 
  	// Detect cryptographic patterns
  	const detectCryptoOperations = (code) => {
@@ -130,7 +134,7 @@ export default function CryptoDetector() {
 
 	const generatePseudocode = (bytecode) => {
 		const cleanCode = bytecode.startsWith("0x") ? bytecode.slice(2) : bytecode;
-		const output = ["// Generated from bytecode", "pragma solidity ^0.8.0;", "", "contract Reconstructed {"];
+		const output = ["pragma solidity ^0.8.0;", "", "contract Reconstructed {"];
 		const storageVars = {};
 		const stack = [];
 		let varCount = 1;
@@ -138,14 +142,14 @@ export default function CryptoDetector() {
 
 		while (i < cleanCode.length) {
 			const byte = cleanCode.substr(i, 2);
-			const op = OPCODE_MAP[byte];
+			const op = OPCODE_MAP[byte.toLowerCase()]; // Ensure lowercase match
 			
 			if (!op) {
 			i += 2;
 			continue;
 			}
 
-			// PUSH operations
+			// Handle PUSH operations
 			if (byte >= "60" && byte <= "7f") {
 			const pushSize = parseInt(byte, 16) - 0x5f;
 			const value = "0x" + cleanCode.substr(i + 2, pushSize * 2);
@@ -159,26 +163,37 @@ export default function CryptoDetector() {
 			}
 			i += 2;
 
-			// SSTORE handling
-			if (op.mnemonic === "SSTORE" && stack.length >= 2) {
-			const value = stack.pop();
-			const slot = stack.pop();
-			
-			if (!storageVars[slot]) {
-				storageVars[slot] = `var${varCount++}`;
-				output.splice(4, 0, `  uint256 ${storageVars[slot]};`);
+			// Handle common operations with meaningful output
+			switch (op.mnemonic) {
+			case "SSTORE":
+				if (stack.length >= 2) {
+				const value = stack.pop();
+				const slot = stack.pop();
+				if (!storageVars[slot]) {
+					storageVars[slot] = `var${varCount++}`;
+					output.splice(3, 0, `  uint256 ${storageVars[slot]};`);
+				}
+				output.push(`  ${storageVars[slot]} = ${value};`);
+				}
+				break;
+				
+			case "RETURN":
+				output.push("  return;");
+				break;
+				
+			case "JUMPI":
+				if (stack.length >= 2) {
+				const condition = stack.pop();
+				output.push(`  if (${condition}) { /* jump */ }`);
+				}
+				break;
+				
+			default:
+				// Use solidity pattern if available, otherwise comment
+				output.push(op.solidity_function 
+				? `  ${op.solidity_function}`
+				: `  // ${op.mnemonic}`);
 			}
-			
-			output.push(`  ${op.solidity_function
-				.replace("{slot}", storageVars[slot])
-				.replace("{value}", value)}`);
-			continue;
-			}
-
-			// Default output
-			output.push(op.solidity_function 
-			? `  ${op.solidity_function}`
-			: `  // ${op.mnemonic}`);
 		}
 
 		output.push("}");
