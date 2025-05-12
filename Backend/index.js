@@ -5,7 +5,6 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const panoramix = require("like-panoramix");
 
 // Import route modules
 const blockchainRoutes = require("./routes/blockchain");
@@ -59,19 +58,6 @@ app.use("/api/crypto-patterns", cryptoPatternsRouter);
 app.use("/api/opcode-patterns", opcodePatternsRouter);
 app.use("/api/evm", evmRoutes);
 app.use("/api/check", checkSubRoute);
-
-// A route to decompile bytecode and return the result
-app.post('/api/decompile', async (req, res) => {
-  const { bytecode } = req.body; // Expect bytecode in the request body
-  
-  try {
-    const pseudocode = await panoramix.decompile(bytecode);
-	console.log(pseudocode);
-    res.json({ pseudocode });
-  } catch (error) {
-    res.status(500).json({ error: 'Error during decompiling' });
-  }
-});
 
 // Set port from environment variables or default to 3000, and start the server
 const PORT = process.env.PORT || 3000;

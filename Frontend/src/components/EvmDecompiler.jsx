@@ -9,7 +9,6 @@ export default function CryptoDetector() {
   const [disassembly, setDisassembly] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [pseudocode, setPseudocode] = useState("");
-  const [decompiledCode, setDecompiledCode] = useState(""); // New state for decompiled code
 
   const [OPCODE_MAP, setOpcodeMap] = useState({});
   const [CRYPTO_PATTERNS, setCryptoPatternsState] = useState({});
@@ -202,29 +201,6 @@ export default function CryptoDetector() {
 		return output.join("\n");
 	};
 
-	// Directly call the decompile API
-	const decompileBytecodeAPI = async (code) => {
-		try {
-		const response = await fetch("/api/decompile", {
-			method: "POST",
-			headers: {
-			"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ bytecode: code }),
-		});
-
-		const result = await response.json();
-		if (result.error) {
-			throw new Error(result.error);
-		}
-
-		setDecompiledCode(result.decompiledCode || "Decompilation result is empty.");
-		} catch (err) {
-		console.error("Decompilation failed:", err);
-		setDecompiledCode("Decompilation failed");
-		}
-	};
-
 	// Main analysis function
 	const analyzeBytecode = async () => {
 		setIsLoading(true);
@@ -352,17 +328,6 @@ export default function CryptoDetector() {
 					{pseudocode}
 				</pre>
 				</div>
-			</div>
-			)}
-
-			{decompiledCode && (
-			<div>
-				<h2 className="text-lg font-medium text-gray-800 mb-2">
-				Decompiled Code:
-				</h2>
-				<pre className="bg-gray-100 p-4 rounded text-sm overflow-x-auto">
-				{decompiledCode}
-				</pre>
 			</div>
 			)}
 		</div>
