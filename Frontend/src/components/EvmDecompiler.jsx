@@ -135,11 +135,8 @@ export default function CryptoDetector() {
 	const generatePseudocode = (bytecode) => {
 		const cleanCode = bytecode.startsWith("0x") ? bytecode.slice(2) : bytecode;
 		const output = ["pragma solidity ^0.8.0;", "", "contract Reconstructed {"];
-		const storageVars = {};
 		const functions = [];
 		let currentFunction = null;
-		let stack = [];
-		let varCount = 1;
 		let i = 0;
 
 		// First pass: identify all JUMPDESTs
@@ -167,24 +164,12 @@ export default function CryptoDetector() {
 			if (currentFunction) {
 				currentFunction.stack.push(value);
 				if (op.solidity_function) {
-				currentFunction.code.push(`    ${op.solidity_function.replace("0x01", value)}`);
+				currentFunction.code.push(`${op.solidity_function.replace("0x01", value)}`);
 				}
 			}
 			continue;
 			}
 			i += 2;
-
-			// Function detection
-			if (opcode === "JUMPDEST" && !currentFunction) {
-			currentFunction = {
-				start: pc,
-				code: [],
-				stack: [],
-				name: `function_${pc.toString(16)}`
-			};
-			functions.push(currentFunction);
-			continue;
-			}
 		}
 
 		// Generate output
