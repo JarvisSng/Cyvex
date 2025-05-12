@@ -171,82 +171,95 @@ export default function CryptoDetector() {
   };
 
   // Generate readable pseudocode
-  const generatePseudocode = (functions) => {
-    const storageVars = {};
-    let varCount = 1;
-    let output = [];
+const generatePseudocode = (functions) => {
+  const storageVars = {};
+  let varCount = 1;
+  let output = [];
 
-    functions.forEach(fn => {
-      let fnCode = [`function ${fn.name}() {`];
-      let stack = [];
+  functions.forEach(fn => {
+    let fnCode = [`function ${fn.name}() public {`];
+    let stack = [];
 
-      fn.ops.forEach(op => {
-        const indent = '  ';
-        
-        // Handle PUSH operations
-        if (op.opcode.startsWith('PUSH')) {
-          stack.push(`0x${op.operand}`);
-          return;
+    fn.ops.forEach(op => {
+      const indent = '  ';
+      
+      // Handle PUSH
+      if (op.opcode.startsWith('PUSH')) {
+        stack.push(`0x${op.operand}`);
+        return;
+      }
+
+      // Handle SSTORE
+      if (op.opcode === 'SSTORE') {
+        const value = stack.pop();
+        const slot = stack.pop();
+
+        if (!storageVars[slot]) {
+          storageVars[slot] = `var${varCount++}`;
         }
 
-        // Handle storage operations
-        if (op.opcode === 'SSTORE') {
-          const value = stack.pop();
-          const slot = stack.pop();
-          
-          if (!storageVars[slot]) {
-            storageVars[slot] = `var${varCount++}`;
-            output.unshift(`// Storage variable at slot ${slot}`);
-            output.unshift(`let ${storageVars[slot]};`);
-          }
-          
-          fnCode.push(`${indent}${storageVars[slot]} = ${value};`);
-          return;
-        }
+        fnCode.push(`${indent}${storageVars[slot]} = ${value};`);
+        return;
+      }
 
-        if (op.opcode === 'SLOAD') {
-          const slot = stack.pop();
-          const varName = storageVars[slot] || `storage[${slot}]`;
-          stack.push(varName);
-          return;
-        }
+      // Handle SLOAD
+      if (op.opcode === 'SLOAD') {
+        const slot = stack.pop();
+        const varName = storageVars[slot] || `storage[${slot}]`;
+        stack.push(varName);
+        return;
+      }
 
-        // Handle control flow
-        if (op.opcode === 'JUMPI') {
-          const condition = stack.pop();
-          const dest = stack.pop();
-          fnCode.push(`${indent}if (${condition}) goto label_${dest};`);
-          return;
-        }
+      // Handle JUMPI
+      if (op.opcode === 'JUMPI') {
+        const condition = stack.pop();
+        const dest = stack.pop();
+        fnCode.push(`${indent}if (${condition}) {`);
+        fnCode.push(`${indent}  goto label_${dest};`);
+        fnCode.push(`${indent}}`);
+        return;
+      }
 
-        if (op.opcode === 'JUMP') {
-          const dest = stack.pop();
-          fnCode.push(`${indent}goto label_${dest};`);
-          return;
-        }
+      // Handle JUMP
+      if (op.opcode === 'JUMP') {
+        const dest = stack.pop();
+        fnCode.push(`${indent}goto label_${dest};`);
+        return;
+      }
 
-        if (op.opcode === 'JUMPDEST') {
-          fnCode.push(`label_${op.pc}:`);
-          return;
-        }
+      // Handle JUMPDEST
+      if (op.opcode === 'JUMPDEST') {
+        fnCode.push(`\nlabel_${op.pc}:`);
+        return;
+      }
 
-        // Handle calls
-        if (op.opcode === 'CALL') {
-          const [gas, addr, value] = [stack.pop(), stack.pop(), stack.pop()];
-          fnCode.push(`${indent}// External call to ${addr} with ${value} ETH`);
-          return;
-        }
+      // External calls
+      if (op.opcode === 'CALL') {
+        const [gas, to, value] = [stack.pop(), stack.pop(), stack.pop()];
+        fnCode.push(`${indent}// External call`);
+        fnCode.push(`${indent}(bool success, ) = address(${to}).call{value: ${value}}("");`);
+        return;
+      }
 
-        // Default case
-        fnCode.push(`${indent}${op.opcode};`);
-      });
+      // Handle RETURN or STOP
+      if (op.opcode === 'RETURN' || op.opcode === 'STOP') {
+        fnCode.push(`${indent}return;`);
+        return;
+      }
 
-      fnCode.push("}");
-      output.push(fnCode.join("\n"));
+      // Default: add the opcode as a comment
+      fnCode.push(`${indent}// ${op.opcode}`);
     });
 
-    return output.join("\n\n");
-  };
+    fnCode.push("}");
+    output.push(fnCode.join("\n"));
+  });
+
+  // Add top-level declarations for known storage vars
+  const decls = Object.values(storageVars).map(name => `uint256 public ${name};`);
+  return decls.concat(output).join("\n\n");
+};
+
 
   // Detect cryptographic patterns
   const detectCryptoOperations = (code) => {
