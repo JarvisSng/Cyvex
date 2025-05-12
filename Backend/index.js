@@ -61,7 +61,7 @@ app.use("/api/evm", evmRoutes);
 app.use("/api/check", checkSubRoute);
 
 // A route to decompile bytecode and return the result
-app.post('api/decompile', async (req, res) => {
+app.post('/api/decompile', async (req, res) => {
   const { bytecode } = req.body; // Expect bytecode in the request body
   
   try {

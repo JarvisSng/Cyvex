@@ -205,7 +205,7 @@ export default function CryptoDetector() {
 	// Directly call the decompile API
 	const decompileBytecodeAPI = async (code) => {
 		try {
-		const response = await fetch("api/decompile", {
+		const response = await fetch("/api/decompile", {
 			method: "POST",
 			headers: {
 			"Content-Type": "application/json",
