@@ -133,71 +133,130 @@ export default function CryptoDetector() {
   	};
 
 	const generatePseudocode = (bytecode) => {
-		const cleanCode = bytecode.startsWith("0x") ? bytecode.slice(2) : bytecode;
+		const functions = detectFunctions(bytecode);
 		const output = ["pragma solidity ^0.8.0;", "", "contract Reconstructed {"];
 		const storageVars = {};
-		const stack = [];
 		let varCount = 1;
-		let i = 0;
 
-		while (i < cleanCode.length) {
-			const byte = cleanCode.substr(i, 2);
-			const op = OPCODE_MAP[byte.toLowerCase()]; // Ensure lowercase match
+		// Process each function
+		functions.forEach(fn => {
+			const fnCode = [];
+			const stack = [];
+			let indent = "  ";
+
+			fnCode.push(`  function ${fn.name}() public {`);
 			
-			if (!op) {
-			i += 2;
-			continue;
-			}
-
-			// Handle PUSH operations
-			if (byte >= "60" && byte <= "7f") {
-			const pushSize = parseInt(byte, 16) - 0x5f;
-			const value = "0x" + cleanCode.substr(i + 2, pushSize * 2);
-			i += 2 + pushSize * 2;
+			fn.ops.forEach(op => {
+			const opInfo = OPCODE_MAP[op.byte?.toLowerCase()] || {};
 			
-			if (op.solidity_function) {
-				output.push(`  ${op.solidity_function.replace("0x01", value)}`);
+			// Handle PUSH
+			if (op.opcode.startsWith("PUSH")) {
+				const pushSize = parseInt(op.byte, 16) - 0x5f;
+				const value = "0x" + bytecode.substr(op.pc*2 + 2, pushSize * 2);
+				stack.push(value);
+				
+				if (opInfo.solidity_function) {
+				fnCode.push(`${indent}${opInfo.solidity_function.replace("0x01", value)}`);
+				}
+				return;
 			}
-			stack.push(value);
-			continue;
-			}
-			i += 2;
 
-			// Handle common operations with meaningful output
-			switch (op.mnemonic) {
-			case "SSTORE":
-				if (stack.length >= 2) {
+			// Handle storage operations
+			if (op.opcode === "SSTORE") {
 				const value = stack.pop();
 				const slot = stack.pop();
 				if (!storageVars[slot]) {
-					storageVars[slot] = `var${varCount++}`;
-					output.splice(3, 0, `  uint256 ${storageVars[slot]};`);
+				storageVars[slot] = `storageVar${varCount++}`;
+				output.splice(2, 0, `  uint256 ${storageVars[slot]};`);
 				}
-				output.push(`  ${storageVars[slot]} = ${value};`);
-				}
-				break;
-				
-			case "RETURN":
-				output.push("  return;");
-				break;
-				
-			case "JUMPI":
-				if (stack.length >= 2) {
-				const condition = stack.pop();
-				output.push(`  if (${condition}) { /* jump */ }`);
-				}
-				break;
-				
-			default:
-				// Use solidity pattern if available, otherwise comment
-				output.push(op.solidity_function 
-				? `  ${op.solidity_function}`
-				: `  // ${op.mnemonic}`);
+				fnCode.push(`${indent}${storageVars[slot]} = ${value};`);
+				return;
 			}
-		}
+
+			// Handle control flow
+			if (op.opcode === "JUMPI") {
+				const dest = stack.pop();
+				const condition = stack.pop();
+				fnCode.push(`${indent}if (${condition}) {`);
+				indent += "  ";
+				return;
+			}
+
+			// Handle returns
+			if (op.opcode === "RETURN") {
+				fnCode.push(`${indent}return;`);
+				return;
+			}
+
+			// Default case
+			if (opInfo.solidity_function) {
+				fnCode.push(`${indent}${opInfo.solidity_function}`);
+			} else {
+				fnCode.push(`${indent}// ${op.opcode}`);
+			}
+			});
+
+			fnCode.push("  }");
+			output.push(fnCode.join("\n"));
+		});
 
 		output.push("}");
 		return output.join("\n");
+	};
+
+	const detectFunctions = (bytecode) => {
+		const cleanCode = bytecode.startsWith("0x") ? bytecode.slice(2) : bytecode;
+		const jumpdests = new Set();
+		const ops = [];
+		let i = 0;
+
+		// First pass: identify all JUMPDESTs
+		while (i < cleanCode.length) {
+			const byte = cleanCode.substr(i, 2);
+			if (byte === "5b") { // JUMPDEST
+			jumpdests.add(i/2);
+			}
+			i += 2;
+		}
+
+		// Second pass: identify functions
+		i = 0;
+		const functions = [];
+		let currentFunction = null;
+
+		while (i < cleanCode.length) {
+			const pc = i/2;
+			const byte = cleanCode.substr(i, 2);
+			const opcode = OPCODE_MAP[byte.toLowerCase()]?.mnemonic || `0x${byte}`;
+			
+			if (byte >= "60" && byte <= "7f") { // PUSH
+			const pushSize = parseInt(byte, 16) - 0x5f;
+			i += 2 + pushSize * 2;
+			} else {
+			i += 2;
+			}
+
+			// Function starts at JUMPDEST with incoming jumps
+			if (opcode === "JUMPDEST" && !currentFunction) {
+			currentFunction = {
+				start: pc,
+				ops: [],
+				name: `function_${pc.toString(16)}`
+			};
+			functions.push(currentFunction);
+			}
+
+			if (currentFunction) {
+			currentFunction.ops.push({ pc, opcode, byte });
+			
+			// Function ends at RETURN, STOP, or invalid JUMP
+			if (opcode === "RETURN" || opcode === "STOP") {
+				currentFunction = null;
+			}
+			}
+	}
+
+	return functions;
 	};
 
 	// Main analysis function
