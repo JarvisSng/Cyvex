@@ -64,48 +64,48 @@ export default function CryptoDetector() {
 
 	// Enhanced disassembler with control flow tracking
 	const enhancedDisassemble = (bytecode) => {
-	const cleanCode = bytecode.startsWith("0x") ? bytecode.slice(2) : bytecode;
-	const ops = [];
-	let i = 0;
-	const jumpdests = new Set();
-	const calls = [];
-	
-	// First pass: identify all jump destinations
-	while (i < cleanCode.length) {
-		const byte = cleanCode.substr(i, 2);
-		if (byte === "5b") { // JUMPDEST
-		jumpdests.add(i/2);
-		}
-		i += 2;
-	}
-	
-	// Second pass: full disassembly
-	i = 0;
-	while (i < cleanCode.length) {
-		const pc = i/2;
-		const byte = cleanCode.substr(i, 2);
-		const opcode = OPCODE_MAP[byte] || `0x${byte}`;
-		const op = { pc, opcode };
+		const cleanCode = bytecode.startsWith("0x") ? bytecode.slice(2) : bytecode;
+		const ops = [];
+		let i = 0;
+		const jumpdests = new Set();
+		const calls = [];
 		
-		if (byte >= "60" && byte <= "7f") { // PUSH
-		const pushSize = parseInt(byte, 16) - 0x5f;
-		op.operand = cleanCode.substr(i + 2, pushSize * 2);
-		i += 2 + pushSize * 2;
-		} else {
-		i += 2;
+		// First pass: identify all jump destinations
+		while (i < cleanCode.length) {
+			const byte = cleanCode.substr(i, 2);
+			if (byte === "5b") { // JUMPDEST
+			jumpdests.add(i/2);
+			}
+			i += 2;
 		}
 		
-		// Track control flow
-		if (byte === "56" || byte === "57") { // JUMP/JUMPI
-		op.isJump = true;
-		} else if (byte === "f1" || byte === "f2" || byte === "f4") { // CALL variants
-		calls.push(pc);
+		// Second pass: full disassembly
+		i = 0;
+		while (i < cleanCode.length) {
+			const pc = i/2;
+			const byte = cleanCode.substr(i, 2);
+			const opcode = OPCODE_MAP[byte] || `0x${byte}`;
+			const op = { pc, opcode };
+			
+			if (byte >= "60" && byte <= "7f") { // PUSH
+			const pushSize = parseInt(byte, 16) - 0x5f;
+			op.operand = cleanCode.substr(i + 2, pushSize * 2);
+			i += 2 + pushSize * 2;
+			} else {
+			i += 2;
+			}
+			
+			// Track control flow
+			if (byte === "56" || byte === "57") { // JUMP/JUMPI
+			op.isJump = true;
+			} else if (byte === "f1" || byte === "f2" || byte === "f4") { // CALL variants
+			calls.push(pc);
+			}
+			
+			ops.push(op);
 		}
 		
-		ops.push(op);
-	}
-	
-	return { ops, jumpdests, calls };
+		return { ops, jumpdests, calls };
 	};
 
 	// Basic control flow analysis
@@ -313,6 +313,161 @@ export default function CryptoDetector() {
 		}
 	};
 
+	const generateReadablePseudocode = (functions) => {
+		const context = {
+		storageVars: {},
+		memoryVars: {},
+		varCount: 1,
+		labelCount: 1,
+		contracts: [],
+		currentContract: null
+		};
+
+		// First pass: detect contracts and functions
+		functions.forEach(fn => {
+		if (isConstructor(fn.ops)) {
+			context.currentContract = {
+			name: `Contract${context.contracts.length + 1}`,
+			functions: [],
+			storageLayout: []
+			};
+			context.contracts.push(context.currentContract);
+		}
+		
+		if (context.currentContract) {
+			context.currentContract.functions.push(fn);
+		}
+		});
+
+		// Generate contract code
+		return context.contracts.map(contract => {
+		let contractCode = [`contract ${contract.name} {`];
+		
+		// Add storage variables
+		Object.entries(context.storageVars).forEach(([slot, varInfo]) => {
+			contractCode.push(`  ${varInfo.type} ${varInfo.name}; // slot ${slot}`);
+		});
+		
+		// Process functions
+		contract.functions.forEach(fn => {
+			contractCode.push(processFunction(fn, context));
+		});
+		
+		contractCode.push("}");
+		return contractCode.join("\n");
+		}).join("\n\n");
+	};
+
+	const isConstructor = (ops) => {
+		return ops.some(op => op.opcode === 'CODECOPY' && 
+		ops.some(o => o.opcode === 'CALLVALUE'));
+	};
+
+	const processFunction = (fn, context) => {
+		const lines = [];
+		let indent = "  ";
+		const stack = [];
+		
+		// Determine function type
+		const fnType = detectFunctionType(fn.ops);
+		const visibility = fnType === 'external' ? 'public' : 'internal';
+		const mutability = fnType === 'view' ? ' view' : (fnType === 'pure' ? ' pure' : '');
+		const returns = fnType === 'view' ? ' returns (bool)' : '';
+		
+		lines.push(`${indent}function ${fn.name}() ${visibility}${mutability}${returns} {`);
+		
+		fn.ops.forEach(op => {
+		const result = processOperation(op, stack, context, indent + "  ");
+		if (result.code) {
+			if (Array.isArray(result.code)) {
+			lines.push(...result.code);
+			} else {
+			lines.push(result.code);
+			}
+		}
+		});
+		
+		lines.push(`${indent}}`);
+		return lines.join("\n");
+	};
+
+	const processOperation = (op, stack, context, indent) => {
+		switch(op.opcode) {
+		case 'PUSH1':
+		case 'PUSH2':
+		case 'PUSH32':
+			stack.push(`0x${op.operand}`);
+			return { stack };
+			
+		case 'MSTORE':
+			if (op.operand === '0x40') {
+			return { 
+				code: `${indent}// Initialize memory pointer`,
+				stack 
+			};
+			}
+			break;
+			
+		case 'SSTORE': {
+			const value = stack.pop();
+			const slot = stack.pop();
+			
+			if (!context.storageVars[slot]) {
+			const type = guessStorageType(value);
+			context.storageVars[slot] = {
+				name: `storage_${context.varCount++}`,
+				type
+			};
+			}
+			
+			return {
+			code: `${indent}${context.storageVars[slot].name} = ${value};`,
+			stack
+			};
+		}
+		
+		case 'JUMPI': {
+			const dest = stack.pop();
+			const condition = stack.pop();
+			return {
+			code: [
+				`${indent}if (${condition}) {`,
+				`${indent}  // Jump to ${dest}`,
+				`${indent}}`
+			],
+			stack
+			};
+		}
+		
+		case 'CALL': {
+			const [gas, addr, value] = [stack.pop(), stack.pop(), stack.pop()];
+			return {
+			code: `${indent}// External call to ${addr} with ${value} ETH`,
+			stack
+			};
+		}
+		
+		default:
+			return {
+			code: `${indent}${op.opcode};`,
+			stack
+			};
+		}
+	};
+
+	const detectFunctionType = (ops) => {
+		if (ops.some(op => op.opcode === 'DELEGATECALL')) return 'proxy';
+		if (ops.some(op => op.opcode === 'CALL' && !op.operand?.startsWith('0x'))) return 'external';
+		if (ops.some(op => op.opcode === 'RETURN' && ops.length < 10)) return 'view';
+		return 'internal';
+	};
+
+	const guessStorageType = (value) => {
+		if (value === '0x00') return 'bool';
+		if (value?.startsWith('0x0000')) return 'address';
+		return 'uint256';
+	};
+	
 	const analyzeBytecode = async () => {
 		setIsLoading(true);
 		setCryptoFindings([]);
@@ -321,35 +476,35 @@ export default function CryptoDetector() {
 		setControlFlow([]);
 
 		try {
-			if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
+		if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
 
-			const normalizedBytecode = bytecode.startsWith("0x")
+		const normalizedBytecode = bytecode.startsWith("0x")
 			? bytecode
 			: `0x${bytecode}`;
 
-			// 1. Enhanced disassembly
-			const { ops, jumpdests, calls } = enhancedDisassemble(normalizedBytecode);
-			setDisassembly(ops.map(op => `${op.pc}: ${op.opcode}${op.operand ? ' ' + op.operand : ''}`).join("\n"));
+		// 1. Enhanced disassembly
+		const { ops, jumpdests, calls } = enhancedDisassemble(normalizedBytecode);
+		setDisassembly(ops.map(op => `${op.pc}: ${op.opcode}${op.operand ? ' ' + op.operand : ''}`).join("\n"));
 
-			// 2. Control flow analysis
-			const functions = analyzeControlFlow(ops, jumpdests);
-			setControlFlow(functions);
+		// 2. Control flow analysis
+		const functions = analyzeControlFlow(ops, jumpdests);
+		setControlFlow(functions);
 
-			// 3. Generate pseudocode
-			const code = generatePseudocode(functions);
-			setPseudocode(code);
+		// 3. Generate high-quality pseudocode
+		const code = generateReadablePseudocode(functions);
+		setPseudocode(code);
 
-			// 4. Detect crypto patterns (your existing function)
-			const detected = detectCryptoOperations(normalizedBytecode);
-			setCryptoFindings(detected);
+		// 4. Detect crypto patterns
+		const detected = detectCryptoOperations(normalizedBytecode);
+		setCryptoFindings(detected);
 
 		} catch (err) {
-			setCryptoFindings([{
+		setCryptoFindings([{
 			type: "error",
 			message: err.message,
-			}]);
+		}]);
 		} finally {
-			setIsLoading(false);
+		setIsLoading(false);
 		}
 	};
 
@@ -452,23 +607,21 @@ export default function CryptoDetector() {
 						</pre>
 					</div>
 				)}
-				
+
 				{pseudocode && (
-				<div className="mt-6">
+					<div className="mt-6">
 					<h2 className="text-lg font-medium text-gray-800 mb-2">
 					Reconstructed Code:
 					</h2>
-					<div className="bg-gray-800 rounded-md overflow-hidden">
-					<pre className="!m-0 !p-4 max-h-[500px] overflow-auto">
-						<code className="language-solidity">
+					<div className="bg-gray-100 p-4 rounded-md overflow-auto">
+						<pre className="text-sm font-mono whitespace-pre-wrap">
 						{pseudocode}
-						</code>
-					</pre>
+						</pre>
 					</div>
 					<div className="mt-2 text-sm text-gray-500">
 					<p>Note: This is reconstructed pseudocode, not original source.</p>
 					</div>
-				</div>
+					</div>
 				)}
 			</div>
 		</div>
