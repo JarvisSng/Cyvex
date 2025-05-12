@@ -168,8 +168,6 @@ export default function CryptoDetector() {
 				currentFunction.stack.push(value);
 				if (op.solidity_function) {
 				currentFunction.code.push(`    ${op.solidity_function.replace("0x01", value)}`);
-				} else {
-				currentFunction.code.push(`    bytes${pushSize} value = ${value};`);
 				}
 			}
 			continue;
@@ -224,8 +222,6 @@ export default function CryptoDetector() {
 			default:
 				if (op.solidity_function) {
 				currentFunction.code.push(`    ${op.solidity_function}`);
-				} else {
-				currentFunction.code.push(`    // ${opcode}`);
 				}
 			}
 		}
