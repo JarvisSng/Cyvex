@@ -142,18 +142,15 @@ export default function CryptoDetector() {
 		let varCount = 1;
 		let i = 0;
 
-				// First pass: identify all JUMPDESTs and potential function starts
-				const jumpdests = new Set();
-				while (i < cleanCode.length) {
-					const byte = cleanCode.substr(i, 2);
-					if (byte === "5b") { // JUMPDEST
-						jumpdests.add(i / 2);
-					}
-					// If it's a PUSHn opcode (0x60 to 0x7f), skip n bytes of data
-					i += (byte >= "60" && byte <= "7f") ? (parseInt(byte, 16) - 0x5f + 1) * 2 : 2;
-				}
+		// First pass: identify all JUMPDESTs
+		const jumpdests = new Set();
+		while (i < cleanCode.length) {
+			const byte = cleanCode.substr(i, 2);
+			if (byte === "5b") jumpdests.add(i/2);
+			i += byte >= "60" && byte <= "7f" ? (parseInt(byte, 16) - 0x5f + 1) * 2 : 2;
+		}
 
-		// Second pass: analyze code with better function detection
+		// Second pass: analyze code
 		i = 0;
 		while (i < cleanCode.length) {
 			const pc = i/2;
@@ -171,13 +168,15 @@ export default function CryptoDetector() {
 				currentFunction.stack.push(value);
 				if (op.solidity_function) {
 				currentFunction.code.push(`    ${op.solidity_function.replace("0x01", value)}`);
+				} else {
+				currentFunction.code.push(`    bytes${pushSize} value = ${value};`);
 				}
 			}
 			continue;
 			}
 			i += 2;
 
-			// Improved function detection
+			// Function detection
 			if (opcode === "JUMPDEST" && !currentFunction) {
 			currentFunction = {
 				start: pc,
@@ -191,55 +190,42 @@ export default function CryptoDetector() {
 
 			if (!currentFunction) continue;
 
-			// Handle common operations with better output
+			// Handle operations
 			switch (opcode) {
-			case "MSTORE":
-				if (currentFunction.stack.length >= 2) {
-				const value = currentFunction.stack.pop();
-				const offset = currentFunction.stack.pop();
-				currentFunction.code.push(`    // Store ${value} at memory ${offset}`);
+			case "POP":
+				if (currentFunction.stack.length > 0) {
+				currentFunction.stack.pop();
+				currentFunction.code.push("    // Clean stack");
 				}
-				break;
-
-			case "CALLVALUE":
-				currentFunction.stack.push("msg.value");
-				currentFunction.code.push("    uint256 value = msg.value;");
-				break;
-
-			case "ISZERO":
-				if (currentFunction.stack.length >= 1) {
-				const val = currentFunction.stack.pop();
-				currentFunction.stack.push(`!(${val})`);
-				currentFunction.code.push(`    bool isZero = (${val} == 0);`);
-				}
-				break;
-
-			case "JUMPI":
-				if (currentFunction.stack.length >= 2) {
-				const dest = currentFunction.stack.pop();
-				const condition = currentFunction.stack.pop();
-				currentFunction.code.push(`    if (${condition}) {`);
-				currentFunction.code.push(`      // Jump to ${dest}`);
-				currentFunction.code.push("    }");
-				}
-				break;
-
-			case "REVERT":
-				currentFunction.code.push("    revert();");
-				currentFunction = null;
-				break;
-
-			case "RETURN":
-				currentFunction.code.push("    return;");
-				currentFunction = null;
 				break;
 
 			case "CODECOPY":
 				if (currentFunction.stack.length >= 3) {
-				const destOffset = currentFunction.stack.pop();
+				const memDest = currentFunction.stack.pop();
+				const codeOffset = currentFunction.stack.pop();
+				const length = currentFunction.stack.pop();
+				currentFunction.code.push(`    assembly {`);
+				currentFunction.code.push(`      codecopy(${memDest}, ${codeOffset}, ${length})`);
+				currentFunction.code.push(`    }`);
+				}
+				break;
+
+			case "RETURN":
+				if (currentFunction.stack.length >= 2) {
 				const offset = currentFunction.stack.pop();
 				const size = currentFunction.stack.pop();
-				currentFunction.code.push(`    // Copy ${size} bytes from code position ${offset} to memory ${destOffset}`);
+				currentFunction.code.push(`    return(memory[${offset}:${offset}+${size}]);`);
+				} else {
+				currentFunction.code.push("    return;");
+				}
+				currentFunction = null;
+				break;
+
+			case "DUP1":
+				if (currentFunction.stack.length > 0) {
+				const val = currentFunction.stack[currentFunction.stack.length-1];
+				currentFunction.stack.push(val);
+				currentFunction.code.push(`    // Duplicate ${val}`);
 				}
 				break;
 
@@ -256,7 +242,8 @@ export default function CryptoDetector() {
 		functions.forEach(fn => {
 			output.push(`  function ${fn.name}() public {`);
 			output.push(...fn.code);
-			output.push("  }", "");
+			output.push("  }");
+			output.push("");
 		});
 
 		output.push("}");
