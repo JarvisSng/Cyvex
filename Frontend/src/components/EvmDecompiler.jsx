@@ -14,51 +14,55 @@ export default function CryptoDetector() {
   const [CRYPTO_PATTERNS, setCryptoPatternsState] = useState({});
   const [OPCODE_PATTERNS, setOpcodePatternsState] = useState({});
 
- 	 // Load opcodes and patterns on mount
-  	useEffect(() => {
-		const loadAll = async () => {
+ 	// Load opcodes and patterns on mount
+	useEffect(() => {
+	const loadAll = async () => {
 		try {
-			const [evm, crypto, ops] = await Promise.all([
+		const [evm, crypto, ops] = await Promise.all([
 			getEvmOpcodes(),
 			getCryptoPatterns(),
 			getOpcodePatterns()
-			]);
+		]);
 
-			if (!evm.error) {
-				const map = {};
-				evm.forEach(op => {
-				map[op.opcode.toLowerCase()] = {
-					opcode: op.opcode,
-					mnemonic: op.mnemonic,
-					solidity_function: op.solidity_function
-				};
-				});
-				setOpcodeMap(map);
-				console.log("OPCODE_MAP loaded with", Object.keys(newMap).length, "opcodes");
-			}
-
-			if (!crypto.error) {
-				const map = {};
-				crypto.forEach(({ pattern_name, signature }) => {
-					map[pattern_name] = signature.toLowerCase();
-				});
-				setCryptoPatternsState(map);
-			}
-
-			if (!ops.error) {
-				const map = {};
-				ops.forEach(({ pattern_name, regex }) => {
-					map[pattern_name] = regex;
-				});
-				setOpcodePatternsState(map);
-			}
-		} catch (err) {
-			console.error("Failed to load data:", err);
+		if (!evm.error) {
+			const map = {};
+			evm.forEach(op => {
+			// Maintains exact JSON structure you required
+			map[op.opcode.toLowerCase()] = {
+				opcode: op.opcode,        // Preserved exactly as from API
+				mnemonic: op.mnemonic,    // Preserved exactly
+				solidity_function: op.solidity_function  // Preserved exactly
+			};
+			});
+			setOpcodeMap(map);
+			console.log("OPCODE_MAP loaded with", Object.keys(map).length, "opcodes");
+			
+			// Debug log to verify structure
+			console.log("Sample PUSH1 entry:", map["60"]);
 		}
-		};
 
-		loadAll();
- 	 }, []);
+		if (!crypto.error) {
+			const cryptoMap = {};
+			crypto.forEach(({ pattern_name, signature }) => {
+			cryptoMap[pattern_name] = signature.toLowerCase();
+			});
+			setCryptoPatternsState(cryptoMap);
+		}
+
+		if (!ops.error) {
+			const opPatterns = {};
+			ops.forEach(({ pattern_name, regex }) => {
+			opPatterns[pattern_name] = regex;
+			});
+			setOpcodePatternsState(opPatterns);
+		}
+		} catch (err) {
+		console.error("Failed to load data:", err);
+		}
+	};
+
+	loadAll();
+	}, []);
 
  	 // Convert bytecode to disassembly
   	const disassembleBytecode = (code) => {
