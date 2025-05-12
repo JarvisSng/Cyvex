@@ -164,12 +164,31 @@ export default function CryptoDetector() {
 			if (currentFunction) {
 				currentFunction.stack.push(value);
 				if (op.solidity_function) {
-				currentFunction.code.push(`${op.solidity_function.replace("0x01", value)}`);
+				currentFunction.code.push(`    ${op.solidity_function.replace("0x01", value)}`);
 				}
 			}
 			continue;
 			}
 			i += 2;
+
+			// Function detection
+			if (opcode === "JUMPDEST" && !currentFunction) {
+			currentFunction = {
+				start: pc,
+				code: [],
+				stack: [],
+				name: `function_${pc.toString(16)}`
+			};
+			functions.push(currentFunction);
+			continue;
+			}
+
+			if (!currentFunction) continue;
+
+			if (op.solidity_function) {
+				currentFunction.code.push(`${op.solidity_function}`);
+			}
+			
 		}
 
 		// Generate output
