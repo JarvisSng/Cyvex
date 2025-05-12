@@ -9,6 +9,7 @@ export default function CryptoDetector() {
   const [disassembly, setDisassembly] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [pseudocode, setPseudocode] = useState("");
+  const [decompiledCode, setDecompiledCode] = useState(""); // New state for decompiled code
 
   const [OPCODE_MAP, setOpcodeMap] = useState({});
   const [CRYPTO_PATTERNS, setCryptoPatternsState] = useState({});
@@ -201,6 +202,29 @@ export default function CryptoDetector() {
 		return output.join("\n");
 	};
 
+	// Directly call the decompile API
+	const decompileBytecodeAPI = async (code) => {
+		try {
+		const response = await fetch("api/decompile", {
+			method: "POST",
+			headers: {
+			"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ bytecode: code }),
+		});
+
+		const result = await response.json();
+		if (result.error) {
+			throw new Error(result.error);
+		}
+
+		setDecompiledCode(result.decompiledCode || "Decompilation result is empty.");
+		} catch (err) {
+		console.error("Decompilation failed:", err);
+		setDecompiledCode("Decompilation failed");
+		}
+	};
+
 	// Main analysis function
 	const analyzeBytecode = async () => {
 		setIsLoading(true);
@@ -237,7 +261,7 @@ export default function CryptoDetector() {
 	};
 
 	return (
-		<div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
+	<div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
 		<div className="mb-4">
 			<label className="block text-sm font-medium text-gray-700 mb-2">
 			EVM Bytecode to Analyze:
@@ -330,7 +354,15 @@ export default function CryptoDetector() {
 				</div>
 			</div>
 			)}
+
+			{/* Decompiled Code */}
+			<div>
+				<h2 className="text-lg font-medium text-gray-800 mb-2">Decompiled Code:</h2>
+				<pre className="bg-gray-100 p-3 rounded-md font-mono text-sm text-gray-700 whitespace-pre-wrap">
+					{decompiledCode || "No decompiled code available."}
+				</pre>
+			</div>
 		</div>
-		</div>
+	</div>
 	);
 }
