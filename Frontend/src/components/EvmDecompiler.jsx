@@ -140,6 +140,12 @@ export default function CryptoDetector() {
 			const op = OPCODE_MAP[byte.toLowerCase()] || {};
 			const opcode = op.mnemonic || `0x${byte}`;
 
+			// Handle PUSH operations
+			if (byte >= "60" && byte <= "7f") {
+			const pushSize = parseInt(byte, 16) - 0x5f;
+			const value = "0x" + cleanCode.substr(i + 2, pushSize * 2);
+			i += 2 + pushSize * 2;
+			
 			if (currentFunction) {
 				currentFunction.stack.push(value);
 				if (op.solidity_function) {
@@ -147,6 +153,8 @@ export default function CryptoDetector() {
 				} else {
 				currentFunction.code.push(`    bytes${pushSize} value = ${value};`);
 				}
+			}
+			continue;
 			}
 			i += 2;
 
