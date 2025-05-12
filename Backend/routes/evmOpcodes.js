@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
 	try {
 		const { data, error } = await supabase
 			.from("evm_opcodes")
-			.select("opcode, mnemonic");
+			.select("*");
 		if (error) return res.status(400).json({ error: error.message });
 		res.json({ data });
 	} catch (err) {
@@ -52,7 +52,7 @@ router.post("/", async (req, res) => {
 		const { opcode, mnemonic } = req.body;
 		const { data, error } = await supabase
 			.from("evm_opcodes")
-			.insert([{ opcode, mnemonic }])
+			.insert([{ opcode, mnemonic, solidity_function }])
 			.select();
 		if (error) return res.status(400).json({ error: error.message });
 		res.json({ message: "EVM opcode created.", data });
