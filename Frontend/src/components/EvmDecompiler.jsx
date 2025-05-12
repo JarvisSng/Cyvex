@@ -221,7 +221,6 @@ export default function CryptoDetector() {
 				currentFunction = null;
 				break;
 
-
 			default:
 				if (op.solidity_function) {
 				currentFunction.code.push(`    ${op.solidity_function}`);
