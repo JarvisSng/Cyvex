@@ -185,45 +185,6 @@ export default function CryptoDetector() {
 			functions.push(currentFunction);
 			continue;
 			}
-
-			if (!currentFunction) continue;
-
-			// Handle operations
-			switch (opcode) {
-			case "POP":
-				if (currentFunction.stack.length > 0) {
-				currentFunction.stack.pop();
-				currentFunction.code.push("    // Clean stack");
-				}
-				break;
-
-			case "CODECOPY":
-				if (currentFunction.stack.length >= 3) {
-				const memDest = currentFunction.stack.pop();
-				const codeOffset = currentFunction.stack.pop();
-				const length = currentFunction.stack.pop();
-				currentFunction.code.push(`    assembly {`);
-				currentFunction.code.push(`      codecopy(${memDest}, ${codeOffset}, ${length})`);
-				currentFunction.code.push(`    }`);
-				}
-				break;
-
-			case "RETURN":
-				if (currentFunction.stack.length >= 2) {
-				const offset = currentFunction.stack.pop();
-				const size = currentFunction.stack.pop();
-				currentFunction.code.push(`    return(memory[${offset}:${offset}+${size}]);`);
-				} else {
-				currentFunction.code.push("    return;");
-				}
-				currentFunction = null;
-				break;
-
-			default:
-				if (op.solidity_function) {
-				currentFunction.code.push(`    ${op.solidity_function}`);
-				}
-			}
 		}
 
 		// Generate output
