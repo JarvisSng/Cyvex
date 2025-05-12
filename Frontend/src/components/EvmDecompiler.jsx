@@ -210,25 +210,6 @@ export default function CryptoDetector() {
 				}
 				break;
 
-			case "RETURN":
-				if (currentFunction.stack.length >= 2) {
-				const offset = currentFunction.stack.pop();
-				const size = currentFunction.stack.pop();
-				currentFunction.code.push(`    return(memory[${offset}:${offset}+${size}]);`);
-				} else {
-				currentFunction.code.push("    return;");
-				}
-				currentFunction = null;
-				break;
-
-			case "DUP1":
-				if (currentFunction.stack.length > 0) {
-				const val = currentFunction.stack[currentFunction.stack.length-1];
-				currentFunction.stack.push(val);
-				currentFunction.code.push(`    // Duplicate ${val}`);
-				}
-				break;
-
 			default:
 				if (op.solidity_function) {
 				currentFunction.code.push(`    ${op.solidity_function}`);
