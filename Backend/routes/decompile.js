@@ -5,6 +5,7 @@ const router = express.Router();
 // Decompile to Solidity-style pseudocode from bytecode
 router.post('/code/bytecode', async (req, res) => {
   const {bytecode} = req.body;
+  console.log('Received bytecode:', bytecode);
 
   // Normalize and fix bytecode
   let hex = bytecode.startsWith('0x') ? bytecode.slice(2) : bytecode;
