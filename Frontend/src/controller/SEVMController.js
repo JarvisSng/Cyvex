@@ -6,13 +6,21 @@ export const decompileBytecode = async (bytecode) => {
             body: JSON.stringify({ bytecode })
         });
 
+        const rawText = await response.text(); // get raw response
+        console.log('Raw Response:', rawText);
+
         if (!response.ok) {
-            const errorData = await response.json();
+            let errorData;
+            try {
+                errorData = JSON.parse(rawText); // try to parse error body
+            } catch {
+                throw new Error('Server error: ' + rawText);
+            }
             throw new Error(errorData.error || 'Decompilation failed');
         }
 
-        return await response.json();
-        
+        return JSON.parse(rawText);
+
     } catch (error) {
         console.error('API Error:', error);
         throw error;
