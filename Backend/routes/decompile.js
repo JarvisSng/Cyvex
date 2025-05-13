@@ -50,8 +50,10 @@ router.post('/code', async (req, res) => {
 router.post('/opcode', async (req, res) => {
   const { address } = req.body;
 
-  if (!address || typeof address !== 'string') {
-    return res.status(400).json({ success: false, error: 'Invalid address' });
+  // Validate Ethereum address
+  const isAddress = /^0x[a-fA-F0-9]{40}$/.test(address);
+  if (!address || typeof address !== 'string' || !isAddress) {
+    return res.status(400).json({ success: false, error: 'Invalid Ethereum address' });
   }
 
   try {
@@ -62,14 +64,14 @@ router.post('/opcode', async (req, res) => {
       success: true,
       data: {
         opcodeCount: formattedOpcodes.length,
-        disassembly: formattedOpcodes
-      }
+        disassembly: formattedOpcodes,
+      },
     });
   } catch (err) {
     console.error('Opcode Decompilation Error:', err);
     res.status(500).json({
       success: false,
-      error: err.message || 'Failed to disassemble bytecode',
+      error: err.message || 'Failed to disassemble contract opcodes',
     });
   }
 });
