@@ -133,6 +133,7 @@ export default function CryptoDetector() {
 	
 		  // Decompile using SEVM
 		  const response = await decompileBytecode(normalizedBytecode);
+		  comsole.log(response);
 		  if (response.success) {
 			setPseudocode(response.data.pseudocode);
 		  } else {

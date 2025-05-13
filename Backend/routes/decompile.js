@@ -21,6 +21,8 @@ router.post('/code', async (req, res) => {
       success: true,
       data: {
         pseudocode,
+        functions,
+        events,
         bytecodeSize: (evenBytecode.length - 2) / 2,
       }
     });
