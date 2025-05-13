@@ -63,7 +63,7 @@ router.post('/opcode', async (req, res) => {
       success: true,
       data: {
         opcodeCount: formattedOpcodes.length,
-        disassembly: formattedOpcodes.join('\n'),
+        disassembly: formattedOpcodes
       }
     });
   } catch (err) {

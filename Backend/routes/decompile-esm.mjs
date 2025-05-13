@@ -10,6 +10,7 @@ export async function decompileBytecode(bytecode) {
 export async function getOpcodes(bytecode) {
   const contract = new Contract(bytecode);
   const opcodes = contract.opcodes();
-  console.log(opcodes.map(opcode => opcode.format()));
-  return opcodes;
+  const formattedOpcodes = opcodes.map(opcode => opcode.format());
+  console.log(formattedOpcodes);
+  return formattedOpcodes;
 }
