@@ -1,6 +1,8 @@
+import path from "../config/expressPath";
+
 export const decompileBytecode = async (bytecode) => {
     try {
-        const response = await fetch('/api/decompile/code', {
+        const response = await fetch(`${path}/api/decompile/code`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ bytecode })
