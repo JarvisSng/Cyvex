@@ -2,7 +2,7 @@ import { use, useEffect, useState } from "react";
 import { getCryptoPatterns } from "../controller/cryptoPatternsController";
 import { getEvmOpcodes } from "../controller/evmOpcodesController";
 import { getOpcodePatterns } from "../controller/opcodePatternsController";
-import { decompileBytecode} from "../controller/SEVMController"
+import { decompileBytecode } from "../controller/SEVMController"
 
 export default function CryptoDetector() {
   const [bytecode, setBytecode] = useState("");

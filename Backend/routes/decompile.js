@@ -2,20 +2,101 @@ const { SEVM } = require('sevm');
 const express = require('express');
 const router = express.Router();
 
-router.post('/', async (req, res) => {
+// Middleware to validate bytecode
+const validateBytecode = (req, res, next) => {
   const { bytecode } = req.body;
-
-  if (!bytecode || !bytecode.startsWith('0x')) {
-    return res.status(400).json({ error: 'Invalid bytecode format. Must start with 0x.' });
+  
+  if (!bytecode) {
+    return res.status(400).json({
+      success: false,
+      error: 'Bytecode is required'
+    });
   }
 
+  if (typeof bytecode !== 'string') {
+    return res.status(400).json({
+      success: false,
+      error: 'Bytecode must be a string'
+    });
+  }
+
+  const cleanBytecode = bytecode.startsWith('0x') ? bytecode : `0x${bytecode}`;
+  
+  if (!/^0x[0-9a-fA-F]+$/.test(cleanBytecode)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Bytecode must contain valid hexadecimal characters'
+    });
+  }
+
+  // Attach cleaned bytecode to request for later use
+  req.cleanBytecode = cleanBytecode;
+  next();
+};
+
+// Decompilation endpoint
+router.post('/', validateBytecode, async (req, res) => {
+  const { cleanBytecode } = req;
+  
   try {
-    const evm = new SEVM();
-    const decompiled = await evm.decompile(bytecode);
-    res.json({ success: true, code: decompiled });
+    // Initialize SEVM with error handling
+    let evm;
+    try {
+      evm = new SEVM();
+    } catch (initError) {
+      console.error('SEVM initialization failed:', initError);
+      throw new Error('Internal decompiler error');
+    }
+
+    // Decompile with timeout protection
+    const decompiled = await Promise.race([
+      evm.solidify(cleanBytecode),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Decompilation timeout')), 10000) // 10 second timeout
+      )
+    ]);
+
+    // Format the output
+    const formattedCode = formatDecompiledOutput(decompiled);
+
+    res.json({
+      success: true,
+      data: {
+        pseudocode: formattedCode,
+        bytecodeSize: (cleanBytecode.length - 2) / 2, // Size in bytes
+        warnings: getDecompilationWarnings(formattedCode)
+      }
+    });
+
   } catch (error) {
-    res.status(500).json({ error: `Decompilation failed: ${error.message}` });
+    console.error(`Decompilation Error (${cleanBytecode.slice(0, 20)}...):`, error);
+    
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      fallback: generateFallbackOutput(cleanBytecode) // Your existing fallback logic
+    });
   }
 });
+
+// Helper functions
+function formatDecompiledOutput(raw) {
+  return `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+${raw.replace(/^contract/m, 'contract Decompiled')}`;
+}
+
+function getDecompilationWarnings(code) {
+  const warnings = [];
+  if (code.includes('delegatecall')) warnings.push('Contains delegatecall - potential security risk');
+  if (code.includes('selfdestruct')) warnings.push('Contains selfdestruct - potential security risk');
+  return warnings;
+}
+
+function generateFallbackOutput(bytecode) {
+  // Implement your existing fallback pseudocode generation
+  return '// Fallback pseudocode generation...';
+}
 
 module.exports = router;
