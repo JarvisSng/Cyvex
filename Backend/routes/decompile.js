@@ -40,16 +40,20 @@ router.post('/', validateBytecode, async (req, res) => {
   
   try {
     // Initialize SEVM with error handling
-    let evm;
+    let evm = new SEVM();
     try {
-      evm = new SEVM();
     } catch (initError) {
       console.error('SEVM initialization failed:', initError);
       throw new Error('Internal decompiler error');
     }
 
     // Decompile with timeout protection
-    const decompiled = await evm.solidify(cleanBytecode);
+    const decompiled = await Promise.race([
+      evm.solidify(cleanBytecode),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Decompilation timeout')), 10000)
+      )
+    ]);
 
     // Format the output
     const formattedCode = formatDecompiledOutput(decompiled);
@@ -67,21 +71,22 @@ router.post('/', validateBytecode, async (req, res) => {
   } catch (error) {
     console.error(`Decompilation Error (${cleanBytecode.slice(0, 20)}...):`, error);
   
-    let fallback;
+    let fallback = '// Fallback pseudocode unavailable';
     try {
       fallback = generateFallbackOutput(cleanBytecode);
     } catch (fallbackErr) {
-      console.error('Fallback generation failed:', fallbackErr);
-      fallback = '// Error generating fallback pseudocode';
+      console.error('Error generating fallback:', fallbackErr);
     }
   
-    // Ensure a response is always sent
-    res.status(500).json({
-      success: false,
-      error: error.message || 'Internal server error',
-      fallback
-    });
-  }  
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Internal server error',
+        fallback
+      });
+    }
+  }
+  
 });
 
 // Helper functions
