@@ -62,14 +62,20 @@ export default function CryptoDetector() {
 	loadAll();
 	}, []);
 
- 	// Convert bytecode to disassembly
-	const disassembleBytecode = (bytecode) => {
-		const opcodeData = decompileToOpcodes(bytecode);
+	// Convert bytecode to disassembly
+	const disassembleBytecode = async (bytecode) => {
+	try {
+		const opcodeData = await decompileToOpcodes(bytecode);
 
 		// Optional: Validate or transform data if needed
 		console.log('Disassembled Opcodes:', opcodeData);
 		return opcodeData;
+	} catch (err) {
+		console.error('Disassembly failed:', err);
+		throw err;
+	}
 	};
+
 
  	// Detect cryptographic patterns
  	const detectCryptoOperations = (code) => {
