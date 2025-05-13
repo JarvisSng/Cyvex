@@ -4,7 +4,7 @@ import { JsonRpcProvider } from 'ethers';
 import 'sevm/4bytedb';
 
 export async function decompileBytecode(address) {
-  const provider = new JsonRpcProvider('https://cloudflare-eth.com/');
+  const provider = new JsonRpcProvider('https://rpc.ankr.com/eth/d066d9a0660462ce9c0547bd9841e9e112b488dd7c0fbe984df18018329e0e42');
   const bytecode = await provider.getCode(address);
   console.log('Bytecode:', bytecode);
 
@@ -26,7 +26,7 @@ export async function decompileBytecode(address) {
 }
 
 export async function getOpcodes(address) {
-  const provider = new JsonRpcProvider('https://cloudflare-eth.com/');
+  const provider = new JsonRpcProvider('https://rpc.ankr.com/eth/d066d9a0660462ce9c0547bd9841e9e112b488dd7c0fbe984df18018329e0e42');
   const bytecode = await provider.getCode(address);
   console.log('Bytecode:', bytecode);
 
@@ -39,7 +39,7 @@ export async function getOpcodes(address) {
 }
 
 export async function getByteCode(address) {
-  const provider = new JsonRpcProvider('https://cloudflare-eth.com/');
+  const provider = new JsonRpcProvider('https://rpc.ankr.com/eth/d066d9a0660462ce9c0547bd9841e9e112b488dd7c0fbe984df18018329e0e42');
   const bytecode = await provider.getCode(address);
   console.log('Bytecode:', bytecode);
 
