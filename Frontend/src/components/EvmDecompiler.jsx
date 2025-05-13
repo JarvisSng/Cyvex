@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getCryptoPatterns } from "../controller/cryptoPatternsController";
 import { getEvmOpcodes } from "../controller/evmOpcodesController";
 import { getOpcodePatterns } from "../controller/opcodePatternsController";
+import { decompileBytecode} from "../controller/SEVMController"
 
 export default function CryptoDetector() {
   const [bytecode, setBytecode] = useState("");
@@ -132,73 +133,14 @@ export default function CryptoDetector() {
 		return findings.sort((a, b) => b.risk - a.risk);
   	};
 
-	const generatePseudocode = (bytecode) => {
-		const cleanCode = bytecode.startsWith("0x") ? bytecode.slice(2) : bytecode;
-		const output = ["pragma solidity ^0.8.0;", "", "contract Reconstructed {"];
-		const functions = [];
-		let currentFunction = null;
-		let i = 0;
-
-		// First pass: identify all JUMPDESTs
-		const jumpdests = new Set();
-		while (i < cleanCode.length) {
-			const byte = cleanCode.substr(i, 2);
-			if (byte === "5b") jumpdests.add(i/2);
-			i += byte >= "60" && byte <= "7f" ? (parseInt(byte, 16) - 0x5f + 1) * 2 : 2;
+	const handleDecompile = async () => {
+		try {
+			const { data } = await decompileBytecode(bytecode);
+			setPseudocode(data.pseudocode);
+			console.log(`Decompiled in ${data.metrics.time_ms}ms`);
+		} catch (error) {
+			setError(error.message);
 		}
-
-		// Second pass: analyze code
-		i = 0;
-		while (i < cleanCode.length) {
-			const pc = i/2;
-			const byte = cleanCode.substr(i, 2);
-			const op = OPCODE_MAP[byte.toLowerCase()] || {};
-			const opcode = op.mnemonic || `0x${byte}`;
-
-			// Handle PUSH operations
-			if (byte >= "60" && byte <= "7f") {
-				const pushSize = parseInt(byte, 16) - 0x5f;
-				const value = "0x" + cleanCode.substr(i + 2, pushSize * 2);
-			i += 2 + pushSize * 2;
-			
-			if (currentFunction) {
-				if (op.solidity_function) {
-				currentFunction.code.push(`${op.solidity_function.replace("0x01", value)}`);
-				}
-			}
-			continue;
-			}
-			i += 2;
-
-			// Function detection
-			if (opcode === "JUMPDEST" && !currentFunction) {
-			currentFunction = {
-				start: pc,
-				code: [],
-				name: `function_${pc.toString(16)}`
-			};
-			functions.push(currentFunction);
-			continue;
-			}
-
-			if (!currentFunction) continue;
-
-			if (op.solidity_function) {
-				currentFunction.code.push(`${op.solidity_function}`);
-			}
-			
-		}
-
-		// Generate output
-		functions.forEach(fn => {
-			output.push(`  function ${fn.name}() public {`);
-			output.push(...fn.code);
-			output.push("  }");
-			output.push("");
-		});
-
-		output.push("}");
-		return output.join("\n");
 	};
 
 	// Main analysis function
@@ -221,7 +163,7 @@ export default function CryptoDetector() {
 
 			// Generate pseudocode with debug info
 			console.log("Generating pseudocode...");
-			const pseudo = generatePseudocode(normalizedBytecode);
+			const pseudo = handleDecompile(normalizedBytecode);
 			console.log("Generated pseudocode:", pseudo);
 			setPseudocode(pseudo);
 
