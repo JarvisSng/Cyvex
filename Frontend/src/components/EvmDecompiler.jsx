@@ -119,6 +119,8 @@ export default function CryptoDetector() {
 		setDisassembly("");
 		setPseudocode("");
 	
+		console.log(address);
+
 		try {
 		  if (!address.trim()) throw new Error("Please enter EVM bytecode");
 		  const normalizedBytecode = address.startsWith("0x") ? address : `0x${address}`;
