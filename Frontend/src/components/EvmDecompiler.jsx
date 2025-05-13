@@ -10,7 +10,7 @@ export default function CryptoDetector() {
   const [disassembly, setDisassembly] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [pseudocode, setPseudocode] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
 
   const [OPCODE_MAP, setOpcodeMap] = useState({});
   const [CRYPTO_PATTERNS, setCryptoPatternsState] = useState({});
@@ -134,48 +134,38 @@ export default function CryptoDetector() {
 		return findings.sort((a, b) => b.risk - a.risk);
   	};
 
-	const handleDecompile = async () => {
-		try {
-			const { data } = await decompileBytecode(bytecode);
-			setPseudocode(data.pseudocode);
-			console.log(`Decompiled in ${data.metrics.time_ms}ms`);
-		} catch (error) {
-			setError(error.message);
-		}
-	};
-
-	// Main analysis function
 	const analyzeBytecode = async () => {
 		setIsLoading(true);
+		setError(null);
 		setCryptoFindings([]);
 		setDisassembly("");
 		setPseudocode("");
-
+	
 		try {
-			if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
-			const normalizedBytecode = bytecode.startsWith("0x") ? bytecode : `0x${bytecode}`;
-
-			// Generate disassembly
-			const assembly = disassembleBytecode(normalizedBytecode);
-			setDisassembly(assembly);
-
-			// Detect crypto patterns
-			setCryptoFindings(detectCryptoOperations(normalizedBytecode));
-
-			// Generate pseudocode with debug info
-			console.log("Generating pseudocode...");
-			const pseudo = handleDecompile(normalizedBytecode);
-			console.log("Generated pseudocode:", pseudo);
-			setPseudocode(pseudo);
-
+		  if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
+		  const normalizedBytecode = bytecode.startsWith("0x") ? bytecode : `0x${bytecode}`;
+	
+		  // Generate disassembly
+		  setDisassembly(disassembleBytecode(normalizedBytecode));
+	
+		  // Detect crypto patterns
+		  setCryptoFindings(detectCryptoOperations(normalizedBytecode));
+	
+		  // Decompile using SEVM
+		  const response = await decompileBytecode(normalizedBytecode);
+		  if (response.success) {
+			setPseudocode(response.data.pseudocode);
+		  } else {
+			throw new Error(response.error || "Decompilation failed");
+		  }
 		} catch (err) {
-			console.error("Analysis error:", err);
-			setCryptoFindings([{
+		  setError(err.message);
+		  setCryptoFindings([{
 			type: "error",
 			message: err.message
-			}]);
+		  }]);
 		} finally {
-			setIsLoading(false);
+		  setIsLoading(false);
 		}
 	};
 
