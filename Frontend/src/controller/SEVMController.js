@@ -118,7 +118,7 @@ export const ByteCodeDecompileToOpcodes = async (bytecode) => {
 
 export const getByteCode = async (address) => {
     try {
-        const response = await fetch(`${path}/api/decompile//getByteCode`, {
+        const response = await fetch(`${path}/api/decompile/getByteCode`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ address })
