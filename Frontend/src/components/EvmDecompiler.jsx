@@ -2,7 +2,7 @@ import { use, useEffect, useState } from "react";
 import { getCryptoPatterns } from "../controller/cryptoPatternsController";
 import { getEvmOpcodes } from "../controller/evmOpcodesController";
 import { getOpcodePatterns } from "../controller/opcodePatternsController";
-import { decompileBytecode, decompileToOpcodes, getByteCode, decompileAddress } from "../controller/SEVMController";
+import { decompileBytecode, AddressDecompileToOpcodes, ByteCodeDecompileToOpcodes, getByteCode, decompileAddress } from "../controller/SEVMController";
 
 export default function CryptoDetector() {
   const [address, setAddress] = useState("");
@@ -63,9 +63,22 @@ export default function CryptoDetector() {
 	}, []);
 
 	// Convert bytecode to disassembly
-	const disassembleBytecode = async (address) => {
+	const AddressDisassembleBytecode = async (address) => {
 		try {
-			const opcodeData = await decompileToOpcodes(address);
+			const opcodeData = await  AddressDecompileToOpcodes(address);
+
+			// Optional: Validate or transform data if needed
+			console.log('Disassembled Opcodes:', opcodeData);
+			return opcodeData;
+		} catch (err) {
+			console.error('Disassembly failed:', err);
+			throw err;
+		}
+	};
+
+	const ByteCodeDisassembleBytecode = async (address) => {
+		try {
+			const opcodeData = await ByteCodeDecompileToOpcodes(address);
 
 			// Optional: Validate or transform data if needed
 			console.log('Disassembled Opcodes:', opcodeData);
@@ -139,7 +152,7 @@ export default function CryptoDetector() {
 			// If address is valid, proceed with disassembling and decompiling
 
 			// === Call backend to disassemble the bytecode from the address ===
-			const disassembled = await disassembleBytecode(address); // Send address to get disassembly
+			const disassembled = await AddressDisassembleBytecode(address); // Send address to get disassembly
 			setDisassembly(disassembled.data?.disassembly?.join("\n") || "No disassembly output");
 
 			// === Crypto detection ===
@@ -158,7 +171,7 @@ export default function CryptoDetector() {
 			} else {
 			// If it's raw bytecode (does not match Ethereum address format)
 			// === Call backend to disassemble the bytecode directly ===
-			const disassembled = await disassembleBytecode(address); // Directly disassemble the bytecode
+			const disassembled = await ByteCodeDisassembleBytecode(address); // Directly disassemble the bytecode
 			setDisassembly(disassembled.data?.disassembly?.join("\n") || "No disassembly output");
 
 			// === Crypto detection ===

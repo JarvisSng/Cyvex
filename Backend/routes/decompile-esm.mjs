@@ -43,11 +43,20 @@ export async function decompileAddress(address) {
   };
 }
 
-export async function getOpcodes(address) {
+export async function getOpcodesByAddress(address) {
   const provider = new JsonRpcProvider('https://rpc.ankr.com/eth/d066d9a0660462ce9c0547bd9841e9e112b488dd7c0fbe984df18018329e0e42');
   const bytecode = await provider.getCode(address);
   console.log('Bytecode:', bytecode);
 
+  const contract = new Contract(bytecode);
+  const opcodes = contract.opcodes();
+
+  const formattedOpcodes = opcodes.map(opcode => opcode.format());
+  console.log(formattedOpcodes);
+  return formattedOpcodes;
+}
+
+export async function getOpcodesByByteCode(bytecode) {
   const contract = new Contract(bytecode);
   const opcodes = contract.opcodes();
 

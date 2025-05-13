@@ -90,7 +90,7 @@ router.post('/code/address', async (req, res) => {
 });
 
 // Disassemble to opcodes
-router.post('/opcode', async (req, res) => {
+router.post('/opcode/address', async (req, res) => {
   const { address } = req.body;
   console.log(address);
 
@@ -101,8 +101,32 @@ router.post('/opcode', async (req, res) => {
   }
 
   try {
-    const { getOpcodes } = await import('./decompile-esm.mjs');
-    const formattedOpcodes = await getOpcodes(address);
+    const { getOpcodesByAddress } = await import('./decompile-esm.mjs');
+    const formattedOpcodes = await getOpcodesByAddress(address);
+
+    res.json({
+      success: true,
+      data: {
+        opcodeCount: formattedOpcodes.length,
+        disassembly: formattedOpcodes,
+      },
+    });
+  } catch (err) {
+    console.error('Opcode Decompilation Error:', err);
+    res.status(500).json({
+      success: false,
+      error: err.message || 'Failed to disassemble contract opcodes',
+    });
+  }
+});
+
+router.post('/opcode/bytecode', async (req, res) => {
+  const { bytecode } = req.body;
+  console.log(bytecode);
+
+  try {
+    const { getOpcodesByByteCode } = await import('./decompile-esm.mjs');
+    const formattedOpcodes = await getOpcodesByByteCode(bytecode);
 
     res.json({
       success: true,
