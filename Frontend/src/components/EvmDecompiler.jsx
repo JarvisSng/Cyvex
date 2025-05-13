@@ -76,41 +76,52 @@ export default function CryptoDetector() {
 		}
 	};
 
- 	// Detect cryptographic patterns
- 	const detectCryptoOperations = (code) => {
-		const findings = [];
-		const cleanCode = code.toLowerCase().replace(/^0x/, "");
+	// Helper function to determine risk based on pattern name
+	const getRisk = (name) => {
+	if (name.includes("ec_") || name.includes("ecrecover")) return 3;
+	if (name.includes("sig") || name.includes("verify")) return 2;
+	return 1;
+	};
 
-		for (const [name, pattern] of Object.entries(CRYPTO_PATTERNS)) {
+	// Detect cryptographic patterns
+	const detectCryptoOperations = (code) => {
+	const findings = [];
+	const cleanCode = code.toLowerCase().replace(/^0x/, "");  // Clean the code once
+
+	// Match patterns by string (function signatures, precompiles)
+	for (const [name, pattern] of Object.entries(CRYPTO_PATTERNS)) {
 		if (typeof pattern === "string") {
-			const index = cleanCode.indexOf(pattern);
-			if (index !== -1) {
+		let index = cleanCode.indexOf(pattern);
+		while (index !== -1) {
 			findings.push({
-				type: pattern.length === 8 ? "function_sig" : "precompile",
-				name,
-				pattern,
-				location: `0x${index.toString(16)}`,
-				risk: name.includes("ec_") || name.includes("ecrecover") ? 3 : 
-					name.includes("sig") || name.includes("verify") ? 2 : 1,
+			type: pattern.length === 8 ? "function_sig" : "precompile",
+			name,
+			pattern,
+			location: `0x${index.toString(16)}`,
+			risk: getRisk(name),
 			});
-			}
+			index = cleanCode.indexOf(pattern, index + 1);  // Move to next match
 		}
 		}
+	}
 
-		for (const [name, regex] of Object.entries(OPCODE_PATTERNS)) {
-		const match = cleanCode.match(regex);
-		if (match) {
-			findings.push({
+	// Match patterns by regex (opcode patterns)
+	for (const [name, regex] of Object.entries(OPCODE_PATTERNS)) {
+		const regexExec = regex.exec(cleanCode);
+		if (regexExec) {
+		findings.push({
 			type: "opcode_pattern",
 			name,
-			location: `0x${match.index.toString(16)}`,
-			risk: name.includes("ec_") ? 3 : name.includes("sig") ? 2 : 1,
-			});
+			location: `0x${regexExec.index.toString(16)}`,
+			risk: getRisk(name),
+		});
 		}
-		}
+	}
 
-		return findings.sort((a, b) => b.risk - a.risk);
-  	};
+	// Sort findings by risk in descending order
+	return findings.sort((a, b) => b.risk - a.risk);
+	};
+
 
 	const analyzeBytecode = async () => {
 		setIsLoading(true);
