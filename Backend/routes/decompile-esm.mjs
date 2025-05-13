@@ -5,8 +5,9 @@ export async function decompileBytecode(bytecode) {
   const contract = new Contract(bytecode)
   const pseudocode = contract.solidify();
   const functions = contract.getFunctions();
+  console.log(functions);
   const events = contract.getEvents();
-
+  console.log(events);
   // Return the pseudocode, functions, and events
   return {
     pseudocode,
