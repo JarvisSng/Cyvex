@@ -18,7 +18,7 @@ router.post('/code', validateBytecode, async (req, res) => {
   console.log(cleanBytecode);
 
   try {
-    const { Contract } = await import('../decompile-esm.mjs'); // dynamic import
+    const { Contract } = await import('./decompile-esm.mjs'); // dynamic import
     const contract = new Contract(cleanBytecode).patchdb();
     const pseudocode = contract.solidify();
 
