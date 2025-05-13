@@ -2,7 +2,7 @@ import { use, useEffect, useState } from "react";
 import { getCryptoPatterns } from "../controller/cryptoPatternsController";
 import { getEvmOpcodes } from "../controller/evmOpcodesController";
 import { getOpcodePatterns } from "../controller/opcodePatternsController";
-import { decompileBytecode, decompileToOpcodes, getByteCode } from "../controller/SEVMController";
+import { decompileBytecode, decompileToOpcodes, getByteCode, decompileAddress } from "../controller/SEVMController";
 
 export default function CryptoDetector() {
   const [address, setAddress] = useState("");
@@ -122,7 +122,6 @@ export default function CryptoDetector() {
 	return findings.sort((a, b) => b.risk - a.risk);
 	};
 
-
 	const analyzeBytecode = async () => {
 		setIsLoading(true);
 		setError(null);
@@ -133,40 +132,46 @@ export default function CryptoDetector() {
 		console.log(address);
 
 		try {
-			if (!address.trim()) throw new Error("Please enter a contract address");
-			
-			// Validate Ethereum address format
-			if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
-				throw new Error("Invalid Ethereum address format");
-			}
+		if (!address.trim()) throw new Error("Please enter a contract address");
 
-			// === Call backend to disassemble ===
-			const disassembled = await disassembleBytecode(address); // send address only
+		// Validate if address is a valid Ethereum address or raw bytecode
+		if (/^0x[a-fA-F0-9]{40}$/.test(address)) {
+			// If address is a valid Ethereum address, use decompileAddress
+			const disassembled = await decompileAddress(address);
 			setDisassembly(disassembled.data?.disassembly?.join("\n") || "No disassembly output");
-
-			// === Crypto detection ===
-			const bytecodeRaw = await getByteCode(address); // <-- get the real bytecode
+			
+			const bytecodeRaw = await getByteCode(address);
 			setCryptoFindings(detectCryptoOperations(bytecodeRaw.data.bytecode));
 
-			// === Call backend to decompile ===
-			const response = await decompileBytecode(address); // send address only
-			console.log(response);
-
+			const response = await decompileBytecode(address);
 			if (response.success) {
-				setPseudocode(response.data.pseudocode);
+			setPseudocode(response.data.pseudocode);
 			} else {
-				throw new Error(response.error || "Decompilation failed");
+			throw new Error(response.error || "Decompilation failed");
 			}
+		} else {
+			// If address is bytecode, use decompileBytecode directly
+			const disassembled = await disassembleBytecode(address);
+			setDisassembly(disassembled.data?.disassembly?.join("\n") || "No disassembly output");
+			
+			const bytecodeRaw = await getByteCode(address);
+			setCryptoFindings(detectCryptoOperations(bytecodeRaw.data.bytecode));
+
+			const response = await decompileBytecode(address);
+			if (response.success) {
+			setPseudocode(response.data.pseudocode);
+			} else {
+			throw new Error(response.error || "Decompilation failed");
+			}
+		}
 		} catch (err) {
-			setError(err.message);
-			setCryptoFindings([
-				{
-					type: "error",
-					message: err.message
-				}
-			]);
+		setError(err.message);
+		setCryptoFindings([{
+			type: "error",
+			message: err.message
+		}]);
 		} finally {
-			setIsLoading(false);
+		setIsLoading(false);
 		}
 	};
 
@@ -174,7 +179,7 @@ export default function CryptoDetector() {
 	<div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
 		<div className="mb-4">
 			<label className="block text-sm font-medium text-gray-700 mb-2">
-			EVM Bytecode to Analyze:
+			EVM Address or Bytecode to Analyze:
 			</label>
 			<textarea
 			value={address}
@@ -183,7 +188,7 @@ export default function CryptoDetector() {
 					focus:outline-none focus:ring-2 focus:ring-blue-500
 					focus:border-blue-500 font-mono text-sm !text-gray-800"
 			rows={8}
-			placeholder="Paste contract address (with or without 0x)"
+			placeholder="Paste contract address or bytecode (with or without 0x)"
 			disabled={isLoading}
 			/>
 		</div>
