@@ -49,6 +49,7 @@ router.post('/code', async (req, res) => {
 // Disassemble to opcodes
 router.post('/opcode', async (req, res) => {
   const { address } = req.body;
+  console.log(address);
 
   // Validate Ethereum address
   const isAddress = /^0x[a-fA-F0-9]{40}$/.test(address);
