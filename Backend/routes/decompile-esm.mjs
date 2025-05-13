@@ -35,3 +35,10 @@ export async function getOpcodes(address) {
   console.log(formattedOpcodes);
   return formattedOpcodes;
 }
+
+export async function getByteCode(address) {
+  const provider = new JsonRpcProvider('https://cloudflare-eth.com/');
+  const bytecode = await provider.getCode(address);
+
+  return bytecode;
+}

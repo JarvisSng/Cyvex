@@ -77,6 +77,27 @@ router.post('/opcode', async (req, res) => {
   }
 });
 
+router.post('/bytecode', async (req, res) => {
+  const { address } = req.body;
+
+  try {
+    const { getByteCode } = await import('./decompile-esm.mjs');
+    const bytecode = await getByteCode(address);
+
+    res.json({
+      success: true,
+      data: {
+        bytecode
+      },
+    });
+  } catch (err) {
+    console.error('Bytecode Error:', err);
+    res.status(500).json({
+      success: false,
+      error: err.message || 'Failed to get bytecode',
+    });
+  }
+});
 
 // Optional fallback
 function generateFallbackOutput() {

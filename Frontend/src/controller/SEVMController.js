@@ -1,11 +1,11 @@
 import path from "../config/expressPath";
 
-export const decompileBytecode = async (bytecode) => {
+export const decompileBytecode = async (address) => {
     try {
         const response = await fetch(`${path}/api/decompile/code`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ bytecode })
+            body: JSON.stringify({ address })
         });
 
         const rawText = await response.text(); // get raw response
@@ -29,12 +29,12 @@ export const decompileBytecode = async (bytecode) => {
     }
 };
 
-export const decompileToOpcodes = async (bytecode) => {
+export const decompileToOpcodes = async (address) => {
     try {
         const response = await fetch(`${path}/api/decompile/opcode`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ bytecode })
+            body: JSON.stringify({ address })
         });
 
         const rawText = await response.text(); // get raw response
@@ -54,6 +54,35 @@ export const decompileToOpcodes = async (bytecode) => {
 
     } catch (error) {
         console.error('Opcode API Error:', error);
+        throw error;
+    }
+};
+
+export const getByteCode = async (address) => {
+    try {
+        const response = await fetch(`${path}/api/decompile/bytecode`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address })
+        });
+
+        const rawText = await response.text(); // get raw response
+        console.log('Raw bytecode Response:', rawText);
+
+        if (!response.ok) {
+            let errorData;
+            try {
+                errorData = JSON.parse(rawText); // try to parse error body
+            } catch {
+                throw new Error('Server error: ' + rawText);
+            }
+            throw new Error(errorData.error || 'Bytecode extraction failed');
+        }
+
+        return JSON.parse(rawText);
+
+    } catch (error) {
+        console.error('Bytecode API Error:', error);
         throw error;
     }
 };

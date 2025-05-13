@@ -118,36 +118,43 @@ export default function CryptoDetector() {
 		setCryptoFindings([]);
 		setDisassembly("");
 		setPseudocode("");
-	
+
 		console.log(address);
 
 		try {
-		  if (!address.trim()) throw new Error("Please enter EVM bytecode");
-		  const normalizedBytecode = address.startsWith("0x") ? address : `0x${address}`;
-	
-		  // Generate disassembly
-		  const disassembled = await disassembleBytecode(normalizedBytecode);
-	      setDisassembly(disassembled.data?.disassembly?.join("\n") || "No disassembly output");
-	
-		  // Detect crypto patterns
-		  setCryptoFindings(detectCryptoOperations(normalizedBytecode));
-	
-		  // Decompile using SEVM
-		  const response = await decompileBytecode(normalizedBytecode);
-		  console.log(response);
-		  if (response.success) {
-			setPseudocode(response.data.pseudocode);
-		  } else {
-			throw new Error(response.error || "Decompilation failed");
-		  }
+			if (!address.trim()) throw new Error("Please enter a contract address");
+			
+			// Validate Ethereum address format
+			if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+				throw new Error("Invalid Ethereum address format");
+			}
+
+			// === Call backend to disassemble ===
+			const disassembled = await disassembleBytecode(address); // send address only
+			setDisassembly(disassembled.data?.disassembly?.join("\n") || "No disassembly output");
+
+			// === Crypto detection ===
+			setCryptoFindings(detectCryptoOperations(address)); // pass address (your logic may vary)
+
+			// === Call backend to decompile ===
+			const response = await decompileBytecode(address); // send address only
+			console.log(response);
+
+			if (response.success) {
+				setPseudocode(response.data.pseudocode);
+			} else {
+				throw new Error(response.error || "Decompilation failed");
+			}
 		} catch (err) {
-		  setError(err.message);
-		  setCryptoFindings([{
-			type: "error",
-			message: err.message
-		  }]);
+			setError(err.message);
+			setCryptoFindings([
+				{
+					type: "error",
+					message: err.message
+				}
+			]);
 		} finally {
-		  setIsLoading(false);
+			setIsLoading(false);
 		}
 	};
 
