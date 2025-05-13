@@ -51,15 +51,12 @@ router.post('/opcode', async (req, res) => {
   const { address } = req.body;
 
   if (!address || typeof address !== 'string') {
-    return res.status(400).json({ success: false, error: 'Invalid bytecode' });
+    return res.status(400).json({ success: false, error: 'Invalid address' });
   }
-
-  const cleanBytecode = address.startsWith('0x') ? address : `0x${address}`;
-  const evenBytecode = cleanBytecode.length % 2 === 0 ? cleanBytecode : cleanBytecode.slice(0, -1);
 
   try {
     const { getOpcodes } = await import('./decompile-esm.mjs');
-    const formattedOpcodes = await getOpcodes(evenBytecode);
+    const formattedOpcodes = await getOpcodes(address);
 
     res.json({
       success: true,
@@ -76,6 +73,7 @@ router.post('/opcode', async (req, res) => {
     });
   }
 });
+
 
 // Optional fallback
 function generateFallbackOutput() {
