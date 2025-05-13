@@ -2,7 +2,7 @@ import { use, useEffect, useState } from "react";
 import { getCryptoPatterns } from "../controller/cryptoPatternsController";
 import { getEvmOpcodes } from "../controller/evmOpcodesController";
 import { getOpcodePatterns } from "../controller/opcodePatternsController";
-import { decompileBytecode } from "../controller/SEVMController";
+import { decompileBytecode, decompileToOpcodes } from "../controller/SEVMController";
 
 export default function CryptoDetector() {
   const [bytecode, setBytecode] = useState("");
@@ -37,10 +37,6 @@ export default function CryptoDetector() {
 			};
 			});
 			setOpcodeMap(map);
-			console.log("OPCODE_MAP loaded with", Object.keys(map).length, "opcodes");
-			
-			// Debug log to verify structure
-			console.log("Sample PUSH1 entry:", map["60"]);
 		}
 
 		if (!crypto.error) {
@@ -67,35 +63,12 @@ export default function CryptoDetector() {
 	}, []);
 
  	// Convert bytecode to disassembly
-	const disassembleBytecode = (code) => {
-	try {
-		const cleanCode = code.startsWith("0x") ? code.slice(2) : code;
-		const result = [];
-		let i = 0;
+	const disassembleBytecode = (bytecode) => {
+		const opcodeData = decompileToOpcodes(bytecode);
 
-		while (i < cleanCode.length) {
-		const byte = cleanCode.substr(i, 2);
-		const op = OPCODE_MAP[byte.toLowerCase()]; // Ensure lowercase match
-		
-		// Format the opcode line
-		const line = `${i/2}: ${op?.mnemonic || `0x${byte}`}`;
-		
-		// Handle PUSH operations
-		if (byte >= "60" && byte <= "7f") {
-			const pushSize = parseInt(byte, 16) - 0x5f;
-			const pushData = cleanCode.substr(i + 2, pushSize * 2);
-			result.push(`${line} 0x${pushData}`);
-			i += 2 + pushSize * 2;
-		} else {
-			result.push(line);
-			i += 2;
-		}
-		}
-
-		return result.join("\n");
-	} catch (err) {
-		return `Disassembly failed: ${err.message}`;
-	}
+		// Optional: Validate or transform data if needed
+		console.log('Disassembled Opcodes:', opcodeData);
+		return opcodeData;
 	};
 
  	// Detect cryptographic patterns
