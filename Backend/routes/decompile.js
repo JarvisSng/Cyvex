@@ -5,11 +5,20 @@ const router = express.Router();
 // Middleware
 const validateBytecode = (req, res, next) => {
   const { bytecode } = req.body;
+
   if (!bytecode || typeof bytecode !== 'string') {
     return res.status(400).json({ success: false, error: 'Invalid bytecode' });
   }
 
-  req.cleanBytecode = bytecode.startsWith('0x') ? bytecode : `0x${bytecode}`;
+  // Strip '0x' if present
+  let cleanBytecode = bytecode.startsWith('0x') ? bytecode.slice(2) : bytecode;
+
+  // Truncate last character if length is odd
+  if (cleanBytecode.length % 2 !== 0) {
+    cleanBytecode = cleanBytecode.slice(0, -1);
+  }
+
+  req.cleanBytecode = '0x' + cleanBytecode;
   next();
 };
 

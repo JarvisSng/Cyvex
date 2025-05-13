@@ -243,10 +243,10 @@ export default function CryptoDetector() {
 			{disassembly && (
 			<div>
 				<h2 className="text-lg font-medium text-gray-800 mb-2">
-				Disassembly (First 100 lines):
+				Disassembly:
 				</h2>
 				<pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60 !text-gray-800">
-				{disassembly.split("\n").slice(0, 100).join("\n")}
+				{disassembly}
 				</pre>
 			</div>
 			)}
