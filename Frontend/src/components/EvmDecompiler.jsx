@@ -5,7 +5,7 @@ import { getOpcodePatterns } from "../controller/opcodePatternsController";
 import { decompileBytecode, decompileToOpcodes } from "../controller/SEVMController";
 
 export default function CryptoDetector() {
-  const [bytecode, setBytecode] = useState("");
+  const [address, setAddress] = useState("");
   const [cryptoFindings, setCryptoFindings] = useState([]);
   const [disassembly, setDisassembly] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -63,19 +63,18 @@ export default function CryptoDetector() {
 	}, []);
 
 	// Convert bytecode to disassembly
-	const disassembleBytecode = async (bytecode) => {
-	try {
-		const opcodeData = await decompileToOpcodes(bytecode);
+	const disassembleBytecode = async (address) => {
+		try {
+			const opcodeData = await decompileToOpcodes(address);
 
-		// Optional: Validate or transform data if needed
-		console.log('Disassembled Opcodes:', opcodeData);
-		return opcodeData;
-	} catch (err) {
-		console.error('Disassembly failed:', err);
-		throw err;
-	}
+			// Optional: Validate or transform data if needed
+			console.log('Disassembled Opcodes:', opcodeData);
+			return opcodeData;
+		} catch (err) {
+			console.error('Disassembly failed:', err);
+			throw err;
+		}
 	};
-
 
  	// Detect cryptographic patterns
  	const detectCryptoOperations = (code) => {
@@ -121,8 +120,8 @@ export default function CryptoDetector() {
 		setPseudocode("");
 	
 		try {
-		  if (!bytecode.trim()) throw new Error("Please enter EVM bytecode");
-		  const normalizedBytecode = bytecode.startsWith("0x") ? bytecode : `0x${bytecode}`;
+		  if (!address.trim()) throw new Error("Please enter EVM bytecode");
+		  const normalizedBytecode = address.startsWith("0x") ? address : `0x${address}`;
 	
 		  // Generate disassembly
 		  const disassembled = await disassembleBytecode(normalizedBytecode);
@@ -157,22 +156,22 @@ export default function CryptoDetector() {
 			EVM Bytecode to Analyze:
 			</label>
 			<textarea
-			value={bytecode}
-			onChange={(e) => setBytecode(e.target.value)}
+			value={address}
+			onChange={(e) => setAddress(e.target.value)}
 			className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
 					focus:outline-none focus:ring-2 focus:ring-blue-500
 					focus:border-blue-500 font-mono text-sm !text-gray-800"
 			rows={8}
-			placeholder="Paste contract bytecode (with or without 0x)"
+			placeholder="Paste contract address (with or without 0x)"
 			disabled={isLoading}
 			/>
 		</div>
 
 		<button
 			onClick={analyzeBytecode}
-			disabled={isLoading || !bytecode.trim()}
+			disabled={isLoading || !address.trim()}
 			className={`px-4 py-2 rounded-md text-white font-medium ${
-			isLoading || !bytecode.trim()
+			isLoading || !address.trim()
 				? "!bg-gray-400 cursor-not-allowed"
 				: "!bg-blue-950 hover:bg-blue-700"
 			}`}

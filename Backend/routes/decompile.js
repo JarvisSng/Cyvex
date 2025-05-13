@@ -3,14 +3,14 @@ const router = express.Router();
 
 // Decompile to Solidity-style pseudocode
 router.post('/code', async (req, res) => {
-  const { bytecode } = req.body;
+  const { address } = req.body;
 
-  if (!bytecode || typeof bytecode !== 'string') {
-    return res.status(400).json({ success: false, error: 'Invalid bytecode' });
+  if (!address || typeof address !== 'string') {
+    return res.status(400).json({ success: false, error: 'Invalid address' });
   }
 
   // Normalize and fix bytecode
-  const cleanBytecode = bytecode.startsWith('0x') ? bytecode : `0x${bytecode}`;
+  const cleanBytecode = address.startsWith('0x') ? address : `0x${address}`;
   const evenBytecode = cleanBytecode.length % 2 === 0 ? cleanBytecode : cleanBytecode.slice(0, -1);
 
   try {
@@ -31,7 +31,7 @@ router.post('/code', async (req, res) => {
 
     let fallback = '// Fallback pseudocode unavailable';
     try {
-      fallback = generateFallbackOutput(evenBytecode);
+      fallback = generateFallbackOutput();
     } catch (fallbackErr) {
       console.error('Error generating fallback:', fallbackErr);
     }
@@ -48,13 +48,13 @@ router.post('/code', async (req, res) => {
 
 // Disassemble to opcodes
 router.post('/opcode', async (req, res) => {
-  const { bytecode } = req.body;
+  const { address } = req.body;
 
-  if (!bytecode || typeof bytecode !== 'string') {
+  if (!address || typeof address !== 'string') {
     return res.status(400).json({ success: false, error: 'Invalid bytecode' });
   }
 
-  const cleanBytecode = bytecode.startsWith('0x') ? bytecode : `0x${bytecode}`;
+  const cleanBytecode = address.startsWith('0x') ? address : `0x${address}`;
   const evenBytecode = cleanBytecode.length % 2 === 0 ? cleanBytecode : cleanBytecode.slice(0, -1);
 
   try {
@@ -78,7 +78,7 @@ router.post('/opcode', async (req, res) => {
 });
 
 // Optional fallback
-function generateFallbackOutput(bytecode) {
+function generateFallbackOutput() {
   return '// Could not decompile; consider reviewing manually.';
 }
 
