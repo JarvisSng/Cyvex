@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { getCryptoPatterns } from "../controller/cryptoPatternsController";
 import { getEvmOpcodes } from "../controller/evmOpcodesController";
 import { getOpcodePatterns } from "../controller/opcodePatternsController";
@@ -10,6 +10,7 @@ export default function CryptoDetector() {
   const [disassembly, setDisassembly] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [pseudocode, setPseudocode] = useState("");
+  const [error, setError] = useState("");
 
   const [OPCODE_MAP, setOpcodeMap] = useState({});
   const [CRYPTO_PATTERNS, setCryptoPatternsState] = useState({});
