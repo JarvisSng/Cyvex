@@ -1,5 +1,6 @@
-const { Contract } = require('sevm');
-const express = require('express');
+import express from 'express';
+import { Contract } from 'sevm';
+
 const router = express.Router();
 
 // Middleware (if you had one before to clean bytecode, keep it)
