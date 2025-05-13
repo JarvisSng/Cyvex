@@ -15,7 +15,7 @@ router.post('/code', async (req, res) => {
 
   try {
     const { decompileBytecode } = await import('./decompile-esm.mjs');
-    const pseudocode = await decompileBytecode(evenBytecode);
+    const { pseudocode, functions, events } = await decompileBytecode(evenBytecode);
 
     res.json({
       success: true,
