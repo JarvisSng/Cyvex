@@ -11,8 +11,18 @@ export async function decompileBytecode(address) {
   const contract = new Contract(bytecode).patchdb();
   const pseudocode = contract.solidify();
 
+  const functions = contract.getFunctions();
+  console.log(functions);
+
+  const events = contract.getEvents();
+  console.log(events);
+
   // Return the pseudocode, functions, and events
-  return pseudocode;
+  return {
+    pseudocode,
+    functions,
+    events
+  };
 }
 
 export async function getOpcodes(address) {
