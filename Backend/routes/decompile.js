@@ -7,10 +7,10 @@ router.post('/code/bytecode', async (req, res) => {
   const {bytecode} = req.body;
 
   // Normalize and fix bytecode
-  const cleanBytecode = address.startsWith('0x') ? address : `0x${address}`;
+  const cleanBytecode = bytecode.startsWith('0x') ? bytecode : `0x${bytecode}`;
   const evenBytecode = cleanBytecode.length % 2 === 0 ? cleanBytecode : cleanBytecode.slice(0, -1);
 
-    try {
+  try {
     const { decompileByteCode } = await import('./decompile-esm.mjs');
     const { pseudocode, functions, events } = await decompileByteCode(evenBytecode);
 
