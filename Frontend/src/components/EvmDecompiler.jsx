@@ -254,13 +254,14 @@ export default function CryptoDetector() {
 			{pseudocode && (
 			<div className="mt-6">
 				<h2 className="text-lg font-medium text-gray-800 mb-2">
-				Reconstructed Pseudocode
+				Reconstructed Solidity Code
 				</h2>
 				<div className="bg-gray-100 p-4 rounded-md overflow-auto max-h-96">
-				<pre className="text-sm font-mono whitespace-pre-wrap">
-					{pseudocode}
-				</pre>
+					<pre className="text-sm font-mono whitespace-pre-wrap">
+						{pseudocode}
+					</pre>
 				</div>
+				<p>Note: This is reconstructed code, not the actual code</p>
 			</div>
 			)}
 		</div>
