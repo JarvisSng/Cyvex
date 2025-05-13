@@ -125,7 +125,8 @@ export default function CryptoDetector() {
 		  const normalizedBytecode = bytecode.startsWith("0x") ? bytecode : `0x${bytecode}`;
 	
 		  // Generate disassembly
-		  setDisassembly(disassembleBytecode(normalizedBytecode));
+		  const disassembled = await disassembleBytecode(normalizedBytecode);
+	      setDisassembly(disassembled.data?.disassembly?.join("\n") || "No disassembly output");
 	
 		  // Detect crypto patterns
 		  setCryptoFindings(detectCryptoOperations(normalizedBytecode));
