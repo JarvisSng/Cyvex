@@ -10,6 +10,8 @@ const validateBytecode = (req, res, next) => {
     return res.status(400).json({ success: false, error: 'Invalid bytecode' });
   }
 
+  console.log(bytecode.length);
+
   // Strip '0x' if present
   let cleanBytecode = bytecode.startsWith('0x') ? bytecode.slice(2) : bytecode;
 
