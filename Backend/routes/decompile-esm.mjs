@@ -6,6 +6,7 @@ import 'sevm/4bytedb';
 export async function decompileBytecode(address) {
   const provider = new JsonRpcProvider('https://cloudflare-eth.com/');
   const bytecode = await provider.getCode(address);
+  console.log('Bytecode:', bytecode);
 
   const contract = new Contract(bytecode).patchdb();
   const pseudocode = contract.solidify();
@@ -27,6 +28,7 @@ export async function decompileBytecode(address) {
 export async function getOpcodes(address) {
   const provider = new JsonRpcProvider('https://cloudflare-eth.com/');
   const bytecode = await provider.getCode(address);
+  console.log('Bytecode:', bytecode);
 
   const contract = new Contract(bytecode);
   const opcodes = contract.opcodes();
@@ -39,6 +41,7 @@ export async function getOpcodes(address) {
 export async function getByteCode(address) {
   const provider = new JsonRpcProvider('https://cloudflare-eth.com/');
   const bytecode = await provider.getCode(address);
+  console.log('Bytecode:', bytecode);
 
   return bytecode;
 }
