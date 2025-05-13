@@ -1,6 +1,6 @@
 export const decompileBytecode = async (bytecode) => {
     try {
-        const response = await fetch('/api/decompile', {
+        const response = await fetch('/api/decompile/code', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ bytecode })

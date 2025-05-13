@@ -13,8 +13,9 @@ const validateBytecode = (req, res, next) => {
   next();
 };
 
-router.post('/', validateBytecode, async (req, res) => {
+router.post('/code', validateBytecode, async (req, res) => {
   const { cleanBytecode } = req;
+  console.log(cleanBytecode);
 
   try {
     const { decompileBytecode } = await import('../decompile-esm.mjs');
