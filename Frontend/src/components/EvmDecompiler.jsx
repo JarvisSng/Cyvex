@@ -2,7 +2,7 @@ import { use, useEffect, useState } from "react";
 import { getCryptoPatterns } from "../controller/cryptoPatternsController";
 import { getEvmOpcodes } from "../controller/evmOpcodesController";
 import { getOpcodePatterns } from "../controller/opcodePatternsController";
-import { decompileBytecode, AddressDecompileToOpcodes, ByteCodeDecompileToOpcodes, getByteCode, decompileAddress } from "../controller/SEVMController";
+import { decompileByteCode, AddressDecompileToOpcodes, ByteCodeDecompileToOpcodes, getByteCode, decompileAddress } from "../controller/SEVMController";
 
 export default function CryptoDetector() {
   const [address, setAddress] = useState("");
