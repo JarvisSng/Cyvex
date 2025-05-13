@@ -32,8 +32,7 @@ export default function CryptoDetector() {
 			// Maintains exact JSON structure you required
 			map[op.opcode.toLowerCase()] = {
 				opcode: op.opcode,        // Preserved exactly as from API
-				mnemonic: op.mnemonic,    // Preserved exactly
-				solidity_function: op.solidity_function  // Preserved exactly
+				mnemonic: op.mnemonic    // Preserved exactly
 			};
 			});
 			setOpcodeMap(map);
@@ -98,42 +97,42 @@ export default function CryptoDetector() {
 
 	// Detect cryptographic patterns
 	const detectCryptoOperations = (code) => {
-	const findings = [];
-	const cleanCode = code.toLowerCase().replace(/^0x/, "");  // Clean the code once
+		const findings = [];
+		const cleanCode = code.toLowerCase().replace(/^0x/, "");  // Clean the code once
 
-	// Match patterns by string (function signatures, precompiles)
-	for (const [name, pattern] of Object.entries(CRYPTO_PATTERNS)) {
-		if (typeof pattern === "string") {
-		let index = cleanCode.indexOf(pattern);
-		while (index !== -1) {
-			findings.push({
-			type: pattern.length === 8 ? "function_sig" : "precompile",
-			name,
-			pattern,
-			location: `0x${index.toString(16)}`,
-			risk: getRisk(name),
-			});
-			index = cleanCode.indexOf(pattern, index + 1);  // Move to next match
+		// Match patterns by string (function signatures, precompiles)
+		for (const [name, pattern] of Object.entries(CRYPTO_PATTERNS)) {
+			if (typeof pattern === "string") {
+			let index = cleanCode.indexOf(pattern);  // Find the first occurrence of the pattern
+			while (index !== -1) {
+				findings.push({
+				type: pattern.length === 8 ? "function_sig" : "precompile",  // Check if it's a function signature
+				name,
+				pattern,
+				location: `0x${index.toString(16)}`,
+				risk: getRisk(name),  // Assuming getRisk is defined to assign a risk level
+				});
+				index = cleanCode.indexOf(pattern, index + 1);  // Move to next match
+			}
+			}
 		}
-		}
-	}
 
-	// Match patterns by regex (opcode patterns)
-	for (const [name, regex] of Object.entries(OPCODE_PATTERNS)) {
-		const clone = new RegExp(regex.source, 'g'); // Ensure global flag
-		let match;
-		while ((match = clone.exec(cleanCode)) !== null) {
+		// Match patterns by regex (opcode patterns)
+		for (const [name, regex] of Object.entries(OPCODE_PATTERNS)) {
+			const clone = new RegExp(regex.source, 'g');  // Ensure global flag for regex
+			let match;
+			while ((match = clone.exec(cleanCode)) !== null) {
 			findings.push({
 				type: "opcode_pattern",
 				name,
 				location: `0x${match.index.toString(16)}`,
 				risk: getRisk(name),
 			});
+			}
 		}
-	}
 
-	// Sort findings by risk in descending order
-	return findings.sort((a, b) => b.risk - a.risk);
+		// Sort findings by risk in descending order
+		return findings.sort((a, b) => b.risk - a.risk);
 	};
 
 	const analyzeBytecode = async () => {
@@ -144,6 +143,9 @@ export default function CryptoDetector() {
 		setPseudocode("");
 
 		console.log(address);
+		// Log the maps to the console
+		console.log("CRYPTO_PATTERNS:", CRYPTO_PATTERNS);
+		console.log("OPCODE_PATTERNS:", OPCODE_PATTERNS);
 
 		try {
 			if (!address.trim()) throw new Error("Please enter a contract address");
