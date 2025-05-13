@@ -28,12 +28,11 @@ router.post('/code/bytecode', async (req, res) => {
         pseudocode,
         functions,
         events,
-        bytecodeSize: (evenBytecode.length - 2) / 2,
+        bytecodeSize: (cleanBytecode.length - 2) / 2,
       }
     });
   } catch (error) {
-    console.error(`Decompilation Error (${evenBytecode.slice(0, 20)}...):`, error);
-
+    
     let fallback = '// Fallback pseudocode unavailable';
     try {
       fallback = generateFallbackOutput();
