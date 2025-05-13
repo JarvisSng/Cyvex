@@ -1,9 +1,8 @@
-import express from 'express';
-import { Contract } from 'sevm';
-
+// routes/decompile.js (CommonJS)
+const express = require('express');
 const router = express.Router();
 
-// Middleware (if you had one before to clean bytecode, keep it)
+// Middleware
 const validateBytecode = (req, res, next) => {
   const { bytecode } = req.body;
   if (!bytecode || typeof bytecode !== 'string') {
@@ -18,8 +17,8 @@ router.post('/', validateBytecode, async (req, res) => {
   const { cleanBytecode } = req;
 
   try {
-    const contract = new Contract(cleanBytecode).patchdb();
-    const pseudocode = contract.solidify(); // Returns Solidity-style pseudocode
+    const { decompileBytecode } = await import('../decompile-esm.mjs');
+    const pseudocode = await decompileBytecode(cleanBytecode);
 
     const formattedCode = formatDecompiledOutput(pseudocode);
 
@@ -52,7 +51,6 @@ router.post('/', validateBytecode, async (req, res) => {
   }
 });
 
-// Helpers
 function formatDecompiledOutput(raw) {
   return `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
@@ -71,4 +69,4 @@ function generateFallbackOutput(bytecode) {
   return '// Could not decompile; consider reviewing manually.';
 }
 
-export default router;
+module.exports = router;
