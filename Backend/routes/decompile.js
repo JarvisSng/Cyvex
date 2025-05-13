@@ -49,16 +49,12 @@ router.post('/', validateBytecode, async (req, res) => {
     }
 
     // Decompile with timeout protection
-    const decompiled = await Promise.race([
-      evm.solidify(cleanBytecode),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Decompilation timeout')), 10000) // 10 second timeout
-      )
-    ]);
+    const decompiled = await evm.solidify(cleanBytecode);
 
     // Format the output
     const formattedCode = formatDecompiledOutput(decompiled);
 
+    console.log('Decompiled code:', formattedCode);
     res.json({
       success: true,
       data: {
@@ -70,13 +66,22 @@ router.post('/', validateBytecode, async (req, res) => {
 
   } catch (error) {
     console.error(`Decompilation Error (${cleanBytecode.slice(0, 20)}...):`, error);
-    
+  
+    let fallback;
+    try {
+      fallback = generateFallbackOutput(cleanBytecode);
+    } catch (fallbackErr) {
+      console.error('Fallback generation failed:', fallbackErr);
+      fallback = '// Error generating fallback pseudocode';
+    }
+  
+    // Ensure a response is always sent
     res.status(500).json({
       success: false,
-      error: error.message,
-      fallback: generateFallbackOutput(cleanBytecode) // Your existing fallback logic
+      error: error.message || 'Internal server error',
+      fallback
     });
-  }
+  }  
 });
 
 // Helper functions
