@@ -7,7 +7,7 @@ export async function decompileBytecode(address) {
   const provider = new JsonRpcProvider('https://cloudflare-eth.com/');
   const bytecode = await provider.getCode(address);
 
-  const contract = new Contract(bytecode).patchdb()
+  const contract = new Contract(bytecode).patchdb();
   const pseudocode = contract.solidify();
 
   const functions = contract.getFunctions();
@@ -28,7 +28,7 @@ export async function getOpcodes(address) {
   const provider = new JsonRpcProvider('https://cloudflare-eth.com/');
   const bytecode = await provider.getCode(address);
 
-  const contract = new Contract(bytecode)
+  const contract = new Contract(bytecode);
   const opcodes = contract.opcodes();
 
   const formattedOpcodes = opcodes.map(opcode => opcode.format());
