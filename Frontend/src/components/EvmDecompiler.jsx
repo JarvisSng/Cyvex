@@ -120,14 +120,15 @@ export default function CryptoDetector() {
 
 	// Match patterns by regex (opcode patterns)
 	for (const [name, regex] of Object.entries(OPCODE_PATTERNS)) {
-		const regexExec = regex.exec(cleanCode);
-		if (regexExec) {
-		findings.push({
-			type: "opcode_pattern",
-			name,
-			location: `0x${regexExec.index.toString(16)}`,
-			risk: getRisk(name),
-		});
+		const clone = new RegExp(regex.source, 'g'); // Ensure global flag
+		let match;
+		while ((match = clone.exec(cleanCode)) !== null) {
+			findings.push({
+				type: "opcode_pattern",
+				name,
+				location: `0x${match.index.toString(16)}`,
+				risk: getRisk(name),
+			});
 		}
 	}
 
