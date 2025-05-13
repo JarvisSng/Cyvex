@@ -178,7 +178,7 @@ export default function CryptoDetector() {
 			setCryptoFindings(detectCryptoOperations(address)); // Use raw bytecode for crypto detection
 
 			// === Call backend to decompile the bytecode directly ===
-			const response = await decompileBytecode(address); // Send raw bytecode to decompile
+			const response = await decompileByteCode(address); // Send raw bytecode to decompile
 			console.log(response);
 
 			if (response.success) {
