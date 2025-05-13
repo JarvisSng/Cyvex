@@ -1,83 +1,46 @@
-const { SEVM } = require('sevm');
+import { Contract } from 'sevm';
 const express = require('express');
 const router = express.Router();
 
-// Middleware to validate bytecode
+// Middleware (if you had one before to clean bytecode, keep it)
 const validateBytecode = (req, res, next) => {
   const { bytecode } = req.body;
-  
-  if (!bytecode) {
-    return res.status(400).json({
-      success: false,
-      error: 'Bytecode is required'
-    });
+  if (!bytecode || typeof bytecode !== 'string') {
+    return res.status(400).json({ success: false, error: 'Invalid bytecode' });
   }
 
-  if (typeof bytecode !== 'string') {
-    return res.status(400).json({
-      success: false,
-      error: 'Bytecode must be a string'
-    });
-  }
-
-  const cleanBytecode = bytecode.startsWith('0x') ? bytecode : `0x${bytecode}`;
-  
-  if (!/^0x[0-9a-fA-F]+$/.test(cleanBytecode)) {
-    return res.status(400).json({
-      success: false,
-      error: 'Bytecode must contain valid hexadecimal characters'
-    });
-  }
-
-  // Attach cleaned bytecode to request for later use
-  req.cleanBytecode = cleanBytecode;
+  req.cleanBytecode = bytecode.startsWith('0x') ? bytecode : `0x${bytecode}`;
   next();
 };
 
-// Decompilation endpoint
 router.post('/', validateBytecode, async (req, res) => {
   const { cleanBytecode } = req;
-  
+
   try {
-    // Initialize SEVM with error handling
-    let evm = new SEVM();
-    try {
-    } catch (initError) {
-      console.error('SEVM initialization failed:', initError);
-      throw new Error('Internal decompiler error');
-    }
+    const contract = new Contract(cleanBytecode).patchdb();
+    const pseudocode = contract.solidify(); // Returns Solidity-style pseudocode
 
-    // Decompile with timeout protection
-    const decompiled = await Promise.race([
-      evm.solidify(cleanBytecode),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Decompilation timeout')), 10000)
-      )
-    ]);
+    const formattedCode = formatDecompiledOutput(pseudocode);
 
-    // Format the output
-    const formattedCode = formatDecompiledOutput(decompiled);
-
-    console.log('Decompiled code:', formattedCode);
     res.json({
       success: true,
       data: {
         pseudocode: formattedCode,
-        bytecodeSize: (cleanBytecode.length - 2) / 2, // Size in bytes
+        bytecodeSize: (cleanBytecode.length - 2) / 2,
         warnings: getDecompilationWarnings(formattedCode)
       }
     });
 
   } catch (error) {
     console.error(`Decompilation Error (${cleanBytecode.slice(0, 20)}...):`, error);
-  
+
     let fallback = '// Fallback pseudocode unavailable';
     try {
       fallback = generateFallbackOutput(cleanBytecode);
     } catch (fallbackErr) {
       console.error('Error generating fallback:', fallbackErr);
     }
-  
+
     if (!res.headersSent) {
       res.status(500).json({
         success: false,
@@ -86,10 +49,9 @@ router.post('/', validateBytecode, async (req, res) => {
       });
     }
   }
-  
 });
 
-// Helper functions
+// Helpers
 function formatDecompiledOutput(raw) {
   return `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
@@ -105,8 +67,7 @@ function getDecompilationWarnings(code) {
 }
 
 function generateFallbackOutput(bytecode) {
-  // Implement your existing fallback pseudocode generation
-  return '// Fallback pseudocode generation...';
+  return '// Could not decompile; consider reviewing manually.';
 }
 
-module.exports = router;
+export default router;
