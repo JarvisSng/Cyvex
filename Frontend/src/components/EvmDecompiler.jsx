@@ -2,7 +2,7 @@ import { use, useEffect, useState } from "react";
 import { getCryptoPatterns } from "../controller/cryptoPatternsController";
 import { getEvmOpcodes } from "../controller/evmOpcodesController";
 import { getOpcodePatterns } from "../controller/opcodePatternsController";
-import { decompileBytecode, decompileToOpcodes } from "../controller/SEVMController";
+import { decompileBytecode, decompileToOpcodes, getByteCode } from "../controller/SEVMController";
 
 export default function CryptoDetector() {
   const [address, setAddress] = useState("");
@@ -134,7 +134,8 @@ export default function CryptoDetector() {
 			setDisassembly(disassembled.data?.disassembly?.join("\n") || "No disassembly output");
 
 			// === Crypto detection ===
-			setCryptoFindings(detectCryptoOperations(address)); // pass address (your logic may vary)
+			const bytecodeRaw = await getByteCode(address); // <-- get the real bytecode
+			setCryptoFindings(detectCryptoOperations(bytecodeRaw.data.bytecode));
 
 			// === Call backend to decompile ===
 			const response = await decompileBytecode(address); // send address only
