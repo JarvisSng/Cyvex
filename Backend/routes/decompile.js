@@ -45,7 +45,7 @@ router.post('/code/bytecode', async (req, res) => {
 });
 
 // Decompile to Solidity-style pseudocode from address
-router.post('/code', async (req, res) => {
+router.post('/code/address', async (req, res) => {
   const { address } = req.body;
 
   if (!address || typeof address !== 'string') {
@@ -120,7 +120,7 @@ router.post('/opcode', async (req, res) => {
   }
 });
 
-router.post('/bytecode', async (req, res) => {
+router.post('/getByteCode', async (req, res) => {
   const { address } = req.body;
 
   try {

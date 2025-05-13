@@ -132,46 +132,56 @@ export default function CryptoDetector() {
 		console.log(address);
 
 		try {
-		if (!address.trim()) throw new Error("Please enter a contract address");
+			if (!address.trim()) throw new Error("Please enter a contract address");
 
-		// Validate if address is a valid Ethereum address or raw bytecode
-		if (/^0x[a-fA-F0-9]{40}$/.test(address)) {
-			// If address is a valid Ethereum address, use decompileAddress
-			const disassembled = await decompileAddress(address);
+			// Check if the input is a valid Ethereum address (starts with "0x" and has 40 hex characters)
+			if (/^0x[a-fA-F0-9]{40}$/.test(address)) {
+			// If address is valid, proceed with disassembling and decompiling
+
+			// === Call backend to disassemble the bytecode from the address ===
+			const disassembled = await disassembleBytecode(address); // Send address to get disassembly
 			setDisassembly(disassembled.data?.disassembly?.join("\n") || "No disassembly output");
-			
-			const bytecodeRaw = await getByteCode(address);
+
+			// === Crypto detection ===
+			const bytecodeRaw = await getByteCode(address); // Fetch the real bytecode using the address
 			setCryptoFindings(detectCryptoOperations(bytecodeRaw.data.bytecode));
 
-			const response = await decompileBytecode(address);
-			if (response.success) {
-			setPseudocode(response.data.pseudocode);
-			} else {
-			throw new Error(response.error || "Decompilation failed");
-			}
-		} else {
-			// If address is bytecode, use decompileBytecode directly
-			const disassembled = await disassembleBytecode(address);
-			setDisassembly(disassembled.data?.disassembly?.join("\n") || "No disassembly output");
-			
-			const bytecodeRaw = await getByteCode(address);
-			setCryptoFindings(detectCryptoOperations(bytecodeRaw.data.bytecode));
+			// === Call backend to decompile the bytecode from the address ===
+			const response = await decompileAddress(address); // Send address to get the pseudocode
+			console.log(response);
 
-			const response = await decompileBytecode(address);
 			if (response.success) {
-			setPseudocode(response.data.pseudocode);
+				setPseudocode(response.data.pseudocode);
 			} else {
-			throw new Error(response.error || "Decompilation failed");
+				throw new Error(response.error || "Decompilation failed");
 			}
-		}
+			} else {
+			// If it's raw bytecode (does not match Ethereum address format)
+			// === Call backend to disassemble the bytecode directly ===
+			const disassembled = await disassembleBytecode(address); // Directly disassemble the bytecode
+			setDisassembly(disassembled.data?.disassembly?.join("\n") || "No disassembly output");
+
+			// === Crypto detection ===
+			setCryptoFindings(detectCryptoOperations(address)); // Use raw bytecode for crypto detection
+
+			// === Call backend to decompile the bytecode directly ===
+			const response = await decompileBytecode(address); // Send raw bytecode to decompile
+			console.log(response);
+
+			if (response.success) {
+				setPseudocode(response.data.pseudocode);
+			} else {
+				throw new Error(response.error || "Decompilation failed");
+			}
+			}
 		} catch (err) {
-		setError(err.message);
-		setCryptoFindings([{
+			setError(err.message);
+			setCryptoFindings([{
 			type: "error",
 			message: err.message
-		}]);
+			}]);
 		} finally {
-		setIsLoading(false);
+			setIsLoading(false);
 		}
 	};
 

@@ -31,7 +31,7 @@ export const decompileByteCode = async (bytecode) => {
 
 export const decompileAddress = async (address) => {
     try {
-        const response = await fetch(`${path}/api/decompile/code`, {
+        const response = await fetch(`${path}/api/decompile/code/address`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ address })
@@ -89,7 +89,7 @@ export const decompileToOpcodes = async (address) => {
 
 export const getByteCode = async (address) => {
     try {
-        const response = await fetch(`${path}/api/decompile/bytecode`, {
+        const response = await fetch(`${path}/api/decompile//getByteCode`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ address })
