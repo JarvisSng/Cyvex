@@ -1,4 +1,4 @@
-import { Contract } from 'sevm';
+const { Contract } = require('sevm');
 const express = require('express');
 const router = express.Router();
 
