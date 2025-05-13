@@ -7,12 +7,19 @@ router.post('/code/bytecode', async (req, res) => {
   const {bytecode} = req.body;
 
   // Normalize and fix bytecode
-  const cleanBytecode = bytecode.startsWith('0x') ? bytecode : `0x${bytecode}`;
-  const evenBytecode = cleanBytecode.length % 2 === 0 ? cleanBytecode : cleanBytecode.slice(0, -1);
+  let hex = bytecode.startsWith('0x') ? bytecode.slice(2) : bytecode;
+
+  if (hex.length % 2 !== 0) {
+    return res.status(400).json({
+      success: false,
+      error: `Bytecode must have even length. Got ${hex.length} characters.`
+    });
+}
+  const cleanBytecode = '0x' + hex;
 
   try {
     const { decompileByteCode } = await import('./decompile-esm.mjs');
-    const { pseudocode, functions, events } = await decompileByteCode(evenBytecode);
+    const { pseudocode, functions, events } = await decompileByteCode(cleanBytecode);
 
     res.json({
       success: true,
