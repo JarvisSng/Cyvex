@@ -90,16 +90,102 @@ const LandingPage = () => {
       </>
     ),
     company: (
-      <>
-        <h2 className="text-2xl font-bold mb-2">About Cyvex</h2>
-        <p className="text-gray-700 mt-2">
-          Cyvex is a cybersecurity company dedicated to making decentralized technologies safer.
-          Founded by a team of security researchers and blockchain engineers, we are on a mission to eliminate vulnerabilities before they reach production.
-        </p>
-        <p className="text-gray-700 mt-2">
-          We believe that security should be accessible, transparent, and efficient — and our tools are built with that philosophy.
-        </p>
-      </>
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row gap-12">
+          {/* Left Column - Text Content */}
+          <div className="md:w-1/2">
+            <p className="text-gray-700 text-lg mb-8">
+              Cyvex is a cybersecurity company dedicated to making decentralized technologies safer.
+              Founded by a team of security researchers and blockchain developers, we are on a mission to eliminate vulnerabilities before they reach blockchain systems.
+            </p>
+            
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-2xl font-semibold mb-4">Our Mission</h3>
+                <p className="text-gray-700">
+                  We believe security should be accessible, transparent, and efficient. Our tools are built with this philosophy,
+                  combining cutting-edge research with practical solutions that scale across blockchain ecosystems.
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="text-2xl font-semibold mb-4">Core Values</h3>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-blue-500 mr-2 mt-1">✓</span>
+                    <span>Security through transparency</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-500 mr-2 mt-1">✓</span>
+                    <span>Research-driven innovation</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-500 mr-2 mt-1">✓</span>
+                    <span>Community-focused solutions</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Team and Join Section */}
+          <div className="md:w-1/2">
+            <div className="space-y-12">
+              {/* Team Section */}
+              <div>
+                <h3 className="text-2xl font-semibold mb-6">The Team</h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Team Member 1 */}
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full mb-3 mx-auto"></div>
+                    <h4 className="font-bold text-center">Sng Zhen Qi, Jarvis</h4>
+                    <p className="text-sm text-gray-600 text-center">Team Lead</p>
+                  </div>
+                  
+                  {/* Team Member 2 */}
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full mb-3 mx-auto"></div>
+                    <h4 className="font-bold text-center">Jaslina Hazin Binti Jeeyaudeen</h4>
+                    <p className="text-sm text-gray-600 text-center">Manager</p>
+                  </div>
+                  
+                  {/* Team Member 3 */}
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full mb-3 mx-auto"></div>
+                    <h4 className="font-bold text-center">Yun Pwint Phyu Linn</h4>
+                    <p className="text-sm text-gray-600 text-center">Developer</p>
+                  </div>
+                  
+                  {/* Team Member 4 */}
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full mb-3 mx-auto"></div>
+                    <h4 className="font-bold text-center">Quek Chun Jeng</h4>
+                    <p className="text-sm text-gray-600 text-center">Team Member</p>
+                  </div>
+
+                  {/* Team Member 5 */}
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full mb-3 mx-auto"></div>
+                    <h4 className="font-bold text-center">Swan Htet</h4>
+                    <p className="text-sm text-gray-600 text-center">Team Member</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Join Our Mission Section */}
+              <div className="bg-blue-50 p-6 rounded-xl">
+                <h3 className="text-xl font-semibold mb-3">Join Our Mission</h3>
+                <p className="text-gray-700 mb-4">
+                  We're always looking for passionate security researchers and blockchain developers.
+                </p>
+                <button className="!bg-blue-950 hover:bg-blue-700 text-white px-5 py-2.5 rounded-md transition-colors w-full sm:w-auto">
+                  View Open Positions
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     ),
   };
 
