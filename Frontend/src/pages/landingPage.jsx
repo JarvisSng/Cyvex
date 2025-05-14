@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import exampleImage from '../assets/blockchain.svg';
+import logoImage from '../assets/cyvex-logo.png'; // Update the path and filename as needed
 
 const LandingPage = () => {
 
@@ -28,7 +29,11 @@ const LandingPage = () => {
       <div className="flex items-center justify-between w-full h-10">
         
         {/* Logo (Left) */}
-        <h2 className="text-stone-50 text-3xl font-bold whitespace-nowrap">cyvex</h2>
+        <img 
+          src={logoImage} 
+          alt="Cyvex Logo" 
+          className="h-10 w-auto" // adjust height/width to fit your design
+        />
   
         {/* Navigation Links (Centered) */}
         <nav className="hidden xl:flex items-center gap-4 lg:gap-8">
