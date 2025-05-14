@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import exampleImage from '../assets/blockchain.svg';
 import logoImage from '../assets/cyvex-logo.png';
+import Binance from '../assets/Binance_logo.svg';
+import Chainlink from '../assets/Chainlink_logo.svg';
+import Coinbase from '../assets/Coinbase_logo.svg';
+import Ethereum from '../assets/Ethereum_logo.svg';
+import Uniswap from '../assets/Uniswap_logo.svg';
 
 const LandingPage = () => {
 
@@ -25,57 +30,268 @@ const LandingPage = () => {
   }
   const menuItems = ["solutions", "customers", "services", "insights", "company"];
   const tabContent = {
-  solutions: (
-    <div className="flex flex-col md:flex-row gap-8">
-      <div className="md:w-1/2">
-        <h2 className="text-6xl font-bold mb-10">Is Your Blockchain Vulnerable?</h2>
-        <p className="text-gray-700 mt-2">
-          Cyvex offers a comprehensive suite of tools for blockchain security and smart contract auditing.
-          Our flagship detector tool identifies vulnerabilities, tracks anomalous contract behavior, and helps secure decentralized applications before deployment.
-        </p>
-        <p className="text-gray-700 mt-2">
-          Whether you're a developer, auditor, or enterprise, our solutions streamline compliance and security checks at scale.
-        </p>
-          <button 
-            onClick={detector}
-            className="mt-6 bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-          >
-          Try It Free
-         </button>
+    solutions: (
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className="md:w-1/2">
+          <h2 className="text-6xl font-bold mb-10">Is Your Blockchain Vulnerable?</h2>
+          <p className="text-gray-700 mt-2">
+            Cyvex offers a comprehensive suite of tools for blockchain security and smart contract auditing.
+            Our flagship detector tool identifies vulnerabilities, tracks anomalous contract behavior, and helps secure decentralized applications before deployment.
+          </p>
+          <p className="text-gray-700 mt-2">
+            Whether you're a developer, auditor, or enterprise, our solutions streamline compliance and security checks at scale.
+          </p>
+            <button 
+              onClick={detector}
+              className="mt-6 bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+            Try It Free
+          </button>
+        </div>
+        <div className="md:w-1/2">
+          <img
+            src={exampleImage}
+            alt="Blockchain security"
+            className="w-full max-w-md mx-auto md:mx-0 rounded-lg"
+            style={{ minWidth: '700px' }}
+          />
+        </div>
       </div>
-      <div className="md:w-1/2">
-        <img
-          src={exampleImage}
-          alt="Blockchain security"
-          className="w-full max-w-md mx-auto md:mx-0 rounded-lg"
-          style={{ minWidth: '700px' }}
-        />
-      </div>
-    </div>
-  ),
+    ),
     customers: (
-      <>
-        <h2 className="text-2xl font-bold mb-2">Trusted by Industry Leaders</h2>
-        <p className="text-gray-700 mt-2">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-4xl font-bold mb-6 text-center">Trusted by Industry Leaders</h2>
+        <p className="text-gray-700 text-lg text-center max-w-2xl mx-auto mb-12">
           Cyvex supports a wide range of customers — from individual smart contract developers to major DeFi protocols.
           Our clients trust us for fast, accurate, and scalable security insights.
         </p>
-        <p className="text-gray-700 mt-2">
+
+        {/* Logo Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 mb-12">
+          {/* Example Client 1 */}
+          <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg">
+            <img 
+              src={Uniswap}
+              alt="Uniswap" 
+              className="h-12 object-contain opacity-80 hover:opacity-100 transition-opacity"
+            />
+          </div>
+          
+          {/* Example Client 3 */}
+          <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg">
+            <img 
+              src={Ethereum}
+              alt="Ethereum" 
+              className="h-10 object-contain opacity-80 hover:opacity-100 transition-opacity"
+            />
+          </div>
+          
+          {/* Example Client 4 */}
+          <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg">
+            <img 
+              src={Chainlink}
+              alt="Chainlink" 
+              className="h-10 object-contain opacity-80 hover:opacity-100 transition-opacity"
+            />
+          </div>
+          
+          {/* Example Client 5 */}
+          <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg">
+            <img 
+              src={Binance}
+              alt="Binance" 
+              className="h-10 object-contain opacity-80 hover:opacity-100 transition-opacity"
+            />
+          </div>
+          
+          {/* Example Client 6 */}
+          <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg">
+            <img 
+              src={Coinbase}
+              alt="Coinbase" 
+              className="h-12 object-contain opacity-80 hover:opacity-100 transition-opacity"
+            />
+          </div>
+        </div>
+
+        <p className="text-gray-700 text-center max-w-2xl mx-auto">
           Join the growing list of secure projects that rely on Cyvex to protect their code and community.
         </p>
-      </>
+      </div>
     ),
     services: (
-      <>
-        <h2 className="text-2xl font-bold mb-2">Professional Services</h2>
-        <p className="text-gray-700 mt-2">
-          In addition to automated detection, we offer in-depth manual smart contract audits, security consulting,
-          and training for Web3 developers.
-        </p>
-        <p className="text-gray-700 mt-2">
-          Our experienced team has worked with projects on Ethereum, Solana, Polygon, and more — helping you launch securely and confidently.
-        </p>
-      </>
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="text-center mb-8">
+          <p className="text-gray-600 text-lg max-w-3xl mx-auto">
+            Advanced tools and expert services to secure your Web3 projects across multiple blockchains
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
+          {/* Core Technology */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Cryptographic Analysis</h3>
+            <p className="text-gray-600 text-sm mb-3">
+              Automated detection of cryptographic functions and vulnerabilities
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Elliptic curve implementation review</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Signature verification checks</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Random number generation audit</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Other service cards follow same structure with reduced spacing... */}
+          {/* Smart Contract Audits */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Smart Contract Audits</h3>
+            <p className="text-gray-600 text-sm mb-3">
+              Comprehensive security reviews for EVM and non-EVM contracts
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Automated vulnerability detection</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Manual code review by experts</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Remediation guidance</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Protocol Design Review */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Protocol Design</h3>
+            <p className="text-gray-600 text-sm mb-3">
+              Architectural security assessment for blockchain protocols
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Economic model analysis</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Consensus mechanism review</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Attack vector identification</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Secure Development */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Secure Development</h3>
+            <p className="text-gray-600 text-sm mb-3">
+              Best practices for building robust smart contracts
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Secure coding standards</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Development lifecycle security</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Upgrade pattern implementation</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* DeFi Security */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold mb-2">DeFi Security</h3>
+            <p className="text-gray-600 text-sm mb-3">
+              Specialized protection for decentralized finance
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Oracle security review</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Flash loan attack prevention</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Liquidation mechanism audit</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Multi-Chain Expertise */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Multi-Chain</h3>
+            <p className="text-gray-600 text-sm mb-3">
+              Securing projects across blockchain ecosystems
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Ethereum & EVM chains</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Solana programs</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mt-0.5 mr-1.5">•</span>
+                <span>Cosmos SDK chains</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     ),
     insights: (
       <>
