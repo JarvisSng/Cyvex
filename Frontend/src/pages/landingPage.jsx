@@ -7,6 +7,71 @@ const LandingPage = () => {
 
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('solutions');
+
+  const menuItems = ["solutions", "customers", "services", "insights", "company"];
+  const tabContent = {
+    solutions: (
+      <>
+        <h2 className="text-2xl font-bold mb-2">Our Solutions</h2>
+        <p className="text-gray-700 mt-2">
+          Cyvex offers a comprehensive suite of tools for blockchain security and smart contract auditing.
+          Our flagship detector tool identifies vulnerabilities, tracks anomalous contract behavior, and helps secure decentralized applications before deployment.
+        </p>
+        <p className="text-gray-700 mt-2">
+          Whether you're a developer, auditor, or enterprise, our AI-assisted solutions streamline compliance and security checks at scale.
+        </p>
+      </>
+    ),
+    customers: (
+      <>
+        <h2 className="text-2xl font-bold mb-2">Trusted by Industry Leaders</h2>
+        <p className="text-gray-700 mt-2">
+          Cyvex supports a wide range of customers — from individual smart contract developers to major DeFi protocols.
+          Our clients trust us for fast, accurate, and scalable security insights.
+        </p>
+        <p className="text-gray-700 mt-2">
+          Join the growing list of secure projects that rely on Cyvex to protect their code and community.
+        </p>
+      </>
+    ),
+    services: (
+      <>
+        <h2 className="text-2xl font-bold mb-2">Professional Services</h2>
+        <p className="text-gray-700 mt-2">
+          In addition to automated detection, we offer in-depth manual smart contract audits, security consulting,
+          and training for Web3 developers.
+        </p>
+        <p className="text-gray-700 mt-2">
+          Our experienced team has worked with projects on Ethereum, Solana, Polygon, and more — helping you launch securely and confidently.
+        </p>
+      </>
+    ),
+    insights: (
+      <>
+        <h2 className="text-2xl font-bold mb-2">Insights & Research</h2>
+        <p className="text-gray-700 mt-2">
+          Stay ahead of the curve with our regular security reports, vulnerability discoveries, and technical blogs.
+          We break down complex vulnerabilities and share lessons from real-world incidents.
+        </p>
+        <p className="text-gray-700 mt-2">
+          Our threat intelligence helps you adapt to the fast-moving blockchain threat landscape.
+        </p>
+      </>
+    ),
+    company: (
+      <>
+        <h2 className="text-2xl font-bold mb-2">About Cyvex</h2>
+        <p className="text-gray-700 mt-2">
+          Cyvex is a cybersecurity company dedicated to making decentralized technologies safer.
+          Founded by a team of security researchers and blockchain engineers, we are on a mission to eliminate vulnerabilities before they reach production.
+        </p>
+        <p className="text-gray-700 mt-2">
+          We believe that security should be accessible, transparent, and efficient — and our tools are built with that philosophy.
+        </p>
+      </>
+    ),
+  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -37,11 +102,17 @@ const LandingPage = () => {
   
         {/* Navigation Links (Centered) */}
         <nav className="hidden xl:flex items-center gap-4 lg:gap-8">
-          <h2 className="text-stone-50 text-xl font-bold cursor-pointer">solutions</h2>
-          <h2 className="text-stone-50 text-xl font-bold cursor-pointer">customers</h2>
-          <h2 className="text-stone-50 text-xl font-bold cursor-pointer">services</h2>
-          <h2 className="text-stone-50 text-xl font-bold cursor-pointer">insights</h2>
-          <h2 className="text-stone-50 text-xl font-bold cursor-pointer">company</h2>
+          {menuItems.map((item) => (
+            <h2
+              key={item}
+               onClick={() => setActiveTab(item)}
+              className={`text-stone-50 text-xl font-bold cursor-pointer ${
+                activeTab === item ? "underline underline-offset-4" : ""
+              }`}
+            >
+              {item}
+            </h2>
+          ))}
         </nav>
   
         {/* Buttons (Right) */}
@@ -72,11 +143,20 @@ const LandingPage = () => {
       {isMenuOpen && (
         <div className="xl:hidden bg-blue-900 w-full py-4 px-8 absolute left-0 top-20 shadow-lg">
           <nav className="flex flex-col items-center gap-4">
-            <h2 className="text-stone-50 text-xl font-bold cursor-pointer">solutions</h2>
-            <h2 className="text-stone-50 text-xl font-bold cursor-pointer">customers</h2>
-            <h2 className="text-stone-50 text-xl font-bold cursor-pointer">services</h2>
-            <h2 className="text-stone-50 text-xl font-bold cursor-pointer">insights</h2>
-            <h2 className="text-stone-50 text-xl font-bold cursor-pointer">company</h2>
+              {menuItems.map((item) => (
+                <h2
+                  key={item}
+                  onClick={() => {
+                    setActiveTab(item);
+                    setIsMenuOpen(false);
+                  }}
+                  className={`text-stone-50 text-xl font-bold cursor-pointer ${
+                    activeTab === item ? "underline underline-offset-4" : ""
+                  }`}
+                >
+                  {item}
+                </h2>
+              ))}
             
             <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 w-full justify-center">
               <button 
@@ -102,10 +182,7 @@ const LandingPage = () => {
       <div className="flex items-start flex-wrap">
         {/* Left Text */}
         <div className="w-full md:w-1/2 lg:pr-8">
-          <h1 className="text-3xl font-bold">Welcome to Cyvex</h1>
-          <p className="text-lg mt-4">
-            We provide cutting-edge solutions to help businesses thrive. Explore our services and see how we can help you grow.
-          </p>
+            {tabContent[activeTab]}
         </div>
 
         {/* Right Image */}
