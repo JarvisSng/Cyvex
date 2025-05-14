@@ -500,7 +500,10 @@ const LandingPage = () => {
         <img 
           src={logoImage} 
           alt="Cyvex Logo" 
-          className="h-10 w-auto" // adjust height/width to fit your design
+          className="h-10 w-auto cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => navigate('/')} // Navigates to home page
+          role="button" // Improves accessibility
+          tabIndex={0} // Makes it focusable
         />
   
         {/* Navigation Links (Centered) */}

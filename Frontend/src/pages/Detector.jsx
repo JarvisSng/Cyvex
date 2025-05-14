@@ -203,29 +203,13 @@ function Detector() {
 			<header className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md z-40">
 				<div className="flex items-center justify-between w-full h-12">
 					<img 
-					src={logoImage} 
-					alt="Cyvex Logo" 
-					className="h-10 w-auto" // adjust height/width to fit your design
+						src={logoImage} 
+						alt="Cyvex Logo" 
+						className="h-10 w-auto cursor-pointer hover:opacity-80 transition-opacity"
+						onClick={() => navigate('/')} // Navigates to home page
+						role="button" // Improves accessibility
+						tabIndex={0} // Makes it focusable
 					/>
-
-					{/* Navigation Links (Centered) */}
-					<nav className="hidden xl:flex items-center gap-4 lg:gap-8">
-						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
-							solutions
-						</h2>
-						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
-							customers
-						</h2>
-						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
-							services
-						</h2>
-						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
-							insights
-						</h2>
-						<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
-							company
-						</h2>
-					</nav>
 
 					{/* Buttons (Right) */}
 					<div className="hidden xl:flex items-center gap-4 lg:gap-8">
