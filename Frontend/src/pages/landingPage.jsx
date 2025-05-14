@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import exampleImage from '../assets/blockchain.svg';
-import logoImage from '../assets/cyvex-logo.png'; // Update the path and filename as needed
+import logoImage from '../assets/cyvex-logo.png';
 
 const LandingPage = () => {
 
@@ -26,7 +26,7 @@ const LandingPage = () => {
   <>
     <header className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md">
       {/* Header Container */}
-      <div className="flex items-center justify-between w-full h-10">
+      <div className="flex items-center justify-between w-full h-12">
         
         {/* Logo (Left) */}
         <img 

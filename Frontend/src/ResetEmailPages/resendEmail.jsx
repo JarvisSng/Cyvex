@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { AccountResetEmail } from "../controller/authController";
+import logoImage from '../assets/cyvex-logo.png';
 
 const ResendEmail = () => {
     const [email, setEmail] = useState("");
@@ -39,7 +40,11 @@ const ResendEmail = () => {
 
     return (
     <div className="bg-blue-950 w-screen h-screen flex flex-col items-center justify-center gap-6">
-        <h4 className="text-stone-50 text-5xl font-bold">cyvex</h4>
+        <img 
+          src={logoImage} 
+          alt="Cyvex Logo" 
+          className="h-10 w-auto" // adjust height/width to fit your design
+        />
             <div className="bg-stone-50 p-8 flex flex-col items-center justify-center gap-4 rounded-md shadow-lg w-100">
                 <p className="text-black text-3xl font-regular">Email has been reset!</p>
                 <p className="text-black text-lg font-regular">email not in inbox?</p>

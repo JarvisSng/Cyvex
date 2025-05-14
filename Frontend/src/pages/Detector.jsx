@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { checkCurrentUserSubscription } from "../controller/checkSub";
 import { getDetectionRules } from "../controller/rulesController";
+import logoImage from '../assets/cyvex-logo.png';
 
 // 1) Skip lines that start with // or #
 function isCommentLine(line) {
@@ -201,9 +202,11 @@ function Detector() {
 			{/* Header (Fixed at the Top) */}
 			<header className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md z-40">
 				<div className="flex items-center justify-between w-full h-12">
-					<h2 className="text-stone-50 text-3xl font-bold whitespace-nowrap">
-						cyvex
-					</h2>
+					<img 
+					src={logoImage} 
+					alt="Cyvex Logo" 
+					className="h-10 w-auto" // adjust height/width to fit your design
+					/>
 
 					{/* Navigation Links (Centered) */}
 					<nav className="hidden xl:flex items-center gap-4 lg:gap-8">
