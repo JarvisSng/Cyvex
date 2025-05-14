@@ -28,6 +28,12 @@ const LandingPage = () => {
   const detector = () => {
     navigate("/detector");
   }
+
+  // Function that navigate to the signup page
+  const signup = () => {
+    navigate("/signup/email");
+  };
+
   const menuItems = ["solutions", "customers", "services", "insights", "company"];
   const tabContent = {
     solutions: (
@@ -41,12 +47,20 @@ const LandingPage = () => {
           <p className="text-gray-700 mt-2">
             Whether you're a developer, auditor, or enterprise, our solutions streamline compliance and security checks at scale.
           </p>
+          <div className="flex flex-col sm:flex-row gap-4 mt-6">
             <button 
               onClick={detector}
-              className="mt-6 bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
-            Try It Free
-          </button>
+              Try It Free
+            </button>
+            <button 
+              onClick={signup}
+              className="bg-gradient-to-r from-gray-600 to-gray-800 text-white px-8 py-3 rounded-lg font-medium hover:from-gray-700 hover:to-gray-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              Sign Up Now
+            </button>
+          </div>
         </div>
         <div className="md:w-1/2">
           <img
@@ -294,16 +308,87 @@ const LandingPage = () => {
       </div>
     ),
     insights: (
-      <>
-        <h2 className="text-2xl font-bold mb-2">Insights & Research</h2>
-        <p className="text-gray-700 mt-2">
-          Stay ahead of the curve with our regular security reports, vulnerability discoveries, and technical blogs.
-          We break down complex vulnerabilities and share lessons from real-world incidents.
-        </p>
-        <p className="text-gray-700 mt-2">
-          Our threat intelligence helps you adapt to the fast-moving blockchain threat landscape.
-        </p>
-      </>
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="text-center mb-12">
+          <p className="text-gray-600 text-lg max-w-3xl mx-auto">
+            Cutting-edge analysis to navigate the evolving blockchain threat landscape
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          {/* Research Report */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+            <div className="mb-4">
+              <div className="w-full h-40 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg mb-4 flex items-center justify-center">
+                <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Quarterly Security Reports</h3>
+              <p className="text-gray-600 text-sm mb-3">
+                Comprehensive analysis of emerging threats and vulnerability trends across blockchain ecosystems
+              </p>
+              <a href="#" className="text-blue-600 text-sm font-medium inline-flex items-center hover:text-blue-800">
+                Read Latest Report
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          {/* Vulnerability Analysis */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+            <div className="mb-4">
+              <div className="w-full h-40 bg-gradient-to-br from-red-50 to-red-100 rounded-lg mb-4 flex items-center justify-center">
+                <svg className="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Vulnerability Deep Dives</h3>
+              <p className="text-gray-600 text-sm mb-3">
+                Technical breakdowns of critical vulnerabilities and exploit patterns in smart contracts
+              </p>
+              <a href="#" className="text-blue-600 text-sm font-medium inline-flex items-center hover:text-blue-800">
+                Explore Vulnerabilities
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          {/* Threat Intelligence */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+            <div className="mb-4">
+              <div className="w-full h-40 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg mb-4 flex items-center justify-center">
+                <svg className="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Threat Intelligence</h3>
+              <p className="text-gray-600 text-sm mb-3">
+                Real-time monitoring and analysis of active threats targeting blockchain protocols
+              </p>
+              <a href="#" className="text-blue-600 text-sm font-medium inline-flex items-center hover:text-blue-800">
+                View Threat Feed
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center">
+          <button className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white px-6 py-2.5 rounded-lg font-medium transition-all duration-200 hover:shadow-md text-sm inline-flex items-center">
+            View All Research
+            <svg className="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </button>
+        </div>
+      </div>
     ),
     company: (
       <div className="max-w-6xl mx-auto">
