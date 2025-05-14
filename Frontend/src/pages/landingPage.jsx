@@ -9,20 +9,50 @@ const LandingPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('solutions');
 
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  // Function that navigate to the login pages
+  const login = () => {
+    navigate("/login/email");
+  }
+
+  // Function that navigate to the detector tool
+  const detector = () => {
+    navigate("/detector");
+  }
   const menuItems = ["solutions", "customers", "services", "insights", "company"];
   const tabContent = {
-    solutions: (
-      <>
-        <h2 className="text-2xl font-bold mb-2">Our Solutions</h2>
+  solutions: (
+    <div className="flex flex-col md:flex-row gap-8">
+      <div className="md:w-1/2">
+        <h2 className="text-6xl font-bold mb-10">Is Your Blockchain Vulnerable?</h2>
         <p className="text-gray-700 mt-2">
           Cyvex offers a comprehensive suite of tools for blockchain security and smart contract auditing.
           Our flagship detector tool identifies vulnerabilities, tracks anomalous contract behavior, and helps secure decentralized applications before deployment.
         </p>
         <p className="text-gray-700 mt-2">
-          Whether you're a developer, auditor, or enterprise, our AI-assisted solutions streamline compliance and security checks at scale.
+          Whether you're a developer, auditor, or enterprise, our solutions streamline compliance and security checks at scale.
         </p>
-      </>
-    ),
+          <button 
+            onClick={detector}
+            className="mt-6 bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+          >
+          Try It Free
+         </button>
+      </div>
+      <div className="md:w-1/2">
+        <img
+          src={exampleImage}
+          alt="Blockchain security"
+          className="w-full max-w-md mx-auto md:mx-0 rounded-lg"
+          style={{ minWidth: '700px' }}
+        />
+      </div>
+    </div>
+  ),
     customers: (
       <>
         <h2 className="text-2xl font-bold mb-2">Trusted by Industry Leaders</h2>
@@ -72,20 +102,6 @@ const LandingPage = () => {
       </>
     ),
   };
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  // Function that navigate to the login pages
-  const login = () => {
-    navigate("/login/email");
-  }
-
-  // Function that navigate to the detector tool
-  const detector = () => {
-    navigate("/detector");
-  }
 
   return (
   <>
@@ -178,23 +194,19 @@ const LandingPage = () => {
     </header>
 
     {/* Content Section */}
-    <main className="mt-24 p-8">
-      <div className="flex items-start flex-wrap">
-        {/* Left Text */}
-        <div className="w-full md:w-1/2 lg:pr-8">
-            {tabContent[activeTab]}
-        </div>
-
-        {/* Right Image */}
-        <div className="w-full md:w-1/2 flex-shrink-0 mt-8 md:mt-0">
-          <img 
-            src={exampleImage} 
-            alt="Description of the image" 
-            className="w-full rounded-lg md:w-auto"
-            style={{minWidth: '400px'}}
-          />
+    <main className="pt-24 min-h-screen flex flex-col justify-between bg-white w-full">
+      <div className="flex-grow flex items-center justify-center px-8 py-12">
+        <div className="w-full max-w-7xl">
+          {tabContent[activeTab]}
         </div>
       </div>
+      
+      {/* Footer Section */}
+      <footer className="w-screen bg-blue-950 text-white py-8">
+        <div className="w-full px-24"> {/* Full width with padding */}
+          <div className="text-center">© 2025 Cyvex. All rights reserved.</div>
+        </div>
+      </footer>
     </main>
   </>
   );  
