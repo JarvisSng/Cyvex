@@ -1,10 +1,12 @@
+import path from "../config/expressPath";
+
 /**
  * Fire-and-forget: tell the server to bump today’s login count.
  * @throws on non-2xx or network error
  */
 export async function incrementDailyLogins() {
 	console.log("[CTRL] incrementDailyLogins(): POST /api/activity/login");
-	const resp = await fetch("/api/activity/login", {
+	const resp = await fetch(`${path}/api/activity/login`, {
 		method: "POST",
 		credentials: "include",
 	});
