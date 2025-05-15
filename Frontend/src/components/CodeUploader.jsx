@@ -4,8 +4,9 @@ const CodeUploader = ({ onFileUpload, onPaste, onSubmit }) => {
   const [fileName, setFileName] = useState("No file chosen");
   const [pastedCode, setPastedCode] = useState("");
   const [dragging, setDragging] = useState(false);
-  const [fileContent, setFileContent] = useState(""); // Store content before submitting
-  const [fileExt, setFileExt] = useState(""); // Store file extension
+  const [fileContent, setFileContent] = useState("");
+  const [fileExt, setFileExt] = useState("");
+  const [activeInput, setActiveInput] = useState(null); // Track whether file or paste is active
 
   // Handle file upload via file input
   const handleFileChange = (event) => {
@@ -13,12 +14,14 @@ const CodeUploader = ({ onFileUpload, onPaste, onSubmit }) => {
     if (file) {
       setPastedCode(""); // Clear any pasted code
       setFileName(file.name);
+      setActiveInput('file');
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target.result;
         const ext = file.name.split('.').pop();
-        setFileContent(content); // Store locally, not submit yet
+        setFileContent(content);
         setFileExt(ext);
+        onFileUpload(content, ext); // Call the prop function
       };
       reader.readAsText(file);
     }
@@ -41,12 +44,15 @@ const CodeUploader = ({ onFileUpload, onPaste, onSubmit }) => {
     setDragging(false);
     const file = event.dataTransfer.files[0];
     if (file) {
-      setPastedCode(""); // Clear pasted text when file is dropped
+      setPastedCode("");
       setFileName(file.name);
+      setActiveInput('file');
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target.result;
         const ext = file.name.split('.').pop();
+        setFileContent(content);
+        setFileExt(ext);
         onFileUpload(content, ext);
       };
       reader.readAsText(file);
@@ -54,33 +60,43 @@ const CodeUploader = ({ onFileUpload, onPaste, onSubmit }) => {
   };
 
   // Handle code pasted into the text area
-  const handlePaste = (event) => {
+  const handlePasteChange = (event) => {
     const text = event.target.value;
     setPastedCode(text);
-    setFileName("No file chosen"); // Reset file
-    setFileContent(text); // Store locally, not submit yet
-    setFileExt("txt");
+    setFileContent(text); // Also store in fileContent for submission
+    setFileExt("txt"); // Default extension for pasted text
+    setActiveInput('paste');
+    onPaste(text); // Call the prop function
   };
 
   // Clear uploaded file
   const clearFile = () => {
     setFileName("No file chosen");
+    setFileContent("");
+    setActiveInput(null);
     onFileUpload("", null);
   };
 
   // Clear pasted text
   const clearPastedText = () => {
     setPastedCode("");
+    setFileContent("");
+    setActiveInput(null);
     onPaste("");
   };
 
   // Submit uploaded or pasted text
   const handleSubmit = () => {
-    if (fileContent.trim() === "") {
+    if (!fileContent.trim()) {
       alert("Please upload a file or paste code before submitting.");
       return;
     }
-    onSubmit(fileContent, fileExt);
+    
+    // Determine which content to submit
+    const contentToSubmit = activeInput === 'file' ? fileContent : pastedCode;
+    const extToSubmit = activeInput === 'file' ? fileExt : 'txt';
+    
+    onSubmit(contentToSubmit, extToSubmit);
   };
 
   return (
@@ -104,7 +120,7 @@ const CodeUploader = ({ onFileUpload, onPaste, onSubmit }) => {
           className="hidden"
         />
         <button
-          onClick={() => document.getElementById("fileInput").click()}
+          onClick={() => document.getElementById('fileInput').click()}
           className="px-4 py-2 !bg-blue-950 text-white rounded-md hover:bg-blue-600 transition"
         >
           Choose File
@@ -117,14 +133,6 @@ const CodeUploader = ({ onFileUpload, onPaste, onSubmit }) => {
               className="px-4 py-2 !bg-blue-950 text-white rounded-md hover:bg-red-600 transition"
             >
               Clear File
-            </button>
-            
-            <button
-              onClick={handleSubmit}
-              disabled={!fileContent.trim()} // Disable if no content
-              className="px-6 py-3 !bg-blue-950 text-white rounded-md transition disabled:bg-gray-500 disabled:cursor-not-allowed"
-            >
-              Submit
             </button>
           </div>
         )}
@@ -139,7 +147,7 @@ const CodeUploader = ({ onFileUpload, onPaste, onSubmit }) => {
         <textarea
           placeholder="Or paste your code here..."
           value={pastedCode}
-          onChange={handlePaste}
+          onChange={handlePasteChange}
           rows={8}
           className="w-full p-2 rounded-md border border-gray-400 bg-white text-black"
         ></textarea>
@@ -152,19 +160,23 @@ const CodeUploader = ({ onFileUpload, onPaste, onSubmit }) => {
             >
               Clear Text
             </button>
-            
+          </div>
+        )}
+
+        {/* Submit Button - Now at the bottom for both options */}
+        {(pastedCode || fileName !== "No file chosen") && (
+          <div className="mt-4 flex justify-center">
             <button
               onClick={handleSubmit}
-              disabled={!pastedCode || fileName === "No file chosen"}
+              disabled={!fileContent.trim()}
               className="px-6 py-3 !bg-blue-950 text-white rounded-md transition disabled:bg-gray-500 disabled:cursor-not-allowed"
             >
               Submit
             </button>
           </div>
         )}
-
-        </div>
       </div>
+    </div>
   );
 };
 
