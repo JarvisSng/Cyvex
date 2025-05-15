@@ -172,13 +172,11 @@ export default function ViewResults({code, fileExt}) {
   };
 
   const detectLanguage = (fileExt, code) => {
-    // 1. First try to detect by file extension
+    // 1. First try file extension if available
     const extensionMap = {
       py: 'Python',
       js: 'JavaScript',
-      java: 'Java',
-      cpp: 'C++',
-      sol: 'Solidity'
+      java: 'Java'
     };
 
     if (fileExt) {
@@ -186,18 +184,78 @@ export default function ViewResults({code, fileExt}) {
       return extensionMap[ext] || 'Unknown';
     }
 
-    // 2. For pasted code, use more aggressive content detection
-    const codeStr = code.toLowerCase();
+    // 2. Get cleaned code lines for analysis
+    const lines = code.split('\n');
+    let contentLines = [];
     
-    if (/(^|\n)\s*(import|def|class)\s/.test(codeStr)) return 'Python';
-    if (/(^|\n)\s*(function|const|let|var)\s/.test(codeStr)) return 'JavaScript';
-    if (/(^|\n)\s*(#include|using namespace)/.test(codeStr)) return 'C++';
-    if (/(^|\n)\s*(contract|pragma solidity)/.test(codeStr)) return 'Solidity';
-    if (/(^|\n)\s*(public class|import java\.)/.test(codeStr)) return 'Java';
+    // Skip initial comment blocks and empty lines
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      
+      // Skip comment lines (single-line and block comments)
+      if (trimmed.startsWith('#') || 
+          trimmed.startsWith('//') ||
+          trimmed.startsWith('/*')) {
+        continue;
+      }
+      
+      contentLines.push(line);
+      if (contentLines.length >= 5) break; // Get first 5 non-comment lines
+    }
+
+    const analysisChunk = contentLines.join('\n').toLowerCase();
+
+    // 3. Language-specific detection patterns
+    const languagePatterns = {
+      Python: [
+        /^[\s]*def\s+\w+\(/,      // Function definition
+        /^[\s]*class\s+\w+/,       // Class definition
+        /^[\s]*import\s+\w+/,      // Import statement
+        /^[\s]*from\s+\w+\s+import/, // From import
+        /^[\s]*@\w+/,              // Decorator
+        /^[\s]*print\(/,           // Print function
+        /^[\s]*self\.\w+/,         // Self reference
+        /^[\s]*__init__\(/         // Constructor
+      ],
+      JavaScript: [
+        /^[\s]*function\s+\w+\(/,  // Function declaration
+        /^[\s]*const\s+\w+\s*=/,   // Const variable
+        /^[\s]*let\s+\w+\s*=/,     // Let variable
+        /^[\s]*=>/,                // Arrow function
+        /^[\s]*import\s+\w+/,      // ES6 import
+        /^[\s]*export\s/,          // Export statement
+        /^[\s]*console\.log\(/,    // Console log
+        /^[\s]*`\$\{/              // Template literal
+      ],
+      Java: [
+        /^[\s]*public\s+class\s+\w+/, // Class definition
+        /^[\s]*import\s+[\w\.]+;/, // Import statement
+        /^[\s]*public\s+\w+\s+\w+\(/, // Method definition
+        /^[\s]*System\.out\.print/, // Print statement
+        /^[\s]*new\s+\w+\(/,       // Object creation
+        /^[\s]*@Override/,         // Annotation
+        /^[\s]*private\s+\w+\s+\w+;/, // Field declaration
+        /^[\s]*try\s*\{/           // Try block
+      ]
+    };
+
+    // Check each language's patterns
+    for (const [lang, patterns] of Object.entries(languagePatterns)) {
+      if (patterns.some(pattern => pattern.test(analysisChunk))) {
+        return lang;
+      }
+    }
+
+    // 4. Fallback: scan entire code if initial detection fails
+    const fullCode = code.toLowerCase();
+    if (/(def |class |import |from |@|print\()/.test(fullCode)) return 'Python';
+    if (/(function |const |let |=>|import )/.test(fullCode)) return 'JavaScript';
+    if (/(public class |import |System\.out|@Override)/.test(fullCode)) return 'Java';
 
     return 'Unknown';
   };
-
+  
   const handleScan = () => {
     setIsScanComplete(false);
     setActiveButton(null);
