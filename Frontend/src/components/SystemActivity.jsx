@@ -35,6 +35,47 @@ const SystemActivity = () => {
 		getProfiles();
 	}, []);
 
+const chartData = {
+        options: {
+            series: data || [],
+            chart: {
+                type: 'bar',
+                height: 300,
+                stacked: true,
+                toolbar: {
+                    show: false
+                },
+                zoom: {
+                    enabled: true
+                }
+            },
+            colors: ['#3437eb', '#3437eb'],
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    legend: {
+                        position: 'bottom',
+                        offsetX: -10,
+                        offsetY: 0
+                    }
+                }
+            }],
+            xaxis: {
+                categories: categories || ["jan", "feb"],
+            },
+            legend: {
+                position: 'top', // top, bottom
+                horizontalAlign: 'right', // left, right
+            },
+            dataLabels: {
+                enabled: false,
+            },
+            fill: {
+                opacity: 1
+            }
+        }
+    }
+
 	const getAllActivitys = async (address) => {
 
 		try {
@@ -253,8 +294,8 @@ const SystemActivity = () => {
 			<div className="mb-2">
 				<div id="chartFive" className="-ml-5">
 					<Chart
-						options={options}
-						series={data}
+						options={chartData?.options}
+						series={chartData?.options?.series}
 						// {[
 						// 	{
 						// 		name: "System Activity",
