@@ -183,11 +183,11 @@ const ManageEVM = () => {
 	const inputCls =
 		"border border-gray-300 rounded-md p-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500";
 	const addBtnCls =
-		"bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md";
+		"!bg-blue-950 hover:bg-blue-700 text-white px-4 py-2 rounded-md";
 	const updateBtnCls =
-		"bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded-md";
+		"!bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded-md";
 	const deleteBtnCls =
-		"bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md";
+		"!bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md";
 
 	return (
 		<div className="space-y-12">
