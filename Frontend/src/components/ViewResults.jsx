@@ -233,7 +233,6 @@ export default function ViewResults({code, fileExt}) {
       if (isCommentLine(lineContent)) return;
 
       const processedLine = stripInlineComment(lineContent);
-      if (!processedLine.includes("(")) return;
 
       ruleEntries.forEach(([ruleName, regexPattern]) => {
         try {
