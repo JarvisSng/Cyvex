@@ -48,14 +48,12 @@ export const loginUser = async (email, password) => {
 	const { data: authData, error: authError } =
 		await supabase.auth.signInWithPassword({ email, password });
 	if (authError) {
-		console.error("[Auth] signIn error:", authError);
 		return { error: authError.message };
 	}
 
 	// 2) Ensure email verified
 	const user = authData.user;
 	if (!user?.email_confirmed_at) {
-		console.warn("[Auth] email not verified");
 		return { error: "Please verify your email before logging in." };
 	}
 
@@ -66,35 +64,30 @@ export const loginUser = async (email, password) => {
 		.eq("id", user.id)
 		.single();
 	if (profileError) {
-		console.error("[Auth] profile fetch error:", profileError);
 		return { error: profileError.message };
 	}
 
 	// 4) Status checks
 	if (profileData.status === "Suspended") {
-		const msg = profileData.banned_until
-			? `The account is suspended until ${new Intl.DateTimeFormat(
-					"en-US",
-					{
-						year: "numeric",
-						month: "short",
-						day: "numeric",
-						hour: "numeric",
-						minute: "numeric",
-						hour12: true,
-					}
-			  ).format(new Date(profileData.banned_until))}`
-			: "The account is suspended";
-		return { error: msg };
+		const until = profileData.banned_until
+			? ` until ${new Intl.DateTimeFormat("en-US", {
+					year: "numeric",
+					month: "short",
+					day: "numeric",
+					hour: "numeric",
+					minute: "numeric",
+					hour12: true,
+			  }).format(new Date(profileData.banned_until))}`
+			: "";
+		return { error: `The account is suspended${until}.` };
 	}
 	if (profileData.status === "Deleted") {
 		return { error: "This account has been deleted." };
 	}
 
 	// 5) Role check
-	const allowedRoles = ["user", "admin"];
-	if (!allowedRoles.includes(profileData.role)) {
-		console.warn("[Auth] unauthorized role:", profileData.role);
+	const allowed = ["user", "admin"];
+	if (!allowed.includes(profileData.role)) {
 		return { error: "Access denied. Your role does not permit login." };
 	}
 
@@ -102,15 +95,16 @@ export const loginUser = async (email, password) => {
 	localStorage.setItem("username", profileData.username);
 	localStorage.setItem("role", profileData.role);
 
-	// 7) Record the login activity (fire-and-forget)
-	try {
-		await incrementDailyLogins();
-	} catch (err) {
-		console.error("[Auth] incrementDailyLogins failed:", err);
-	}
+	// 7) Mark profile as logged in
+	await supabase
+		.from("profiles")
+		.update({ logged_in: true })
+		.eq("id", user.id);
 
-	// 8) Return user details
+	// 8) Record the login activity (fire-and-forget)
+	incrementDailyLogins().catch(() => {});
 
+	// 9) Return user details
 	return {
 		user,
 		username: profileData.username,
@@ -120,14 +114,38 @@ export const loginUser = async (email, password) => {
 	};
 };
 
-// Function to logout user
 export const logoutUserAll = async () => {
-	const { error } = await supabase.auth.signOut();
-	if (error) {
-		console.error("Error logging out:", error);
-		return { error: error.message };
+	// 1) Get current user ID
+	const {
+		data: { user },
+		error: getUserError,
+	} = await supabase.auth.getUser();
+	if (getUserError) {
+		console.error("[Auth] getUser error:", getUserError);
 	}
-	// Clear local storage so that user data is removed from the client
+
+	// 2) If we have a user, mark them as logged out in profiles
+	if (user?.id) {
+		const { error: updateError } = await supabase
+			.from("profiles")
+			.update({ logged_in: false })
+			.eq("id", user.id);
+		if (updateError) {
+			console.error(
+				"[Auth] failed to clear logged_in flag:",
+				updateError
+			);
+		}
+	}
+
+	// 3) Sign out from Supabase auth
+	const { error: signOutError } = await supabase.auth.signOut();
+	if (signOutError) {
+		console.error("[Auth] signOut error:", signOutError);
+		return { error: signOutError.message };
+	}
+
+	// 4) Clear local storage
 	localStorage.clear();
 	return { message: "Logout successful." };
 };
