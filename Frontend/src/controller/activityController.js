@@ -18,3 +18,24 @@ export async function incrementDailyLogins() {
 		throw new Error(`Activity API error: ${resp.status} — ${text}`);
 	}
 }
+
+/**
+ * Fetches *all* activity records from the server.
+ * @returns {Promise<Array<{id: string, date: string, logins: number}>>}
+ */
+export async function getAllActivity() {
+	const resp = await fetch(`${path}/api/activity/login`, {
+		method: "GET",
+		credentials: "include",
+	});
+
+	if (!resp.ok) {
+		const body = await resp.text();
+		console.error("[CTRL] getAllActivity error:", resp.status, body);
+		throw new Error(`Activity API error: ${resp.status}`);
+	}
+
+	const data = await resp.json();
+	console.log("[CTRL] getAllActivity success:", data);
+	return data;
+}

@@ -65,4 +65,27 @@ router.post("/login", async (req, res) => {
 	}
 });
 
+// GET /api/activity
+// Returns every row in the activity table, ordered by date ascending.
+router.get("/", async (req, res) => {
+	console.log("[API] GET /api/activity called");
+	try {
+		const { data, error } = await supabase
+			.from("activity")
+			.select("*")
+			.order("date", { ascending: true });
+
+		if (error) {
+			console.error("[API] Error fetching activity data:", error);
+			return res.status(500).json({ error: error.message });
+		}
+
+		console.log("[API] Fetched activity rows:", data.length);
+		res.json(data);
+	} catch (err) {
+		console.error("[API] Unexpected error in GET /api/activity:", err);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+});
+
 module.exports = router;
