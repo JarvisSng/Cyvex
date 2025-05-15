@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ManageEVM from "../components/ManageEVM";
 import ManageRules from "../components/ManageRules";
 import ManageSubs from "../components/ManageSubs";
 import Profile from "../components/Profile";
 import SystemActivity from "../components/SystemActivity";
-import { getOnlineCount } from "../controller/activityController";
 import AdminNav from "./AdminNav";
 
 function AdminDashboard() {
@@ -14,12 +13,6 @@ function AdminDashboard() {
 	const [activeSection, setActiveSection] = useState("subscriptions");
 	// For the subscriptions section, we also keep track of the sub-tab.
 	const [activeSubTab, setActiveSubTab] = useState("all");
-
-	useEffect(() => {
-		getOnlineCount().catch((err) =>
-			console.error("Failed to load online count:", err)
-		);
-	}, []);
 
 	return (
 		<div className="w-screen h-screen flex flex-col bg-gray-50">

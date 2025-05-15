@@ -58,6 +58,5 @@ export async function getOnlineCount() {
 	}
 
 	const { onlineCount } = await resp.json();
-	console.log("[CTRL] getOnlineCount success:", onlineCount);
 	return onlineCount;
 }
