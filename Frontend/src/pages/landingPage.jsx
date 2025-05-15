@@ -34,7 +34,7 @@ const LandingPage = () => {
     navigate("/signup/email");
   };
 
-  const menuItems = ["solutions", "customers", "services", "insights", "company"];
+  const menuItems = ["solutions", "customers", "services", "insights", "company", "pricing"];
   const tabContent = {
     solutions: (
       <div className="flex flex-col md:flex-row gap-8">
@@ -485,6 +485,177 @@ const LandingPage = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    ),
+    pricing: (
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center py-10">
+          <p className="text-gray-600">No hidden fees. Cancel anytime.</p>
+        </div>
+
+        {/* Pricing Cards - Perfect Alignment */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {/* Basic Plan */}
+          <div className="flex flex-col h-full bg-white rounded-lg shadow-md border-2 border-blue-500 overflow-hidden relative">
+            <div className="bg-blue-500 text-white text-center py-1 text-xs font-medium">
+              Free
+            </div>
+            <div className="p-5 flex flex-col h-full">
+              <div className="mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Basic</h3>
+                <p className="text-sm text-gray-600 mt-1">For small projects</p>
+              </div>
+              
+              <div className="mb-6">
+                <span className="text-3xl font-bold text-gray-900">Free</span>
+              </div>
+              
+              <ul className="space-y-3 mb-6 flex-grow pl-1">
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>5 scans / month</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>Basic vulnerability checks</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>Email support</span>
+                </li>
+              </ul>
+              
+              <button 
+                onClick={signup}
+                className="w-full !bg-blue-950 text-white hover:bg-gray-200 py-2.5 rounded text-sm font-medium transition-colors mt-auto"
+              >
+                Try for Free
+              </button>
+            </div>
+          </div>
+
+          {/* Pro Plan (Highlighted) */}
+          <div className="flex flex-col h-full bg-white rounded-lg shadow-md border-2 border-blue-500 overflow-hidden relative">
+            <div className="bg-blue-500 text-white text-center py-1 text-xs font-medium">
+              Most Popular
+            </div>
+            <div className="p-5 flex flex-col h-full">
+              <div className="mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Pro</h3>
+                <p className="text-sm text-gray-600 mt-1">For growing projects</p>
+              </div>
+              
+              <div className="mb-6">
+                <span className="text-3xl font-bold text-gray-900">$12</span>
+                <span className="text-gray-600 text-sm ml-1">/month</span>
+              </div>
+              
+              <ul className="space-y-3 mb-6 flex-grow pl-1">
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>Unlimited scans</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>Dedicated Audits</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>Priority email support</span>
+                </li>
+              </ul>
+              
+              <button 
+                onClick={signup}
+                className="w-full !bg-blue-950 hover:bg-blue-700 text-white py-2.5 rounded text-sm font-medium transition-colors mt-auto"
+              >
+                Get Started
+              </button>
+            </div>
+          </div>
+
+          {/* Enterprise Plan */}
+          <div className="flex flex-col h-full bg-white rounded-lg shadow-md border-2 border-blue-500 overflow-hidden relative">
+            <div className="bg-blue-500 text-white text-center py-1 text-xs font-medium">
+              Enterprise
+            </div>
+            <div className="p-5 flex flex-col h-full">
+              <div className="mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Enterprise</h3>
+                <p className="text-sm text-gray-600 mt-1">For large needs</p>
+              </div>
+              
+              <div className="mb-6">
+                <span className="text-3xl font-bold text-gray-900">Custom</span>
+              </div>
+              
+              <ul className="space-y-3 mb-6 flex-grow pl-1">
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>Everything in Pro</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>Dedicated security engineer</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>24/7 priority support</span>
+                </li>
+              </ul>
+              
+              <button 
+                onClick={() => navigate("/contact")}
+                className="w-full !bg-blue-950 text-white hover:bg-gray-200 py-2.5 rounded text-sm font-medium transition-colors mt-auto"
+              >
+                Contact Sales
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Feature Comparison */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8 text-sm">
+          <table className="w-full">
+            <thead className="border-b">
+              <tr>
+                <th className="py-3 px-4 text-left">Feature</th>
+                <th className="py-3 px-4 text-center">Basic</th>
+                <th className="py-3 px-4 text-center">Pro</th>
+                <th className="py-3 px-4 text-center">Enterprise</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                "Smart Contract Scanner",
+                "Maximum Scans",
+                "Dedicated Audits",
+                "Support Level",
+                "Security Reports"
+              ].map((feature, idx) => (
+                <tr key={idx} className={idx % 2 === 0 ? "bg-gray-50" : ""}>
+                  <td className="py-3 px-4">{feature}</td>
+                  <td className="py-3 px-4 text-center">
+                    {idx === 0 ? "✓" : idx === 1 ? "5 / month" : idx === 2 ? "✗" : idx === 3 ? "Email" : "Basic"}
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    {idx === 1 ? "Unlimited" : idx === 3 ? "Priority" : "✓"}
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    {idx === 3 ? "24/7" : idx === 4 ? "Advanced" : "✓"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Trust Signals */}
+        <div className="text-center text-sm">
+          <p className="text-gray-600 mb-1">Trusted by blockchain projects worldwide</p>
+          <p className="text-gray-500">30-day money-back guarantee</p>
         </div>
       </div>
     ),
