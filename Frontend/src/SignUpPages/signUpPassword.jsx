@@ -12,6 +12,11 @@ const SignUpPassword = () => {
     const email = localStorage.getItem("email");
     const username = localStorage.getItem("username");
 
+    // Function to handle redirection to the landing page
+    const handleBackToLanding = () => {
+        navigate('/');  // Redirect to the landing page (root route)
+    };
+
      // Function to handle redirection to the sign-up page
     const PasswordResetRedirect = () => {
         navigate('/reset/email');  // Redirect to the sign-up page
@@ -38,11 +43,12 @@ const SignUpPassword = () => {
 
     return (
         <div className="bg-blue-950 w-screen h-screen flex flex-col items-center justify-center gap-6">
-        <img 
-          src={logoImage} 
-          alt="Cyvex Logo" 
-          className="h-10 w-auto" // adjust height/width to fit your design
-        />
+            <img 
+                src={logoImage} 
+                alt="Cyvex Logo" 
+                className="h-10 w-auto cursor-pointer" // Added cursor-pointer
+                onClick={handleBackToLanding} // Added click handler
+            />
             <div className="bg-stone-50 p-8 flex flex-col items-center justify-center gap-4 rounded-md shadow-lg w-100">
                 <p className="text-black text-3xl font-regular">welcome</p>
                 <p className="text-black text-lg font-regular">almost there! now your password!</p>
