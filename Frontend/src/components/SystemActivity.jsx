@@ -53,7 +53,7 @@ const SystemActivity = () => {
 
 
 		} catch (error) {
-
+			console.error("error", error);
 		}
 	}
 	useEffect(() => {
