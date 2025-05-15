@@ -37,7 +37,7 @@ const SystemActivity = () => {
 
 const chartData = {
         options: {
-            series: data || [],
+            series: [2,3,4],
             chart: {
                 type: 'bar',
                 height: 300,
@@ -61,7 +61,7 @@ const chartData = {
                 }
             }],
             xaxis: {
-                categories: categories || ["jan", "feb"],
+                categories:["jan", "feb", "mar"],
             },
             legend: {
                 position: 'top', // top, bottom
@@ -292,16 +292,10 @@ const chartData = {
 				</div>
 			</div>
 			<div className="mb-2">
-				<div id="chartFive" className="-ml-5">
+				<div id="chartFive" ac-chart="'donut'" className="-ml-5">
 					<Chart
 						options={chartData?.options}
 						series={chartData?.options?.series}
-						// {[
-						// 	{
-						// 		name: "System Activity",
-						// 		data: data,
-						// 	},
-						// ]}
 						type="bar"
 						height={350}
 					/>
