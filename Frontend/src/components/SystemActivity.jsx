@@ -39,17 +39,15 @@ const SystemActivity = () => {
 		try {
 			const result = getAllActivity(address);
 
-			
+			console.log("datass", result);
 			let activityData = [];
 			let activityCategory = [];
 			result.map((val) => {
 				activityData.push(val["logins"]);
-				activityCategory.push(val["currently active"]);
+				activityCategory.push(val["date"]);
 			});
 			setCategories(activityCategory);
 			setData(activityData);
-
-			console.log("datass", result);
 
 
 		} catch (error) {
