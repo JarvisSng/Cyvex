@@ -44,8 +44,6 @@ export const signUpUser = async (email, username, password) => {
 //Login route both for admin and normal user, redirects accordingly
 // Function to log in the user and fetch their username, role, status, etc.
 export const loginUser = async (email, password) => {
-	console.log("[Auth] Attempting login for:", email);
-
 	// 1) Authenticate
 	const { data: authData, error: authError } =
 		await supabase.auth.signInWithPassword({ email, password });
@@ -106,19 +104,13 @@ export const loginUser = async (email, password) => {
 
 	// 7) Record the login activity (fire-and-forget)
 	try {
-		console.log("[Auth] incrementDailyLogins()");
 		await incrementDailyLogins();
-		console.log("[Auth] incrementDailyLogins succeeded");
 	} catch (err) {
 		console.error("[Auth] incrementDailyLogins failed:", err);
 	}
 
 	// 8) Return user details
-	console.log("[Auth] loginUser successful:", {
-		id: user.id,
-		username: profileData.username,
-		role: profileData.role,
-	});
+
 	return {
 		user,
 		username: profileData.username,
