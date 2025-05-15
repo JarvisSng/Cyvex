@@ -16,9 +16,9 @@ function AdminDashboard() {
 	const [activeSubTab, setActiveSubTab] = useState("all");
 
 	useEffect(() => {
-		getOnlineCount()
-			.then(setCount)
-			.catch((err) => console.error("Failed to load online count:", err));
+		getOnlineCount().catch((err) =>
+			console.error("Failed to load online count:", err)
+		);
 	}, []);
 
 	return (
