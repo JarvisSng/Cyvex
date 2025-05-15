@@ -39,3 +39,25 @@ export async function getAllActivity() {
 	console.log("[CTRL] getAllActivity success:", data);
 	return data;
 }
+
+/**
+ * Fetches the number of currently logged-in users.
+ * @returns {Promise<number>} the count of profiles with logged_in = true
+ * @throws on network or API error
+ */
+export async function getOnlineCount() {
+	const resp = await fetch(`${path}/api/activity/online`, {
+		method: "GET",
+		credentials: "include",
+	});
+
+	if (!resp.ok) {
+		const text = await resp.text();
+		console.error("[CTRL] getOnlineCount error:", resp.status, text);
+		throw new Error(`Activity API error: ${resp.status}`);
+	}
+
+	const { onlineCount } = await resp.json();
+	console.log("[CTRL] getOnlineCount success:", onlineCount);
+	return onlineCount;
+}

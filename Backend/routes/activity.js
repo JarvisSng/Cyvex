@@ -88,4 +88,32 @@ router.get("/getAll", async (req, res) => {
 	}
 });
 
+/**
+ * GET /api/activity/online
+ *
+ * Returns the count of profiles where logged_in = true.
+ */
+router.get("/online", async (req, res) => {
+	try {
+		// Use head:true to fetch only the count, not the rows themselves
+		const { count, error: countError } = await supabase
+			.from("profiles")
+			.select("id", { count: "exact", head: true })
+			.eq("logged_in", true);
+
+		if (countError) {
+			console.error("[API] Error counting online users:", countError);
+			return res.status(500).json({ error: countError.message });
+		}
+
+		res.json({ onlineCount: count });
+	} catch (err) {
+		console.error(
+			"[API] Unexpected error in GET /api/activity/online:",
+			err
+		);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+});
+
 module.exports = router;
