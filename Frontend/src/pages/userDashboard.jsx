@@ -35,8 +35,6 @@ function UserDashboard() {
 
 	// Handle code submission from CodeUploader and GitHubPull
 	const handleCodeSubmit = (code, fileExt) => {
-		console.log(code);
-		console.log(fileExt);
 		setSubmittedCode(code);
 		setFileExt(fileExt || "txt");
 		setActiveSection("View Results"); // Switch to results after submission

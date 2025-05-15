@@ -164,7 +164,8 @@ export default function ViewResults({code, fileExt}) {
   };
 
   // Detect the programming language based on file extension or string content
-  const detectLanguage = (fileExt) => {
+  const detectLanguage = (fileExt, code) => {
+    // 1. Try extension first
     const extensionMap = {
       py: 'Python',
       js: 'JavaScript',
@@ -172,10 +173,17 @@ export default function ViewResults({code, fileExt}) {
       h: 'C/C++ Header'
     };
 
-    if (!fileExt) return "Unknown";
+    if (fileExt) {
+      const ext = fileExt.replace('.', '').toLowerCase();
+      return extensionMap[ext] || 'Unknown';
+    }
+
+    // 2. Fallback: Infer from code content
+    if (code.includes('import ') || code.includes('def ')) return 'Python';
+    if (code.includes('function ') || code.includes('const ')) return 'JavaScript';
+    if (code.includes('#include ')) return 'C/C++';
     
-    const ext = fileExt.replace('.', '').toLowerCase();
-    return extensionMap[ext] || 'Unknown';
+    return 'Unknown'; // Default
   };
 
   const handleScan = () => {
@@ -190,7 +198,7 @@ export default function ViewResults({code, fileExt}) {
       return;
     }
 
-    const language = detectLanguage(fileExt);
+    const language = detectLanguage(fileExt, code);
     const rulesForLanguage = detectionRules[language] || {};
     const ruleEntries = Object.entries(rulesForLanguage);
 
