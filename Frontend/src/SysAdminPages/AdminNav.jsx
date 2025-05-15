@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { logoutUserAll } from "../controller/authController";
 import logoImage from '../assets/cyvex-logo.png';
-import { getAllActivity } from "../controller/activityController";
 
 function AdminNav({ setActiveSection }) {
 	const navigate = useNavigate();
@@ -21,19 +20,6 @@ function AdminNav({ setActiveSection }) {
 			navigate("/");
 		}
 	};
-
-	const getAllActivitys = async (address) =>{
-
-		try{
-			const result = getAllActivity(address);
-
-		}catch(error){
-
-		}
-	}
-	useEffect(()=>{
-		getAllActivitys({})
-	},[])
 
 	// close on click outside
 	useEffect(() => {

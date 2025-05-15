@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { fetchAdminProfiles } from "../controller/userController";
+import { getAllActivity } from "../controller/activityController";
 
 const SystemActivity = () => {
 	const [profiles, setProfiles] = useState([]);
@@ -18,20 +19,46 @@ const SystemActivity = () => {
 				setProfiles(result.data);
 				console.log(" profiles == " + profiles);
 			}
-			setCategories([
-				"16-03-2025",
-				"17-03-2025",
-				"18-03-2025",
-				"19-03-2025",
-				"20-03-2025",
-				"21-03-2025",
-				"22-03-2025",
-			]);
+			// setCategories([
+			// 	"16-03-2025",
+			// 	"17-03-2025",
+			// 	"18-03-2025",
+			// 	"19-03-2025",
+			// 	"20-03-2025",
+			// 	"21-03-2025",
+			// 	"22-03-2025",
+			// ]);
 
-			setData([168, 385, 201, 298, 187, 195, 291]);
+			// setData([168, 385, 201, 298, 187, 195, 291]);
 		};
 		getProfiles();
 	}, []);
+
+	const getAllActivitys = async (address) => {
+
+		try {
+			const result = getAllActivity(address);
+
+			
+			let activityData = [];
+			let activityCategory = [];
+			result.map((val) => {
+				activityData.push(val["logins"]);
+				activityCategory.push(val["currently active"]);
+			});
+			setCategories(activityCategory);
+			setData(activityData);
+
+			console.log("datass", result);
+
+
+		} catch (error) {
+
+		}
+	}
+	useEffect(() => {
+		getAllActivitys({})
+	}, [])
 
 	const changeBarChart = (e) => {
 		var datevalue = e.target.value;
