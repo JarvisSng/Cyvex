@@ -37,7 +37,7 @@ const SystemActivity = () => {
 	const getAllActivitys = async (address) => {
 
 		try {
-			const result = getAllActivity(address);
+			const result = await getAllActivity(address);
 
 			console.log("datass", result);
 			let activityData = [];
