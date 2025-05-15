@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logoImage from "../assets/cyvex-logo.png";
 import { loginUser } from "../controller/authController";
-import logoImage from '../assets/cyvex-logo.png';
+import { incrementDailyLogins } from "../controllers/activityController"; // ← import it
 
 const LoginUI = () => {
 	const [password, setPassword] = useState("");
@@ -30,6 +31,10 @@ const LoginUI = () => {
 			return;
 		}
 
+		incrementDailyLogins().catch((err) => {
+			console.error("Failed to record login activity:", err);
+		});
+
 		// Immediately navigate based on the user's role.
 		if (response.role === "admin") {
 			navigate("/admin/dashboard");
@@ -40,9 +45,9 @@ const LoginUI = () => {
 
 	// Function to handle redirection to the sign-up page
 	const PasswordResetRedirect = () => {
-		navigate('/reset/email');  // Redirect to the sign-up page
+		navigate("/reset/email"); // Redirect to the sign-up page
 	};
-	
+
 	// Function that navigate to signup page
 	const handleSignUpRedirect = () => {
 		navigate("/signup/email");
@@ -50,9 +55,9 @@ const LoginUI = () => {
 
 	return (
 		<div className="bg-blue-950 w-screen h-screen flex flex-col items-center justify-center gap-6">
-			<img 
-				src={logoImage} 
-				alt="Cyvex Logo" 
+			<img
+				src={logoImage}
+				alt="Cyvex Logo"
 				className="h-10 w-auto" // adjust height/width to fit your design
 			/>
 			<div className="bg-stone-50 p-8 flex flex-col items-center justify-center gap-4 rounded-md shadow-lg w-100">
@@ -75,12 +80,12 @@ const LoginUI = () => {
 					Login
 				</button>
 				<div className="flex justify-between w-80 mt-2">
-					<p 
-                        className="text-sm text-gray-600 hover:underline cursor-pointer"
-                        onClick={PasswordResetRedirect}
-                    >
-                        Reset Password
-                    </p>
+					<p
+						className="text-sm text-gray-600 hover:underline cursor-pointer"
+						onClick={PasswordResetRedirect}
+					>
+						Reset Password
+					</p>
 					<p
 						className="text-sm text-gray-600 hover:underline cursor-pointer"
 						onClick={handleSignUpRedirect}

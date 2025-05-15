@@ -20,6 +20,7 @@ const opcodePatternsRouter = require("./routes/opcodePatterns");
 const evmRoutes = require("./routes/evmRoutes");
 const checkSubRoute = require("./routes/checkSub");
 const decompileRoute = require("./routes/decompile");
+const activityRoutes = require("./routes/activity");
 
 // Initialize the Express application
 const app = express();
@@ -59,7 +60,8 @@ app.use("/api/crypto-patterns", cryptoPatternsRouter);
 app.use("/api/opcode-patterns", opcodePatternsRouter);
 app.use("/api/evm", evmRoutes);
 app.use("/api/check", checkSubRoute);
-app.use('/api/decompile', decompileRoute);
+app.use("/api/decompile", decompileRoute);
+app.use("/api/activity", activityRoutes);
 
 // Set port from environment variables or default to 3000, and start the server
 const PORT = process.env.PORT || 3000;
