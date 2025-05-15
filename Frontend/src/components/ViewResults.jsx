@@ -22,6 +22,14 @@ const severityColors = {
   info: "#6495ed"
 };
 
+const FALLBACK_RULES = {
+  "MD5": "\\bmd5\\b|\\bMD5\\b",
+  "SHA-1": "\\bsha1\\b|\\bSHA-1\\b",
+  "DES": "\\bdes\\b|\\bDES\\b",
+  "Hardcoded Key": "['\"][0-9a-fA-F]{16,}['\"]",
+  "RSA (Weak Key)": "\\brsa\\b.*\\b1024\\b|\\bRSA\\b.*\\b1024\\b"
+};
+
 // 1) Skip lines that start with // or #
 function isCommentLine(line) {
 	const trimmed = line.trim();
@@ -163,14 +171,14 @@ export default function ViewResults({code, fileExt}) {
     setActiveButton(button);
   };
 
-  // Detect the programming language based on file extension or string content
   const detectLanguage = (fileExt, code) => {
-    // 1. Try extension first
+    // 1. First try to detect by file extension
     const extensionMap = {
       py: 'Python',
       js: 'JavaScript',
+      java: 'Java',
       cpp: 'C++',
-      h: 'C/C++ Header'
+      sol: 'Solidity'
     };
 
     if (fileExt) {
@@ -178,12 +186,16 @@ export default function ViewResults({code, fileExt}) {
       return extensionMap[ext] || 'Unknown';
     }
 
-    // 2. Fallback: Infer from code content
-    if (code.includes('import ') || code.includes('def ')) return 'Python';
-    if (code.includes('function ') || code.includes('const ')) return 'JavaScript';
-    if (code.includes('#include ')) return 'C/C++';
+    // 2. For pasted code, use more aggressive content detection
+    const codeStr = code.toLowerCase();
     
-    return 'Unknown'; // Default
+    if (/(^|\n)\s*(import|def|class)\s/.test(codeStr)) return 'Python';
+    if (/(^|\n)\s*(function|const|let|var)\s/.test(codeStr)) return 'JavaScript';
+    if (/(^|\n)\s*(#include|using namespace)/.test(codeStr)) return 'C++';
+    if (/(^|\n)\s*(contract|pragma solidity)/.test(codeStr)) return 'Solidity';
+    if (/(^|\n)\s*(public class|import java\.)/.test(codeStr)) return 'Java';
+
+    return 'Unknown';
   };
 
   const handleScan = () => {
@@ -199,7 +211,7 @@ export default function ViewResults({code, fileExt}) {
     }
 
     const language = detectLanguage(fileExt, code);
-    const rulesForLanguage = detectionRules[language] || {};
+    const rulesForLanguage = detectionRules[language] || FALLBACK_RULES;
     const ruleEntries = Object.entries(rulesForLanguage);
 
     // Early return if no rules for this language
@@ -225,7 +237,7 @@ export default function ViewResults({code, fileExt}) {
 
       ruleEntries.forEach(([ruleName, regexPattern]) => {
         try {
-          const regex = new RegExp(regexPattern);
+          const regex = new RegExp(regexPattern, 'i');
           if (regex.test(processedLine)) {
             if (!detectedCryptographicFunctions.includes(ruleName)) {
               detectedCryptographicFunctions.push(ruleName);
