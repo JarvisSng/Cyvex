@@ -1,4 +1,5 @@
 import supabase from "../config/supabaseClient";
+import { incrementDailyLogins } from "./activityController";
 
 // Function to handle user sign-up
 export const signUpUser = async (email, username, password) => {
@@ -43,61 +44,81 @@ export const signUpUser = async (email, username, password) => {
 //Login route both for admin and normal user, redirects accordingly
 // Function to log in the user and fetch their username, role, status, etc.
 export const loginUser = async (email, password) => {
-	console.log("Attempting login...");
+	console.log("[Auth] Attempting login for:", email);
 
-	// Step 1: Attempt to log in
+	// 1) Authenticate
 	const { data: authData, error: authError } =
-		await supabase.auth.signInWithPassword({
-			email,
-			password,
-		});
-	if (authError) return { error: authError.message };
+		await supabase.auth.signInWithPassword({ email, password });
+	if (authError) {
+		console.error("[Auth] signIn error:", authError);
+		return { error: authError.message };
+	}
 
-	// Step 2: Check if the user's email is confirmed
+	// 2) Ensure email verified
 	const user = authData.user;
 	if (!user?.email_confirmed_at) {
+		console.warn("[Auth] email not verified");
 		return { error: "Please verify your email before logging in." };
 	}
 
-	// Step 3: Fetch the username, role, status, and banned_until from the profiles table
+	// 3) Fetch profile
 	const { data: profileData, error: profileError } = await supabase
 		.from("profiles")
 		.select("username, role, status, banned_until")
 		.eq("id", user.id)
 		.single();
-	if (profileError) return { error: profileError.message };
+	if (profileError) {
+		console.error("[Auth] profile fetch error:", profileError);
+		return { error: profileError.message };
+	}
 
-	// Check account status and return error if not allowed to login
+	// 4) Status checks
 	if (profileData.status === "Suspended") {
-		if (profileData.banned_until != null) {
-			const formattedDate = new Intl.DateTimeFormat("en-US", {
-				year: "numeric",
-				month: "short",
-				day: "numeric",
-				hour: "numeric",
-				minute: "numeric",
-				hour12: true,
-			}).format(new Date(profileData.banned_until));
-			return { error: `The account is suspended until ${formattedDate}` };
-		} else {
-			return { error: `The account is suspended` };
-		}
+		const msg = profileData.banned_until
+			? `The account is suspended until ${new Intl.DateTimeFormat(
+					"en-US",
+					{
+						year: "numeric",
+						month: "short",
+						day: "numeric",
+						hour: "numeric",
+						minute: "numeric",
+						hour12: true,
+					}
+			  ).format(new Date(profileData.banned_until))}`
+			: "The account is suspended";
+		return { error: msg };
 	}
 	if (profileData.status === "Deleted") {
 		return { error: "This account has been deleted." };
 	}
 
-	// Optionally, check allowed roles (if needed)
+	// 5) Role check
 	const allowedRoles = ["user", "admin"];
 	if (!allowedRoles.includes(profileData.role)) {
+		console.warn("[Auth] unauthorized role:", profileData.role);
 		return { error: "Access denied. Your role does not permit login." };
 	}
 
-	// Store user info in local storage
+	// 6) Persist basic info
 	localStorage.setItem("username", profileData.username);
 	localStorage.setItem("role", profileData.role);
 
-	// Return user details (do not redirect here)
+	// 7) Record the login activity (fire-and-forget)
+	try {
+		console.log("[Auth] incrementDailyLogins()");
+		await incrementDailyLogins();
+		console.log("[Auth] incrementDailyLogins succeeded");
+	} catch (err) {
+		console.error("[Auth] incrementDailyLogins failed:", err);
+	}
+
+	// 8) Return user details
+	console.log("[Auth] loginUser successful:", {
+		id: user.id,
+		username: profileData.username,
+		role: profileData.role,
+	});
 	return {
 		user,
 		username: profileData.username,

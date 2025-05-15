@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logoImage from "../assets/cyvex-logo.png";
 import { loginUser } from "../controller/authController";
-import { incrementDailyLogins } from "../controllers/activityController"; // ← import it
 
 const LoginUI = () => {
 	const [password, setPassword] = useState("");
@@ -30,15 +29,6 @@ const LoginUI = () => {
 			setError(response.error);
 			return;
 		}
-
-		console.log("[UI] login successful, now incrementDailyLogins");
-		incrementDailyLogins()
-			.then(() => {
-				console.log("[UI] incrementDailyLogins: done");
-			})
-			.catch((err) => {
-				console.error("[UI] incrementDailyLogins failed:", err);
-			});
 
 		// Immediately navigate based on the user's role.
 		if (response.role === "admin") {
