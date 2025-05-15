@@ -24,7 +24,7 @@ export async function incrementDailyLogins() {
  * @returns {Promise<Array<{id: string, date: string, logins: number}>>}
  */
 export async function getAllActivity() {
-	const resp = await fetch(`${path}/api/activity/login`, {
+	const resp = await fetch(`${path}/api/activity`, {
 		method: "GET",
 		credentials: "include",
 	});
