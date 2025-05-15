@@ -67,7 +67,7 @@ router.post("/login", async (req, res) => {
 
 // GET /api/activity
 // Returns every row in the activity table, ordered by date ascending.
-router.get("/", async (req, res) => {
+router.get("/getAll", async (req, res) => {
 	console.log("[API] GET /api/activity called");
 	try {
 		const { data, error } = await supabase
