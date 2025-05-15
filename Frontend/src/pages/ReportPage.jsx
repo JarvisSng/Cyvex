@@ -163,8 +163,6 @@ export default function ReportPage() {
 	// Separate the summary from the code snippet display
 	const summarySection = (
 		<div>
-			<h1>Analysis Report</h1>
-
 			<h3>Code Details:</h3>
 			<p>
 				<strong>Language Detected:</strong> {report.language}
