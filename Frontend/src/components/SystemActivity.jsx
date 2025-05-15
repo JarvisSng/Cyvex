@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Chart from "react-apexcharts";
 import ReactApexChart from "react-apexcharts";
 import { fetchAdminProfiles } from "../controller/userController";
 import { getAllActivity } from "../controller/activityController";
@@ -244,6 +245,22 @@ const SystemActivity = () => {
 								data: data,
 							},
 						]}
+						type="bar"
+						height={350}
+					/>
+				</div>
+			</div>
+			<div className="mb-2">
+				<div id="chartFive" className="-ml-5">
+					<Chart
+						options={options}
+						series={data}
+						// {[
+						// 	{
+						// 		name: "System Activity",
+						// 		data: data,
+						// 	},
+						// ]}
 						type="bar"
 						height={350}
 					/>
