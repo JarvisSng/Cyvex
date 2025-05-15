@@ -31,9 +31,14 @@ const LoginUI = () => {
 			return;
 		}
 
-		incrementDailyLogins().catch((err) => {
-			console.error("Failed to record login activity:", err);
-		});
+		console.log("[UI] login successful, now incrementDailyLogins");
+		incrementDailyLogins()
+			.then(() => {
+				console.log("[UI] incrementDailyLogins: done");
+			})
+			.catch((err) => {
+				console.error("[UI] incrementDailyLogins failed:", err);
+			});
 
 		// Immediately navigate based on the user's role.
 		if (response.role === "admin") {

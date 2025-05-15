@@ -3,16 +3,21 @@
  * @throws on non-2xx or network error
  */
 export async function incrementDailyLogins() {
-	const resp = await fetch("/api/activity/loginCount", {
+	console.log("[CTRL] incrementDailyLogins(): POST /api/activity/login");
+	const resp = await fetch("/api/activity/login", {
 		method: "POST",
 		credentials: "include",
 	});
 
 	if (!resp.ok) {
-		// Optionally read error text:
 		const text = await resp.text();
+		console.error(
+			`[CTRL] incrementDailyLogins error: status=${resp.status}, body=${text}`
+		);
 		throw new Error(`Activity API error: ${resp.status} — ${text}`);
 	}
-
-	// No JSON to parse—just succeed or throw
+	console.log(
+		"[CTRL] incrementDailyLogins succeeded with status",
+		resp.status
+	);
 }
