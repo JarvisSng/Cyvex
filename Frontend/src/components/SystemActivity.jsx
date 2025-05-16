@@ -379,9 +379,9 @@ const pieData = [
 					/>
 				</div>
 			</div>
-			<div>
+			{/* <div>
 				<Doughnut {...PieOption} className="chart" />
-			</div>
+			</div> */}
 			
 		</div>
 	);
