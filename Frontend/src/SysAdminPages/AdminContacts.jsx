@@ -65,7 +65,7 @@ const AdminContacts = () => {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <AdminNav />
       
-      <div className="flex-1 p-6 md:p-8 lg:p-12 mt-16"> {/* Added mt-16 to account for fixed nav */}
+<div className="flex-1 p-6 md:p-8 lg:p-12 mt-16" style={{ paddingTop: '80px' }}> {/* Added mt-16 to account for fixed nav */}
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-8 md:mb-12">
