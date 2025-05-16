@@ -1,11 +1,33 @@
 // src/pages/Contacts.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AdminNav from "./AdminNav";
-import { FiMail, FiPhone, FiMapPin, FiClock, FiSend } from "react-icons/fi";
+import { FiMail, FiPhone, FiMapPin, FiClock, FiSend, FiChevronUp } from "react-icons/fi";
 import ContactForm from "../components/ContactForm";
 
 const AdminContacts = () => {
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
+  // Check scroll position for back-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.pageYOffset > 300) {
+        setShowScrollButton(true);
+      } else {
+        setShowScrollButton(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   const contactMethods = [
     {
@@ -40,7 +62,7 @@ const AdminContacts = () => {
           </div>
 
           {/* Contact Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-12">
             {contactMethods.map((method, index) => (
               <div 
                 key={index}
@@ -118,10 +140,10 @@ const AdminContacts = () => {
           {/* Map Section */}
           <div className="mt-12 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
             <iframe
-              title="Office Location"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.215573291234!2d-73.9878449241646!3d40.74844047138971!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9b3117469%3A0xd134e199a405a163!2sEmpire%20State%20Building!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus"
+              title="SIM Headquarters Location"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.747704172798!2d103.76789031533184!3d1.329753999036913!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da1a4f3d3a4b3d%3A0x3a6b3e3b3a3a3a3a!2sSingapore%20Institute%20of%20Management!5e0!3m2!1sen!2ssg!4v1620000000000!5m2!1sen!2ssg"
               width="100%"
-              height="400"
+              height="450"
               style={{ border: 0 }}
               allowFullScreen=""
               loading="lazy"
@@ -130,6 +152,16 @@ const AdminContacts = () => {
           </div>
         </div>
       </div>
+      {/* Back to top button */}
+      {showScrollButton && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+          aria-label="Back to top"
+        >
+          <FiChevronUp className="text-xl" />
+        </button>
+      )}
     </div>
   );
 };
