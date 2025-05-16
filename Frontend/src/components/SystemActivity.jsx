@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import ReactApexChart from "react-apexcharts";
+import {Doughnut} from "react-chartjs-2";
 import { fetchAdminProfiles } from "../controller/userController";
 import { getAllActivity } from "../controller/activityController";
 
@@ -76,6 +77,35 @@ const SystemActivity = () => {
 			}
 		}
 	}
+const borderColors = data?.orderPaymentType?.map((selling) => {
+      return selling._id === selectValue ? 'black' : 'white'; // Change border color for selected
+    });
+    const offsets = data?.orderPaymentType?.map((selling) => {
+      return selling._id === selectValue ? 35 : 0; // Offset for selected slice
+    });
+	const PieOption = {
+      data: {
+        datasets: [
+          {
+            data: newData?.data,
+            backgroundColor: ["#10B981", "#3B82F6", "#F97316", "#0EA5E9"],
+            label: "Dataset 1",
+            borderColor: borderColors,
+            offset: offsets,
+            borderWidth: 1, 
+          },
+        ],
+        labels: ["Active" , "In Active"],
+      },
+      options: {
+        responsive: true,
+        cutoutPercentage: 80,
+        // onClick: (event, elements) => handleClick(event, elements),
+      },
+      legend: {
+        display: false,
+      },
+    };
 
 	const getAllActivitys = async (val) => {
 
@@ -312,6 +342,10 @@ const SystemActivity = () => {
 					/>
 				</div>
 			</div>
+			<div>
+				<Doughnut {...PieOption} className="chart" />
+			</div>
+			
 		</div>
 	);
 };
