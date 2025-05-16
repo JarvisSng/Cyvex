@@ -95,19 +95,11 @@ function UserNav({ setActiveSection }) {
 						Help
 					</a>
 					<a
-						onClick={() => navigate("/user/help")}
+						onClick={() => navigate("/user/subscribe")}
 						className="hover:bg-blue-700 px-3 py-2 rounded"
 					>
 						Subscribe
 					</a>
-					{!isSubscribed && (
-						<a
-							onClick={() => navigate("/user/subscribe")}
-							className="hover:bg-blue-700 px-3 py-2 rounded"
-						>
-							Subscription
-						</a>
-					)}
 				</div>
 				<div className="flex items-center space-x-2">
 					<Link
