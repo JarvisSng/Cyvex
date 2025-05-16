@@ -53,7 +53,7 @@ const AdminHelp = () => {
       <div className="flex-1 p-6 md:p-8 lg:p-12">
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
-          <div className="flex items-center mb-8">
+          <div className="flex items-center mb-8 mt-16">
             <FiHelpCircle className="text-4xl text-blue-500 mr-4" />
             <div>
               <p className="text-gray-600">Find answers and resources to help you use our platform</p>
@@ -159,15 +159,15 @@ const AdminHelp = () => {
                     <form className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Your Email</label>
-                        <input type="email" className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
+                        <input type="email" className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                        <input type="text" className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
+                        <input type="text" className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                        <textarea rows="4" className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"></textarea>
+                        <textarea rows="4" className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500"></textarea>
                       </div>
                       <button type="submit" className="!bg-blue-950 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium">
                         Send Message

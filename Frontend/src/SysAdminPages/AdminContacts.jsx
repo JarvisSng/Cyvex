@@ -1,4 +1,3 @@
-// src/pages/Contacts.jsx
 import React, { useState, useEffect, useRef } from "react";
 import AdminNav from "./AdminNav";
 import { FiMail, FiPhone, FiMapPin, FiClock, FiSend, FiChevronUp } from "react-icons/fi";
@@ -8,19 +7,21 @@ const AdminContacts = () => {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const mapRef = useRef(null);
+  const contentRef = useRef(null); // New ref for scrollable content
 
   // Check scroll position for back-to-top button
   useEffect(() => {
     const handleScroll = () => {
-      setShowScrollButton(window.pageYOffset > 300);
+      setShowScrollButton(contentRef.current?.scrollTop > 300);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const contentElement = contentRef.current;
+    contentElement?.addEventListener('scroll', handleScroll);
+    return () => contentElement?.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Scroll to top function
   const scrollToTop = () => {
-    window.scrollTo({
+    contentRef.current?.scrollTo({
       top: 0,
       behavior: 'smooth'
     });
@@ -62,23 +63,24 @@ const AdminContacts = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50">
+      {/* Fixed Navbar */}
       <AdminNav />
       
-      <div className="flex-1 p-6 md:p-8 lg:p-12 mt-16"> {/* Added mt-16 to account for fixed nav */}
-        <div className="max-w-6xl mx-auto">
+      {/* Scrollable Content Area */}
+      <div 
+        ref={contentRef}
+        className="flex-1 overflow-y-auto pt-16" // pt-16 accounts for navbar height
+      >
+        <div className="p-6 md:p-8 lg:p-12 max-w-6xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-8 md:mb-12">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
               Contact Support
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We're here to help students, staff, and faculty with any questions.
-              Reach out to us through any of these channels.
-            </p>
           </div>
 
-          {/* Contact Cards Grid - Now 4 columns */}
+          {/* Contact Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {contactMethods.map((method, index) => (
               <div 
@@ -160,7 +162,7 @@ const AdminContacts = () => {
             </div>
           </div>
 
-          {/* Map Section with ref for scrolling */}
+          {/* Map Section */}
           <div 
             ref={mapRef}
             className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100"
