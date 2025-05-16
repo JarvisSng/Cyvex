@@ -1,3 +1,4 @@
+import path from "../config/expressPath";
 // src/controllers/subscriptionController.js
 
 /**
@@ -7,7 +8,7 @@
  */
 export async function activateSubscription(userId) {
 	try {
-		const resp = await fetch(`${path}/subscription/activate/${userId}`, {
+		const resp = await fetch(`${path}/api/subscription/activate/${userId}`, {
 			method: "POST",
 			credentials: "include", // if you need cookies/auth
 			headers: {
