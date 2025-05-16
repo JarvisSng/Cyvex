@@ -51,7 +51,7 @@ const SystemActivity = () => {
 					enabled: true
 				}
 			},
-			colors: ['#3437eb', '#3437eb'],
+			colors: ["#10B981", "#3B82F6"],
 			responsive: [{
 				breakpoint: 480,
 				options: {
@@ -87,11 +87,11 @@ const SystemActivity = () => {
       data: {
         datasets: [
           {
-            data: [2,3,4,3],
-            backgroundColor: ["#10B981", "#3B82F6", "#F97316", "#0EA5E9"],
+            data: [2,3],
+            backgroundColor: ["#10B981", "#3B82F6"],
             label: "Dataset 1",
-            borderColor: ["black", "white"],
-            offset: [35,0],
+            borderColor: "black",
+            offset: 0,
             borderWidth: 1, 
           },
         ],
