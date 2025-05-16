@@ -61,12 +61,6 @@ function UserNav({ setActiveSection }) {
 						className="h-10 w-auto" // adjust height/width to fit your design
 					/>
 					<a
-						href="#manage"
-						className="hover:bg-blue-700 px-3 py-2 rounded"
-					>
-						Manage
-					</a>
-					<a
 						href="#contacts"
 						className="hover:bg-blue-700 px-3 py-2 rounded"
 					>
