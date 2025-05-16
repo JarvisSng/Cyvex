@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import {
-	AccountResetEmail,
-	getUserProfileNoAuth,
-} from "../controller/userController";
+import { AccountResetEmail } from "../controller/authController";
+import { getUserProfileNoAuth } from "../controller/userController";
 
 const Profile = () => {
 	const [profile, setProfile] = useState({});
