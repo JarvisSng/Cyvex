@@ -56,7 +56,6 @@ const AdminHelp = () => {
           <div className="flex items-center mb-8">
             <FiHelpCircle className="text-4xl text-blue-500 mr-4" />
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Help Center</h1>
               <p className="text-gray-600">Find answers and resources to help you use our platform</p>
             </div>
           </div>
@@ -170,7 +169,7 @@ const AdminHelp = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
                         <textarea rows="4" className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"></textarea>
                       </div>
-                      <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium">
+                      <button type="submit" className="!bg-blue-950 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium">
                         Send Message
                       </button>
                     </form>
