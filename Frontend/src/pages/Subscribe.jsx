@@ -51,7 +51,7 @@ export default function Subscribe() {
 		<div className="h-screen w-screen overflow-y-auto bg-gray-50 flex flex-col">
 			<UserNav />
 
-			<div className="px-4 sm:px-6 md:px-8 lg:px-12 py-10 flex-1">
+			<div className="pt-20 px-4 sm:px-6 md:px-8 lg:px-12 py-10 flex-1">
 				<div className="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-md">
 					<h1 className="text-2xl font-bold text-gray-800 mb-4">
 						Manage Subscription

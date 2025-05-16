@@ -1,3 +1,4 @@
+import path from "../config/expressPath";
 // src/controllers/subscriptionController.js
 
 /**
