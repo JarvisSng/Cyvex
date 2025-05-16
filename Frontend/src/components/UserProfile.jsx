@@ -35,7 +35,7 @@ const Profile = () => {
 			setMessage(`Error: ${resetError}`);
 		} else if (success) {
 			setMessage(
-				"If that email is in our system, you’ll receive a password reset link shortly."
+				"Reset Password email sent. Please check your inbox and follow the instructions."
 			);
 		}
 	};
@@ -126,7 +126,7 @@ const Profile = () => {
 						onClick={handleResetPassword}
 						className="px-6 py-3 !bg-blue-950 text-white rounded hover:bg-blue-700"
 					>
-						Send Reset Email
+						Reset Password
 					</button>
 					{message && (
 						<p className="mt-4 text-center text-gray-800 dark:text-gray-200">
