@@ -66,10 +66,10 @@ export default function Subscribe() {
 		<div className="h-screen w-screen overflow-y-auto bg-gray-50 flex flex-col">
 			<UserNav />
 
-			<div className="pt-20 px-4 sm:px-6 md:px-8 lg:px-12 py-10 flex-1">
+			<div className="pt-40 px-4 sm:px-6 md:px-8 lg:px-12 py-10 flex-1">
 				<div className="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-md">
 					<h1 className="text-2xl font-bold text-gray-800 mb-4">
-						Manage Subscription
+						Analyze Your Cryptos Now!!!
 					</h1>
 
 					{isSubscribed ? (
@@ -79,8 +79,7 @@ export default function Subscribe() {
 					) : (
 						<>
 							<p className="text-gray-600 mb-6">
-								Click below to activate or renew your one-month
-								subscription.
+								Click below to get a free one month trial.
 							</p>
 
 							{feedback && (
@@ -98,9 +97,7 @@ export default function Subscribe() {
 										: "bg-blue-600 hover:bg-blue-700"
 								}`}
 							>
-								{loading
-									? "Processing..."
-									: "Activate / Renew Subscription"}
+								{loading ? "Processing..." : "Activate "}
 							</button>
 						</>
 					)}
