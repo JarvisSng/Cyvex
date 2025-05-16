@@ -333,6 +333,7 @@ const borderColors = data?.orderPaymentType?.map((selling) => {
 				</div>
 			</div> */}
 			<div className="mb-2">
+				Chart
 				<div id="chartFive" ac-chart="'donut'" className="-ml-5">
 					<Chart
 						options={chartData?.options}
