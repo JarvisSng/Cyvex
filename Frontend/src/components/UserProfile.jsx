@@ -21,17 +21,15 @@ const Profile = () => {
 		getProfiles();
 	}, []);
 
-	console.log(profile.authData.email);
-
 	const handleResetPassword = async () => {
-		if (!profile.authData?.email) {
+		if (localStorage.getItem("email") === null) {
 			alert("Email address not available.");
 			return;
 		}
 
 		setMessage("Sending password reset email…");
 		const { success, error: resetError } = await AccountResetEmail(
-			profile.authData.email
+			localStorage.getItem("email")
 		);
 		if (resetError) {
 			setMessage(`Error: ${resetError}`);
