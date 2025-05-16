@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import {
+	AccountResetEmail,
 	getUserProfileNoAuth,
-	resetUserPassword,
 } from "../controller/userController";
 
 const Profile = () => {
 	const [profile, setProfile] = useState({});
 	const [error, setError] = useState(null);
+	const [message, setMessage] = useState("");
 
 	useEffect(() => {
 		const getProfiles = async () => {
@@ -15,8 +16,6 @@ const Profile = () => {
 			if (result.error) {
 				setError(result.error);
 			} else {
-				// Assuming the API returns { data: [ profile, ... ] }
-
 				setProfile(result.data[0]);
 			}
 		};
@@ -25,15 +24,21 @@ const Profile = () => {
 	}, []);
 
 	const handleResetPassword = async () => {
-		if (!profile.id) {
-			alert("Profile not loaded yet.");
+		if (!profile.authData?.email) {
+			alert("Email address not available.");
 			return;
 		}
-		const result = await resetUserPassword(profile.id);
-		if (result.error) {
-			alert("Error: " + result.error);
-		} else {
-			alert(result.message);
+
+		setMessage("Sending password reset email…");
+		const { success, error: resetError } = await AccountResetEmail(
+			profile.authData.email
+		);
+		if (resetError) {
+			setMessage(`Error: ${resetError}`);
+		} else if (success) {
+			setMessage(
+				"If that email is in our system, you’ll receive a password reset link shortly."
+			);
 		}
 	};
 
@@ -42,7 +47,7 @@ const Profile = () => {
 			<div className="p-4 text-center text-red-600">Error: {error}</div>
 		);
 	}
-	if (!profile || !profile.id) {
+	if (!profile?.id) {
 		return <div className="p-4 text-center">Loading...</div>;
 	}
 
@@ -82,7 +87,7 @@ const Profile = () => {
 							Email Address
 						</span>
 						<span className="text-lg text-gray-800 dark:text-gray-100">
-							{profile.authData && profile.authData.email}
+							{profile.authData?.email}
 						</span>
 					</div>
 				</div>
@@ -118,13 +123,18 @@ const Profile = () => {
 				</div>
 
 				{/* Reset Password Button */}
-				<div className="mt-8 flex justify-center">
+				<div className="mt-8 flex flex-col items-center">
 					<button
 						onClick={handleResetPassword}
-						className="px-6 py-3 !bg-blue-950 text-white rounded hover:bg-blue-700"
+						className="px-6 py-3 bg-blue-950 text-white rounded hover:bg-blue-700"
 					>
-						Reset Password
+						Send Reset Email
 					</button>
+					{message && (
+						<p className="mt-4 text-center text-gray-800 dark:text-gray-200">
+							{message}
+						</p>
+					)}
 				</div>
 			</div>
 		</div>
