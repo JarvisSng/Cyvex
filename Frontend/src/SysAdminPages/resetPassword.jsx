@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import supabase from "../config/supabaseClient"; // Your centralized Supabase client
 
@@ -11,23 +11,24 @@ const ResetPassword = () => {
 
 	// On mount, parse tokens or error info from the URL hash.
 	useEffect(() => {
-		// Remove the leading '#' from the hash string
-		const hash = window.location.hash.substring(1);
-		const params = new URLSearchParams(hash);
+		// window.location.hash === "#/reset-password#access_token=…&refresh_token=…&…"
+		const fullHash = window.location.hash;
+		// split on "#" → ["", "/reset-password", "access_token=…&refresh_token=…&…"]
+		const parts = fullHash.split("#");
 
-		// Check if there's an error parameter in the URL
+		// the actual query lives in parts[2]
+		const paramsString = parts[2] ?? "";
+
+		const params = new URLSearchParams(paramsString);
+
 		const error = params.get("error");
-		const errorCode = params.get("error_code");
-		const errorDescription = params.get("error_description");
-
 		if (error) {
 			setMessage(
-				`Error: ${error}. Code: ${errorCode}. ${errorDescription || ""}`
+				`Error: ${error}. ${params.get("error_description") || ""}`
 			);
 			return;
 		}
 
-		// Otherwise, try to extract tokens.
 		const access_token = params.get("access_token");
 		const refresh_token = params.get("refresh_token");
 
