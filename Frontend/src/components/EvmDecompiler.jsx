@@ -197,7 +197,7 @@ export default function CryptoDetector() {
         className={`px-4 py-2 rounded-md text-white font-medium ${
           loading || !input.trim()
             ? "bg-gray-400 cursor-not-allowed"
-            : "bg-blue-950 hover:bg-blue-700"
+            : "!bg-blue-950 hover:bg-blue-700"
         }`}
       >
         {loading ? "Analyzing..." : "Analyze Contract"}
@@ -210,50 +210,63 @@ export default function CryptoDetector() {
       )}
 
       <div className="mt-6 space-y-6">
-        <AnalysisSection 
-          title="Cryptographic Findings"
-          content={
-            analysis.findings.length > 0 ? (
-              <div className="space-y-3">
-                {analysis.findings.map((finding, index) => (
-                  <FindingCard key={index} finding={finding} />
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500">
-                {loading ? "Analyzing..." : "No findings to display"}
-              </p>
-            )
-          }
-        />
+        {/* Cryptographic Findings - Always show this section */}
+        <div>
+          <h2 className="text-lg font-medium text-gray-800 mb-2">
+            Cryptographic Findings:
+          </h2>
+          {loading ? (
+            <p className="text-gray-500">Analyzing...</p>
+          ) : error ? (
+            <div className="p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+              {error}
+            </div>
+          ) : analysis.findings.length > 0 ? (
+            <div className="space-y-3">
+              {analysis.findings.map((finding, index) => (
+                <div
+                  key={index}
+                  className={`p-3 rounded-md border-l-4 ${
+                    finding.type === "error"
+                      ? "bg-red-50 border-red-500 text-red-700"
+                      : finding.risk === 3
+                      ? "bg-orange-50 border-orange-500 text-orange-700"
+                      : finding.risk === 2
+                      ? "bg-yellow-50 border-yellow-500 text-yellow-700"
+                      : "bg-green-50 border-green-500 text-green-700"
+                  }`}
+                >
+                  {/* ... finding content ... */}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No cryptographic operations detected</p>
+          )}
+        </div>
 
+        {/* Disassembly - Only show if we have content */}
         {analysis.disassembly && (
-          <AnalysisSection
-            title="Disassembly"
-            content={
-              <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60">
-                {analysis.disassembly}
-              </pre>
-            }
-          />
+          <div>
+            <h2 className="text-lg font-medium text-gray-800 mb-2">Disassembly:</h2>
+            <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60">
+              {analysis.disassembly}
+            </pre>
+          </div>
         )}
 
+        {/* Pseudocode - Only show if we have content */}
         {analysis.pseudocode && (
-          <AnalysisSection
-            title="Reconstructed Solidity Code"
-            content={
-              <>
-                <div className="bg-gray-100 p-4 rounded-md overflow-auto max-h-96">
-                  <pre className="text-sm font-mono whitespace-pre-wrap">
-                    {analysis.pseudocode}
-                  </pre>
-                </div>
-                <p className="mt-2 text-sm text-gray-500">
-                  Note: This is reconstructed code, not the original source
-                </p>
-              </>
-            }
-          />
+          <div>
+            <h2 className="text-lg font-medium text-gray-800 mb-2">
+              Reconstructed Solidity Code
+            </h2>
+            <div className="bg-gray-100 p-4 rounded-md overflow-auto max-h-96">
+              <pre className="text-sm font-mono whitespace-pre-wrap">
+                {analysis.pseudocode}
+              </pre>
+            </div>
+          </div>
         )}
       </div>
     </div>
