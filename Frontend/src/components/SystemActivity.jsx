@@ -51,8 +51,14 @@ const SystemActivity = () => {
 					enabled: true
 				}
 			},
+			plotOptions:{
+				bar:{
+					distribute:true,
+					borderRadius:8
+				},
+			},
 			colors: ["#78f58d", "#041947"],
-			borderRadius:"10px",
+			borderRadius:8,
 			responsive: [{
 				breakpoint: 480,
 				options: {
@@ -94,6 +100,8 @@ const SystemActivity = () => {
 					{ name: "Activity", data: result.map(item => item["currently active"]).slice(result.length-limit, result.length) },
 					{ name: "In Active", data: result.map(item => item["currently inactive"]).slice(result.length-limit, result.length) }
 				];
+				activityCategory=["Actine", "In Active"];
+				activitynewData= [{ name: "System Activity", data: [result[result.length-limit]["currently active"] ,  result[result.length-limit]["currently inactive"]]}]
 			} else {
 				activitynewData = [{ name: "System Activity", data: result.map(item => item["logins"]).slice(result.length-limit, result.length) }];
 			}
@@ -277,15 +285,14 @@ const SystemActivity = () => {
 					System Activity
 				</h3>
 				<div className="relative p-6 z-20 bg-white dark:bg-form-input">
+					<span><b>Filter By</b></span>
 					<select
-					  style={{borderRadius:"20px"}}
-						className="relative z-20 w-half appearance-none rounded border border-stroke border-r-4  bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
+						className="system-active-select relative z-20 w-half appearance-none rounded border border-stroke rounded-md  bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
 						onChange={changeBarChart}
 					>
 						<option value="today">Today</option>
 						<option value="week">Last 7 Days</option>
 						<option value="month">Last 30 Days</option>
-						{/* <option value="3">This Year</option> */}
 					</select>
 				</div>
 			</div>
