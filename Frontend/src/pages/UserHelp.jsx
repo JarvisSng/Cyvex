@@ -56,7 +56,7 @@ const UserHelp = () => {
 		<div className="h-screen w-screen overflow-y-auto bg-gray-50 flex flex-col">
 			<UserNav />
 
-			<div className="px-4 sm:px-6 md:px-8 lg:px-12 py-6 flex-1">
+			<div className="px-4 sm:px-6 md:px-8 lg:px-12 py-6 flex-1 mt-20">
 				{/* Header */}
 				<div className="flex items-center mb-8">
 					<FiHelpCircle className="text-4xl text-blue-500 mr-4" />
@@ -199,7 +199,7 @@ const UserHelp = () => {
 											</label>
 											<input
 												type="email"
-												className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+												className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500"
 											/>
 										</div>
 										<div>
@@ -208,7 +208,7 @@ const UserHelp = () => {
 											</label>
 											<input
 												type="text"
-												className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+												className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500"
 											/>
 										</div>
 										<div>
@@ -217,12 +217,12 @@ const UserHelp = () => {
 											</label>
 											<textarea
 												rows="4"
-												className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+												className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500"
 											></textarea>
 										</div>
 										<button
 											type="submit"
-											className="w-full bg-blue-950 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
+											className="w-full !bg-blue-950 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
 										>
 											Send Message
 										</button>

@@ -39,7 +39,7 @@ const UserContacts = () => {
 		<div className="h-screen w-screen overflow-y-auto bg-gray-50">
 			<UserNav />
 
-			<div className="px-4 sm:px-6 md:px-8 lg:px-12 py-6">
+			<div className="px-4 sm:px-6 md:px-8 lg:px-12 py-6 mt-20">
 				{/* Header */}
 				<div className="text-center mb-8">
 					<h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
