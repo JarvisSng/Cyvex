@@ -24,6 +24,7 @@ const Profile = () => {
 	}, []);
 
 	const handleResetPassword = async () => {
+		console.log(profile.authData.email);
 		if (!profile.authData?.email) {
 			alert("Email address not available.");
 			return;
