@@ -2,25 +2,52 @@ const express = require('express');
 const { decompileAddress } = require('./decompile-esm.mjs');
 const router = express.Router();
 
-// Decompile to Solidity-style pseudocode from bytecode
-router.post('/code/bytecode', async (req, res) => {
-  const {bytecode} = req.body;
-  console.log('Received bytecode:', bytecode);
-
-  // Normalize and fix bytecode
-  let hex = bytecode.startsWith('0x') ? bytecode.slice(2) : bytecode;
-  console.log(hex);
-
+const normalizeBytecode = (bytecode) => {
+  if (!bytecode || typeof bytecode !== 'string') {
+    throw new Error('Bytecode must be a string');
+  }
+  
+  // Remove 0x prefix if present
+  const hex = bytecode.startsWith('0x') ? bytecode.slice(2) : bytecode;
+  
+  // Validate hex characters
+  if (!/^[0-9a-fA-F]*$/.test(hex)) {
+    throw new Error('Bytecode contains invalid hex characters');
+  }
+  
+  // Check for empty bytecode
+  if (hex.length === 0) {
+    throw new Error('Bytecode cannot be empty');
+  }
+  
+  // Ensure even length
   if (hex.length % 2 !== 0) {
-    return res.status(400).json({
-      success: false,
-      error: `Bytecode must have even length. Got ${hex.length} characters.`
-    });
-}
-  const cleanBytecode = '0x' + hex;
-  console.log(cleanBytecode);
+    throw new Error(`Bytecode must have even length (got ${hex.length} characters)`);
+  }
+  
+  return `0x${hex}`;
+};
 
+const normalizeAddress = (address) => {
+  if (!address || typeof address !== 'string') {
+    throw new Error('Address must be a string');
+  }
+  
+  const cleanAddress = address.startsWith('0x') ? address : `0x${address}`;
+  
+  if (!/^0x[a-fA-F0-9]{40}$/.test(cleanAddress)) {
+    throw new Error('Invalid Ethereum address format');
+  }
+  
+  return cleanAddress.toLowerCase(); // Normalize to lowercase
+};
+
+// Decompile from bytecode
+router.post('/code/bytecode', async (req, res) => {
   try {
+    const { bytecode } = req.body;
+    const cleanBytecode = normalizeBytecode(bytecode);
+    
     const { decompileByteCode } = await import('./decompile-esm.mjs');
     const { pseudocode, functions, events } = await decompileByteCode(cleanBytecode);
 
@@ -30,69 +57,68 @@ router.post('/code/bytecode', async (req, res) => {
         pseudocode,
         functions,
         events,
-        bytecodeSize: (cleanBytecode.length - 4),
+        bytecodeSize: (cleanBytecode.length - 2) / 2, // Correct byte size calculation
       }
     });
   } catch (error) {
+    console.error('Bytecode decompilation error:', error);
     
-    let fallback = '// Fallback pseudocode unavailable';
-    try {
-      fallback = generateFallbackOutput();
-    } catch (fallbackErr) {
-      console.error('Error generating fallback:', fallbackErr);
-    }
-
     if (!res.headersSent) {
-      res.status(500).json({
+      res.status(error.statusCode || 500).json({
         success: false,
-        error: error.message || 'Internal server error',
-        fallback
+        error: error.message,
+        details: {
+          inputType: 'bytecode',
+          validationFailed: error.message.includes('must') || 
+                          error.message.includes('invalid') ||
+                          error.message.includes('cannot')
+        }
       });
     }
   }
-
 });
 
-// Decompile to Solidity-style pseudocode from address
+// Decompile from address
 router.post('/code/address', async (req, res) => {
-  const { address } = req.body;
-
-  if (!address || typeof address !== 'string') {
-    return res.status(400).json({ success: false, error: 'Invalid address' });
-  }
-
-  // Normalize and fix bytecode
-  const cleanBytecode = address.startsWith('0x') ? address : `0x${address}`;
-  const evenBytecode = cleanBytecode.length % 2 === 0 ? cleanBytecode : cleanBytecode.slice(0, -1);
-
   try {
+    const { address } = req.body;
+    const cleanAddress = normalizeAddress(address);
+    
     const { decompileAddress } = await import('./decompile-esm.mjs');
-    const { pseudocode, functions, events } = await decompileAddress(evenBytecode);
+    const result = await decompileAddress(cleanAddress);
+
+    // Handle empty contract case
+    if (result.pseudocode.includes('No contract code')) {
+      return res.json({
+        success: true,
+        data: {
+          ...result,
+          isContract: false,
+          warnings: ['No bytecode found at this address']
+        }
+      });
+    }
 
     res.json({
       success: true,
       data: {
-        pseudocode,
-        functions,
-        events,
-        bytecodeSize: (evenBytecode.length - 4),
+        ...result,
+        isContract: true,
+        bytecodeSize: result.bytecodeSize || 0
       }
     });
   } catch (error) {
-    console.error(`Decompilation Error (${evenBytecode.slice(0, 20)}...):`, error);
-
-    let fallback = '// Fallback pseudocode unavailable';
-    try {
-      fallback = generateFallbackOutput();
-    } catch (fallbackErr) {
-      console.error('Error generating fallback:', fallbackErr);
-    }
-
+    console.error(`Address decompilation error (${req.body.address}):`, error);
+    
     if (!res.headersSent) {
-      res.status(500).json({
+      res.status(error.statusCode || 500).json({
         success: false,
-        error: error.message || 'Internal server error',
-        fallback
+        error: error.message,
+        details: {
+          inputType: 'address',
+          validationFailed: error.message.includes('Invalid') ||
+                          error.message.includes('must')
+        }
       });
     }
   }
