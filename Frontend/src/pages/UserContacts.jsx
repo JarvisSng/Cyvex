@@ -105,7 +105,7 @@ const UserContacts = () => {
 									<h3 className="text-2xl font-bold mb-2">
 										Thank You!
 									</h3>
-									<p className="text-gray-600 mb-6">
+									<p className="!bg-blue-950 text-gray-600 mb-6">
 										Your message has been sent.
 									</p>
 									<button
