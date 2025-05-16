@@ -77,25 +77,61 @@ const SystemActivity = () => {
 			}
 		}
 	}
-// const borderColors = data?.orderPaymentType?.map((selling) => {
-//       return selling._id === selectValue ? 'black' : 'white'; // Change border color for selected
-//     });
-//     const offsets = data?.orderPaymentType?.map((selling) => {
-//       return selling._id === selectValue ? 35 : 0; // Offset for selected slice
-//     });
+
+const pieData = [
+        {
+            "_id": "Cash",
+            "count": 56854.87
+        },
+        {
+            "_id": "PayNow",
+            "count": 13200.58
+        },
+        {
+            "_id": "Credit/Debit Card",
+            "count": 13188.38
+        },
+        {
+            "_id": "Enets",
+            "count": 1025.6
+        },
+        {
+            "_id": "Credit Card",
+            "count": 100
+        },
+        {
+            "_id": "Card",
+            "count": 39.24
+        },
+        {
+            "_id": "Pay Now",
+            "count": 3.3
+        },
+        {
+            "_id": null,
+            "count": 0
+        }
+    ];
+	const borderColors = pieData?.map((selling) => {
+      return 'black'  // Change border color for selected
+    });
+    const offsets = pieData?.map((selling) => {
+      return  0; // Offset for selected slice
+    });
+
 	const PieOption = {
       data: {
         datasets: [
           {
-            data: [2,3],
+            data: pieData.map((val) => val.count),
             backgroundColor: ["#10B981", "#3B82F6"],
             label: "Dataset 1",
-            borderColor: "black",
-            offset: 0,
+            borderColor: borderColors,
+            offset: offsets,
             borderWidth: 1, 
           },
         ],
-        labels: ["Active" , "In Active"],
+        labels: pieData.map((val) => val._id),
       },
       options: {
         responsive: true,
