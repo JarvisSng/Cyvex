@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
-import ReactApexChart from "react-apexcharts";
 import { fetchAdminProfiles } from "../controller/userController";
 import { getAllActivity } from "../controller/activityController";
 
@@ -21,17 +20,6 @@ const SystemActivity = () => {
 				setProfiles(result.data);
 				console.log(" profiles == " + profiles);
 			}
-			// setCategories([
-			// 	"16-03-2025",
-			// 	"17-03-2025",
-			// 	"18-03-2025",
-			// 	"19-03-2025",
-			// 	"20-03-2025",
-			// 	"21-03-2025",
-			// 	"22-03-2025",
-			// ]);
-
-			// setData([168, 385, 201, 298, 187, 195, 291]);
 		};
 		getProfiles();
 	}, []);
@@ -50,15 +38,15 @@ const SystemActivity = () => {
 					enabled: true
 				}
 			},
-			plotOptions:{
-				bar:{
-					distribute:true,
-					borderRadius:8
+			plotOptions: {
+				bar: {
+					distribute: true,
+					borderRadius: 8
 				},
 			},
 			colors: ["#78f58d", "#041947"],
-			backgroundColor: categories.length === 2 ? ["#78f58d", "#041947"] : ["#78f58d"] ,
-			borderRadius:8,
+			backgroundColor: categories.length === 2 ? ["#78f58d", "#041947"] : ["#78f58d"],
+			borderRadius: 8,
 			responsive: [{
 				breakpoint: 480,
 				options: {
@@ -86,32 +74,23 @@ const SystemActivity = () => {
 	}
 
 	const getAllActivitys = async (val) => {
-
 		try {
 			const result = await getAllActivity({});
-			console.log("datass", result);
 			let activityData = result.map(item => item.logins);
 			let activityCategory = result.map(item => item.date);
 			let activitynewData = [];
 			const limit = val === "today" ? 1 : val === "week" ? 7 : val === "month" ? 30 : result.length;
 
 			if (val === "today") {
-				// activitynewData = [
-				// 	{ name: "Activity", data: result.map(item => item["currently active"]).slice(result.length-limit, result.length) },
-				// 	{ name: "In Active", data: result.map(item => item["currently inactive"]).slice(result.length-limit, result.length) }
-				// ];
-				activityCategory=["Currently Active", "Inactive"];
-				activitynewData= [{ name: "System Activity", data: [result[result.length-limit]["currently active"] ,  result[result.length-limit]["currently inactive"]]}];
+				activityCategory = ["Currently Active", "Inactive"];
+				activitynewData = [{ name: "System Activity", data: [result[result.length - limit]["currently active"], result[result.length - limit]["currently inactive"]] }];
 				setCategories(activityCategory);
 			} else {
-				activitynewData = [{ name: "System Activity", data: result.map(item => item["logins"]).slice(result.length-limit, result.length) }];
-				setCategories(activityCategory.slice(result.length-limit, result.length));
+				activitynewData = [{ name: "System Activity", data: result.map(item => item["logins"]).slice(result.length - limit, result.length) }];
+				setCategories(activityCategory.slice(result.length - limit, result.length));
 			}
-			console.log("activitynewData", activitynewData);
-			// setCategories(activityCategory.slice(result.length-limit, result.length));
-			setData(activityData.slice(result.length-limit, result.length));
+			setData(activityData.slice(result.length - limit, result.length));
 			setNewData(activitynewData);
-
 
 		} catch (error) {
 			console.error("error", error);
@@ -124,75 +103,6 @@ const SystemActivity = () => {
 	const changeBarChart = (e) => {
 		var datevalue = e.target.value;
 		getAllActivitys(datevalue);
-		// if (datevalue == 1) {
-		// 	setCategories([
-		// 		"16-03-2025",
-		// 		"17-03-2025",
-		// 		"18-03-2025",
-		// 		"19-03-2025",
-		// 		"20-03-2025",
-		// 		"21-03-2025",
-		// 		"22-03-2025",
-		// 	]);
-
-		// 	setData([4, 385, 201, 6, 187, 195, 291]);
-		// } else if (datevalue == 2) {
-		// 	setCategories([
-		// 		"01-03-2025",
-		// 		"02-03-2025",
-		// 		"03-03-2025",
-		// 		"04-03-2025",
-		// 		"05-03-2025",
-		// 		"06-03-2025",
-		// 		"07-03-2025",
-		// 		"08-03-2025",
-		// 		"09-03-2025",
-		// 		"10-03-2025",
-		// 		"11-03-2025",
-		// 		"12-03-2025",
-		// 		"13-03-2025",
-		// 		"14-03-2025",
-		// 		"15-03-2025",
-		// 		"16-03-2025",
-		// 		"17-03-2025",
-		// 		"18-03-2025",
-		// 		"19-03-2025",
-		// 		"20-03-2025",
-		// 		"21-03-2025",
-		// 		"22-03-2025",
-		// 		// "23-03-2025",
-		// 		// "24-03-2025",
-		// 		// "25-03-2025",
-		// 		// "26-03-2025",
-		// 		// "27-03-2025",
-		// 		// "28-03-2025",
-		// 		// "29-03-2025",
-		// 		// "30-03-2025",
-		// 		// "31-03-2025",
-		// 	]);
-
-		// 	setData([
-		// 		168, 385, 201, 298, 7, 195, 9, 168, 385, 201, 298, 7, 195, 9,
-		// 		168, 385, 201, 298, 7, 195, 9, 168,
-		// 	]);
-		// } else if (datevalue == 3) {
-		// 	setCategories([
-		// 		"January",
-		// 		"February",
-		// 		"March",
-		// 		"April",
-		// 		"May",
-		// 		"June",
-		// 		"July",
-		// 		"August",
-		// 		"September",
-		// 		"October",
-		// 		"November",
-		// 		"December",
-		// 	]);
-
-		// 	setData([168, 2, 201, 5, 187, 195, 291, 168, 2, 201, 5, 187]);
-		// }
 	};
 
 	const [state, setState] = useState({
@@ -304,13 +214,13 @@ const SystemActivity = () => {
 						options={chartData?.options}
 						series={chartData?.options?.series}
 						type="bar"
-						height={350}					
+						height={350}
 					/>
 				</div>
 			</div>
 			<div>
 			</div>
-			
+
 		</div>
 	);
 };
