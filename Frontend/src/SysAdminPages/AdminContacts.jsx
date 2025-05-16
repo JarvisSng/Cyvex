@@ -41,19 +41,6 @@ const AdminContacts = () => {
       action: () => window.location.href = "mailto:cyvexsupport@gmail.com"
     },
     {
-      icon: <FiPhone className="text-blue-500 text-2xl" />,
-      title: "Phone",
-      value: "+65 6248 9747",
-      description: "Mon-Fri, 9am-5pm",
-      action: () => window.location.href = "tel:+6562489747"
-    },
-    {
-      icon: <FiMapPin className="text-blue-500 text-2xl" />,
-      title: "Location",
-      description: "461 Clementi Road, Singapore 599491",
-      action: scrollToMap
-    },
-    {
       icon: <FiClock className="text-blue-500 text-2xl" />,
       title: "Support Hours",
       value: "24/7 Emergency",
