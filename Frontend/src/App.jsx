@@ -65,6 +65,7 @@ function App() {
 					<Route path="/detector" element={<Detector />} />
 					<Route path="/admin-login" element={<AdminLogin />} />
 					<Route path="/user-dashboard" element={<UserDashboard />} />
+					<Route path="/user/contacts" element={<AdminContacts />} />
 					<Route path="/repo-pull" element={<RepoPull />} />
 					{/* Routes for SysAdmin pages */}
 					<Route
