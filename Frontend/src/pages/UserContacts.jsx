@@ -8,11 +8,10 @@ const UserContacts = () => {
 	const [formSubmitted, setFormSubmitted] = useState(false);
 	const [showScrollButton, setShowScrollButton] = useState(false);
 
-	// show “back to top” once scrolled down
+	// Show “back to top” once scrolled down
 	useEffect(() => {
-		const handleScroll = () => {
+		const handleScroll = () =>
 			setShowScrollButton(window.pageYOffset > 300);
-		};
 		window.addEventListener("scroll", handleScroll);
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, []);
@@ -35,19 +34,19 @@ const UserContacts = () => {
 	];
 
 	return (
-		<div className="flex flex-col min-h-screen w-screen bg-gray-50">
+		// 1) Make this wrapper exactly viewport height...
+		// 2) ...and scrollable whenever its content is taller.
+		<div className="h-screen w-screen overflow-y-auto bg-gray-50">
 			<UserNav />
 
-			{/* Content wrapper: scrollable and full-width */}
-			<div className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 lg:px-12 py-6">
+			<div className="px-4 sm:px-6 md:px-8 lg:px-12 py-6">
 				{/* Header */}
 				<div className="text-center mb-8">
 					<h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
 						Contact Us
 					</h1>
 					<p className="text-lg text-gray-600">
-						We're here to help and answer any questions you might
-						have.
+						We're here to help—reach out however you like.
 					</p>
 				</div>
 
@@ -82,8 +81,8 @@ const UserContacts = () => {
 								Get in Touch
 							</h2>
 							<p className="mb-6">
-								Have questions about our services? Fill out the
-								form below.
+								Have questions? Fill out the form and we’ll be
+								in touch.
 							</p>
 							<div className="flex items-start space-x-3">
 								<FiSend className="text-blue-500 mt-1" />
@@ -92,7 +91,7 @@ const UserContacts = () => {
 										Response Time
 									</h4>
 									<p className="text-sm text-gray-600">
-										Typically within 24 hours
+										Within 24 hours
 									</p>
 								</div>
 							</div>
@@ -107,8 +106,7 @@ const UserContacts = () => {
 										Thank You!
 									</h3>
 									<p className="text-gray-600 mb-6">
-										Your message has been sent. We'll get
-										back to you soon.
+										Your message has been sent.
 									</p>
 									<button
 										onClick={() => setFormSubmitted(false)}
@@ -127,13 +125,12 @@ const UserContacts = () => {
 				</div>
 
 				{/* Map */}
-				<div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+				<div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-12">
 					<iframe
 						title="SIM Headquarters"
 						src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.747704172798!2d103.76789031533184!3d1.329753999036913!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da1a4f3d3a4b3d%3A0x3a6b3e3b3a3a3a3a!2sSingapore%20Institute%20of%20Management!5e0!3m2!1sen!2ssg!4v1620000000000!5m2!1sen!2ssg"
 						className="w-full h-64 md:h-80 lg:h-96 rounded-b-xl"
-						style={{ border: 0 }}
-						allowFullScreen=""
+						allowFullScreen
 						loading="lazy"
 					/>
 				</div>
@@ -143,7 +140,7 @@ const UserContacts = () => {
 			{showScrollButton && (
 				<button
 					onClick={scrollToTop}
-					className="fixed bottom-6 right-6 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition"
+					className="fixed bottom-6 right-6 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
 					aria-label="Back to top"
 				>
 					<FiChevronUp className="text-xl" />
