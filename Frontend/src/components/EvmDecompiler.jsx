@@ -238,32 +238,32 @@ export default function CryptoDetector() {
 			</h2>
 			{cryptoFindings.length > 0 ? (
 				<div className="space-y-3">
-				{cryptoFindings.map((finding, index) => (
-					<div
-					key={index}
-					className={`p-3 rounded-md border-l-4 ${
-						finding.type === "error"
-						? "bg-red-50 border-red-500 text-red-700"
-						: finding.risk === 3
-						? "bg-orange-50 border-orange-500 text-orange-700"
-						: finding.risk === 2
-						? "bg-yellow-50 border-yellow-500 text-yellow-700"
-						: "bg-green-50 border-green-500 text-green-700"
-					}`}
-					>
-					{finding.type === "error" ? (
-						<p>{finding.message}</p>
-					) : (
-						<>
-						<p className="font-bold">{finding.name}</p>
-						<p>Type: {finding.type.replace("_", " ")}</p>
-						{finding.pattern && <p>Pattern: {finding.pattern}</p>}
-						<p>Location: {finding.location}</p>
-						<p>Risk: {"❗".repeat(finding.risk)}</p>
-						</>
-					)}
-					</div>
-				))}
+					{Object.entries(
+					cryptoFindings.reduce((acc, finding) => {
+						if (!acc[finding.name]) acc[finding.name] = [];
+						acc[finding.name].push(finding);
+						return acc;
+					}, {})
+					).map(([name, findings], index) => {
+					const first = findings[0];
+					return (
+						<div
+						key={index}
+						className={`p-3 rounded-md border-l-4 ${
+							first.risk === 3
+							? "bg-orange-50 border-orange-500 text-orange-700"
+							: first.risk === 2
+							? "bg-yellow-50 border-yellow-500 text-yellow-700"
+							: "bg-green-50 border-green-500 text-green-700"
+						}`}
+						>
+						<p className="font-bold">{name}</p>
+						<p>Type: {first.type.replace("_", " ")}</p>
+						<p>Locations: {findings.map(f => f.location).join(", ")}</p>
+						<p>Risk: {"❗".repeat(first.risk)}</p>
+						</div>
+					);
+					})}
 				</div>
 			) : (
 				<p className="text-gray-500">
