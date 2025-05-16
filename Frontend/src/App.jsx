@@ -10,6 +10,7 @@ import LandingPage from "./pages/landingPage.jsx";
 import ReportPage from "./pages/ReportPage.jsx"; // Importing Report Page
 import UserContacts from "./pages/UserContacts.jsx";
 import UserDashboard from "./pages/userDashboard.jsx";
+import UserHelp from "./pages/UserHelp.jsx";
 import ResendEmail from "./ResetEmailPages/resendEmail.jsx";
 import ResetEmail from "./ResetEmailPages/resetAccount.jsx";
 import ResetUserPassword from "./ResetEmailPages/resetUserPassword.jsx";
@@ -67,6 +68,7 @@ function App() {
 					<Route path="/admin-login" element={<AdminLogin />} />
 					<Route path="/user-dashboard" element={<UserDashboard />} />
 					<Route path="/user/contacts" element={<UserContacts />} />
+					<Route path="/user/help" element={<UserHelp />} />
 					<Route path="/repo-pull" element={<RepoPull />} />
 					{/* Routes for SysAdmin pages */}
 					<Route
