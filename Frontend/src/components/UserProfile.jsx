@@ -124,7 +124,7 @@ const Profile = () => {
 				<div className="mt-8 flex flex-col items-center">
 					<button
 						onClick={handleResetPassword}
-						className="px-6 py-3 bg-blue-950 text-white rounded hover:bg-blue-700"
+						className="px-6 py-3 !bg-blue-950 text-white rounded hover:bg-blue-700"
 					>
 						Send Reset Email
 					</button>

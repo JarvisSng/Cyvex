@@ -608,7 +608,7 @@ const LandingPage = () => {
               </ul>
               
               <button 
-                onClick={() => navigate("/contact")}
+                onClick={() => setShowContactForm(true)}
                 className="w-full !bg-blue-950 text-white hover:bg-gray-200 py-2.5 rounded text-sm font-medium transition-colors mt-auto"
               >
                 Contact Sales
