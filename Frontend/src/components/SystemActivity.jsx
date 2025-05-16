@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import ReactApexChart from "react-apexcharts";
-import {Doughnut} from "react-chartjs-2";
 import { fetchAdminProfiles } from "../controller/userController";
 import { getAllActivity } from "../controller/activityController";
 
@@ -58,6 +57,7 @@ const SystemActivity = () => {
 				},
 			},
 			colors: ["#78f58d", "#041947"],
+			backgroundColor: categories.length === 2 ? ["#78f58d", "#041947"] : ["#78f58d"] ,
 			borderRadius:8,
 			responsive: [{
 				breakpoint: 480,
@@ -100,7 +100,7 @@ const SystemActivity = () => {
 				// 	{ name: "Activity", data: result.map(item => item["currently active"]).slice(result.length-limit, result.length) },
 				// 	{ name: "In Active", data: result.map(item => item["currently inactive"]).slice(result.length-limit, result.length) }
 				// ];
-				activityCategory=["Actine", "In Active"];
+				activityCategory=["Currently Active", "Inactive"];
 				activitynewData= [{ name: "System Activity", data: [result[result.length-limit]["currently active"] ,  result[result.length-limit]["currently inactive"]]}];
 				setCategories(activityCategory);
 			} else {
@@ -281,13 +281,13 @@ const SystemActivity = () => {
 	};
 
 	return (
-		<div className="overflow-hidden rounded-sm border-stroke bg-gray-2 shadow-default dark:border-strokedark dark:bg-boxdark">
+		<div className="overflow-hidden p-3 rounded-sm border-stroke bg-gray-2 shadow-default dark:border-strokedark dark:bg-boxdark">
 			<div>
 				<h3 className="text-xl font-semibold text-black dark:text-white">
 					System Activity
 				</h3>
 				<div className="relative p-6 z-20 bg-white dark:bg-form-input">
-					<span className="me32"><b>Filter By</b></span>
+					<span className="system-active-filter"><b>Filter By</b></span>
 					<select
 						className="system-active-select relative z-20 w-half appearance-none rounded border border-stroke rounded-md  bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
 						onChange={changeBarChart}
@@ -298,35 +298,17 @@ const SystemActivity = () => {
 					</select>
 				</div>
 			</div>
-
-			{/* <div className="mb-2">
-				<div id="chartFour" className="-ml-5">
-					<ReactApexChart
-						options={options}
-						series={[
-							{
-								name: "System Activity",
-								data: data,
-							},
-						]}
-						type="bar"
-						height={350}
-					/>
-				</div>
-			</div> */}
 			<div className="mb-2">
-				Chart
-				<div id="chartFive" ac-chart="'donut'" className="-ml-5">
+				<div id="chartFive" ac-chart="'donut'" className="ml-1">
 					<Chart
 						options={chartData?.options}
 						series={chartData?.options?.series}
 						type="bar"
-						height={350}
+						height={350}					
 					/>
 				</div>
 			</div>
 			<div>
-				{/* <Doughnut {...PieOption} className="chart" /> */}
 			</div>
 			
 		</div>
