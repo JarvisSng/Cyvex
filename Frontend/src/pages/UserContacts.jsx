@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { FiClock, FiMail, FiSend } from "react-icons/fi";
 import ContactForm from "../components/ContactForm";
-import AdminNav from "./AdminNav";
+import UserNav from "./UserNav";
 
 const UserContacts = () => {
 	const [formSubmitted, setFormSubmitted] = useState(false);
@@ -24,7 +24,7 @@ const UserContacts = () => {
 
 	return (
 		<div className="min-h-screen flex flex-col bg-gray-50">
-			<AdminNav />
+			<UserNav />
 
 			<div className="flex-1 p-6 md:p-8 lg:p-12">
 				<div className="max-w-6xl mx-auto">
