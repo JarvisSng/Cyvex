@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import ReactApexChart from "react-apexcharts";
-import {Doughnut} from "react-chartjs-2";
 import { fetchAdminProfiles } from "../controller/userController";
 import { getAllActivity } from "../controller/activityController";
 
