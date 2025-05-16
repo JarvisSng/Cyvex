@@ -53,8 +53,11 @@ export default function Subscribe() {
 	// While we haven’t yet determined subscription status
 	if (isSubscribed === null) {
 		return (
-			<div className="h-screen w-screen flex items-center justify-center">
-				<p>Loading…</p>
+			<div className="h-screen w-screen overflow-y-auto bg-gray-50 flex flex-col">
+				<UserNav />
+				<div className="h-screen w-screen flex items-center justify-center">
+					<p>Loading…</p>
+				</div>
 			</div>
 		);
 	}
