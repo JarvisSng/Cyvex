@@ -188,46 +188,6 @@ const UserHelp = () => {
 										</div>
 									</div>
 								</div>
-								<div>
-									<h3 className="text-xl font-semibold text-gray-800 mb-4">
-										Send Us a Message
-									</h3>
-									<form className="space-y-6">
-										<div>
-											<label className="block text-base font-medium text-gray-700 mb-2">
-												Your Email
-											</label>
-											<input
-												type="email"
-												className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500 p-3 h-12"
-											/>
-										</div>
-										<div>
-											<label className="block text-base font-medium text-gray-700 mb-2">
-												Subject
-											</label>
-											<input
-												type="text"
-												className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500 p-3 h-12"
-											/>
-										</div>
-										<div>
-											<label className="block text-base font-medium text-gray-700 mb-2">
-												Message
-											</label>
-											<textarea
-												rows="4"
-												className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500 p-3 min-h-[150px]"
-											></textarea>
-										</div>
-										<button
-											type="submit"
-											className="w-full !bg-blue-950 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
-										>
-											Send Message
-										</button>
-									</form>
-								</div>
 							</div>
 						</div>
 					</div>
