@@ -8,6 +8,7 @@ import AdminLogin from "./pages/adminLogin.jsx";
 import Detector from "./pages/Detector.jsx";
 import LandingPage from "./pages/landingPage.jsx";
 import ReportPage from "./pages/ReportPage.jsx"; // Importing Report Page
+import UserContacts from "./pages/UserContacts.jsx";
 import UserDashboard from "./pages/userDashboard.jsx";
 import ResendEmail from "./ResetEmailPages/resendEmail.jsx";
 import ResetEmail from "./ResetEmailPages/resetAccount.jsx";
@@ -65,6 +66,7 @@ function App() {
 					<Route path="/detector" element={<Detector />} />
 					<Route path="/admin-login" element={<AdminLogin />} />
 					<Route path="/user-dashboard" element={<UserDashboard />} />
+					<Route path="/user/contacts" element={<UserContacts />} />
 					<Route path="/repo-pull" element={<RepoPull />} />
 					{/* Routes for SysAdmin pages */}
 					<Route

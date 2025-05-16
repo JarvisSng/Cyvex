@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import logoImage from "../assets/cyvex-logo.png";
 import { logoutUserAll } from "../controller/authController";
-import logoImage from '../assets/cyvex-logo.png';
 
 function UserNav({ setActiveSection }) {
 	const navigate = useNavigate();
@@ -55,13 +55,13 @@ function UserNav({ setActiveSection }) {
 			{/* Top Navbar */}
 			<nav className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md text-white flex justify-between items-center">
 				<div className="flex items-center space-x-12 hori-nav">
-					<img 
-						src={logoImage} 
-						alt="Cyvex Logo" 
+					<img
+						src={logoImage}
+						alt="Cyvex Logo"
 						className="h-10 w-auto" // adjust height/width to fit your design
 					/>
 					<a
-						href="#contacts"
+						onClick={() => navigate("/user/contacts")}
 						className="hover:bg-blue-700 px-3 py-2 rounded"
 					>
 						Contacts
