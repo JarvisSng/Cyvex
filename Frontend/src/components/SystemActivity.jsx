@@ -93,7 +93,7 @@ const SystemActivity = () => {
 					{ name: "In Active", data: result.map(item => item["currently inactive"]).slice(result.length-limit, result.length) }
 				];
 			} else {
-				activitynewData = [{ name: "System Activity", data: activityData }];
+				activitynewData = [{ name: "System Activity", data: result.map(item => item["logins"]).slice(result.length-limit, result.length) }];
 			}
 			console.log("activitynewData", activitynewData);
 			setCategories(activityCategory.slice(result.length-limit, result.length));
