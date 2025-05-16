@@ -28,7 +28,7 @@ export default function Subscribe() {
 	useEffect(() => {
 		if (!userId) return;
 		checkCurrentUserSubscription()
-			.then((sub) => setIsSubscribed(sub))
+			.then((sub) => setIsSubscribed(true))
 			.catch((err) => {
 				console.error("Subscription check failed:", err);
 				setIsSubscribed(false);
