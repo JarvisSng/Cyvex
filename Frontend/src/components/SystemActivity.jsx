@@ -51,7 +51,7 @@ const SystemActivity = () => {
 					enabled: true
 				}
 			},
-			colors: ["#78f58d", "#0f172a"],
+			colors: ["#78f58d", "#041947"],
 			responsive: [{
 				breakpoint: 480,
 				options: {
