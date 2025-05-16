@@ -8,7 +8,7 @@ import {
 	FiMail,
 	FiVideo,
 } from "react-icons/fi";
-import AdminNav from "./AdminNav";
+import UserNav from "./UserNav";
 
 const UserHelp = () => {
 	const [activeTab, setActiveTab] = useState("faq");
@@ -54,7 +54,7 @@ const UserHelp = () => {
 
 	return (
 		<div className="h-screen w-screen overflow-y-auto bg-gray-50 flex flex-col">
-			<AdminNav />
+			<UserNav />
 
 			<div className="px-4 sm:px-6 md:px-8 lg:px-12 py-6 flex-1">
 				{/* Header */}
