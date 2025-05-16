@@ -66,11 +66,11 @@ const AdminContacts = () => {
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Fixed Navbar */}
       <AdminNav />
-      
+
       {/* Scrollable Content Area */}
-      <div 
+      <div
         ref={contentRef}
-        className="flex-1 overflow-y-auto pt-16 z-10" // pt-16 accounts for navbar height
+        className="w-screen flex-1 overflow-y-auto pt-16 z-10" // pt-16 accounts for navbar height
       >
         <div className="p-6 md:p-8 lg:p-12  mx-auto">
           {/* Header Section */}
@@ -83,7 +83,7 @@ const AdminContacts = () => {
           {/* Contact Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {contactMethods.map((method, index) => (
-              <div 
+              <div
                 key={index}
                 className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-200 border border-gray-100 cursor-pointer"
                 onClick={method.action || undefined}
@@ -120,10 +120,10 @@ const AdminContacts = () => {
                   Get in Touch
                 </h2>
                 <p className="mb-6">
-                  Have questions? Fill out the form and 
+                  Have questions? Fill out the form and
                   our support team will get back to you promptly.
                 </p>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-start">
                     <FiSend className="text-blue-500 mt-1 mr-3 flex-shrink-0" />
@@ -163,7 +163,7 @@ const AdminContacts = () => {
           </div>
 
           {/* Map Section */}
-          <div 
+          <div
             ref={mapRef}
             className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100"
           >

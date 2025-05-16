@@ -49,7 +49,7 @@ const AdminHelp = () => {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <AdminNav />
       
-      <div className="flex-1 p-6 md:p-8 lg:p-12">
+      <div className="w-screen flex-1 p-6 md:p-8 lg:p-12">
         <div className=" mx-auto">
           {/* Header Section */}
           <div className="flex items-center mb-8 mt-16">
