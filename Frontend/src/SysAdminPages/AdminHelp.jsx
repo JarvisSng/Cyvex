@@ -1,5 +1,4 @@
 // src/pages/Help.jsx
-// src/pages/Help.jsx
 import React, { useState } from "react";
 import AdminNav from "./AdminNav";
 import { FiHelpCircle, FiMail, FiLock, FiDownload, FiVideo, FiBookOpen } from "react-icons/fi";
@@ -153,26 +152,6 @@ const AdminHelp = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Send Us a Message</h3>
-                    <form className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Your Email</label>
-                        <input type="email" className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                        <input type="text" className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                        <textarea rows="4" className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500"></textarea>
-                      </div>
-                      <button type="submit" className="!bg-blue-950 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium">
-                        Send Message
-                      </button>
-                    </form>
                   </div>
                 </div>
               </div>
