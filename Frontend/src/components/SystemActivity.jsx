@@ -51,7 +51,7 @@ const SystemActivity = () => {
 					enabled: true
 				}
 			},
-			colors: ["#10B981", "#3B82F6"],
+			colors: ["#0f172a", "#3B82F6"],
 			responsive: [{
 				breakpoint: 480,
 				options: {
@@ -112,36 +112,61 @@ const pieData = [
             "count": 0
         }
     ];
-	const borderColors = pieData?.map((selling) => {
-      return 'black'  // Change border color for selected
-    });
-    const offsets = pieData?.map((selling) => {
-      return  0; // Offset for selected slice
-    });
+	// const borderColors = pieData?.map((selling) => {
+    //   return 'black'  // Change border color for selected
+    // });
+    // const offsets = pieData?.map((selling) => {
+    //   return  0; // Offset for selected slice
+    // });
 
-	const PieOption = {
-      data: {
-        datasets: [
-          {
-            data: pieData.map((val) => val.count),
-            backgroundColor: ["#10B981", "#3B82F6"],
-            label: "Dataset 1",
-            borderColor: borderColors,
-            offset: offsets,
-            borderWidth: 1, 
-          },
-        ],
-        labels: pieData.map((val) => val._id),
+const PieOption = {
+  data: {
+    datasets: [
+      {
+        data: [35, 25, 20, 20], // static values
+        backgroundColor: ["#10B981", "#3B82F6", "#F97316", "#0EA5E9"],
+        borderColor: ["#ffffff", "#ffffff", "#ffffff", "#ffffff"], // optional border colors
+        offset: [0, 0, 0, 0], // optional offsets
+        borderWidth: 1,
       },
-      options: {
-        responsive: true,
-        cutoutPercentage: 80,
-        // onClick: (event, elements) => handleClick(event, elements),
-      },
+    ],
+    labels: ["Cash", "Card", "UPI", "Wallet"], // static labels
+  },
+  options: {
+    responsive: true,
+    cutout: '80%', // cutoutPercentage is deprecated, use cutout instead
+    plugins: {
       legend: {
         display: false,
       },
-    };
+    },
+    // Removed onClick
+  },
+};
+
+	// const PieOption = {
+    //   data: {
+    //     datasets: [
+    //       {
+    //         data: pieData.map((val) => val.count),
+    //         backgroundColor: ["#10B981", "#3B82F6"],
+    //         label: "Dataset 1",
+    //         borderColor: borderColors,
+    //         offset: offsets,
+    //         borderWidth: 1, 
+    //       },
+    //     ],
+    //     labels: pieData.map((val) => val._id),
+    //   },
+    //   options: {
+    //     responsive: true,
+    //     cutoutPercentage: 80,
+    //     // onClick: (event, elements) => handleClick(event, elements),
+    //   },
+    //   legend: {
+    //     display: false,
+    //   },
+    // };
 
 	const getAllActivitys = async (val) => {
 
@@ -379,9 +404,9 @@ const pieData = [
 					/>
 				</div>
 			</div>
-			{/* <div>
+			<div>
 				<Doughnut {...PieOption} className="chart" />
-			</div> */}
+			</div>
 			
 		</div>
 	);
