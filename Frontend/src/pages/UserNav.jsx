@@ -9,7 +9,6 @@ function UserNav({ setActiveSection }) {
 	const trigger = useRef(null);
 	const dropdown = useRef(null);
 	const [NotificationOpen, setNotificationOpen] = useState(false);
-	const [isSubscribed, setIsSubscribed] = useState(false);
 
 	const Notification = useRef(null);
 
@@ -79,7 +78,7 @@ function UserNav({ setActiveSection }) {
 						onClick={() => navigate("/user/subscribe")}
 						className="hover:bg-blue-700 px-3 py-2 rounded"
 					>
-						Subscribe
+						Subscribe Now!
 					</a>
 				</div>
 				<div className="flex items-center space-x-2">
