@@ -1,5 +1,5 @@
 // src/pages/Contacts.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import AdminNav from "./AdminNav";
 import { FiMail, FiPhone, FiMapPin, FiClock, FiSend, FiChevronUp } from "react-icons/fi";
 import ContactForm from "../components/ContactForm";
@@ -7,15 +7,12 @@ import ContactForm from "../components/ContactForm";
 const AdminContacts = () => {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const mapRef = useRef(null);
 
   // Check scroll position for back-to-top button
   useEffect(() => {
     const handleScroll = () => {
-      if (window.pageYOffset > 300) {
-        setShowScrollButton(true);
-      } else {
-        setShowScrollButton(false);
-      }
+      setShowScrollButton(window.pageYOffset > 300);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -29,18 +26,38 @@ const AdminContacts = () => {
     });
   };
 
+  // Scroll to map function
+  const scrollToMap = () => {
+    mapRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const contactMethods = [
     {
       icon: <FiMail className="text-blue-500 text-2xl" />,
       title: "Email",
       value: "cyvexsupport@gmail.com",
-      description: "We'll respond within 24 hours"
+      description: "We'll respond within 24 hours",
+      action: () => window.location.href = "mailto:cyvexsupport@gmail.com"
+    },
+    {
+      icon: <FiPhone className="text-blue-500 text-2xl" />,
+      title: "Phone",
+      value: "+65 6248 9747",
+      description: "Mon-Fri, 9am-5pm",
+      action: () => window.location.href = "tel:+6562489747"
+    },
+    {
+      icon: <FiMapPin className="text-blue-500 text-2xl" />,
+      title: "Location",
+      description: "461 Clementi Road, Singapore 599491",
+      action: scrollToMap
     },
     {
       icon: <FiClock className="text-blue-500 text-2xl" />,
       title: "Support Hours",
       value: "24/7 Emergency",
-      description: "Critical issues only"
+      description: "Critical issues only",
+      action: null
     }
   ];
 
@@ -48,25 +65,26 @@ const AdminContacts = () => {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <AdminNav />
       
-      <div className="flex-1 p-6 md:p-8 lg:p-12">
+      <div className="flex-1 p-6 md:p-8 lg:p-12 mt-16"> {/* Added mt-16 to account for fixed nav */}
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-8 md:mb-12">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
-              Contact Us
+              Contact Support
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We're here to help and answer any questions you might have. 
+              We're here to help students, staff, and faculty with any questions.
               Reach out to us through any of these channels.
             </p>
           </div>
 
-          {/* Contact Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-12">
+          {/* Contact Cards Grid - Now 4 columns */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {contactMethods.map((method, index) => (
               <div 
                 key={index}
-                className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-200 border border-gray-100"
+                className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-200 border border-gray-100 cursor-pointer"
+                onClick={method.action || undefined}
               >
                 <div className="flex items-center mb-4">
                   <div className="mr-4">
@@ -82,12 +100,17 @@ const AdminContacts = () => {
                 <p className="text-gray-500 text-sm">
                   {method.description}
                 </p>
+                {method.action && (
+                  <p className="text-blue-600 text-sm mt-2 font-medium">
+                    Click to {method.title === "Location" ? "view map" : "contact"}
+                  </p>
+                )}
               </div>
             ))}
           </div>
 
           {/* Contact Form Section */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 mb-12">
             <div className="md:flex">
               {/* Left Side - Information */}
               <div className="md:w-1/3 bg-blue-50 p-8 text-gray-700">
@@ -95,8 +118,8 @@ const AdminContacts = () => {
                   Get in Touch
                 </h2>
                 <p className="mb-6">
-                  Have questions about our services? Fill out the form and 
-                  our team will get back to you as soon as possible.
+                  Have questions? Fill out the form and 
+                  our support team will get back to you promptly.
                 </p>
                 
                 <div className="space-y-4">
@@ -105,7 +128,7 @@ const AdminContacts = () => {
                     <div>
                       <h4 className="font-semibold">Response Time</h4>
                       <p className="text-sm text-gray-600">
-                        Typically within 24 hours
+                        Typically within 24 hours (48 hours on weekends)
                       </p>
                     </div>
                   </div>
@@ -121,7 +144,7 @@ const AdminContacts = () => {
                       Thank You!
                     </h3>
                     <p className="text-gray-600 mb-6">
-                      Your message has been sent successfully. We'll get back to you soon.
+                      Your message has been sent successfully. Our support team will contact you soon.
                     </p>
                     <button
                       onClick={() => setFormSubmitted(false)}
@@ -137,8 +160,15 @@ const AdminContacts = () => {
             </div>
           </div>
 
-          {/* Map Section */}
-          <div className="mt-12 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+          {/* Map Section with ref for scrolling */}
+          <div 
+            ref={mapRef}
+            className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100"
+          >
+            <div className="p-6 border-b">
+              <h2 className="text-2xl font-bold text-gray-800">Cyvex Office Location</h2>
+              <p className="text-gray-600 mt-2">461 Clementi Road, Singapore 599491</p>
+            </div>
             <iframe
               title="SIM Headquarters Location"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.747704172798!2d103.76789031533184!3d1.329753999036913!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da1a4f3d3a4b3d%3A0x3a6b3e3b3a3a3a3a!2sSingapore%20Institute%20of%20Management!5e0!3m2!1sen!2ssg!4v1620000000000!5m2!1sen!2ssg"
@@ -152,11 +182,12 @@ const AdminContacts = () => {
           </div>
         </div>
       </div>
+
       {/* Back to top button */}
       {showScrollButton && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+          className="fixed bottom-6 right-6 !bg-blue-950 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors z-40"
           aria-label="Back to top"
         >
           <FiChevronUp className="text-xl" />
