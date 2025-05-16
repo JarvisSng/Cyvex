@@ -72,7 +72,7 @@ const AdminContacts = () => {
         ref={contentRef}
         className="flex-1 overflow-y-auto pt-16 z-10" // pt-16 accounts for navbar height
       >
-        <div className="p-6 md:p-8 lg:p-12 max-w-6xl mx-auto">
+        <div className="p-6 md:p-8 lg:p-12  mx-auto">
           {/* Header Section */}
           <div className="text-center mb-8 md:mb-12">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">

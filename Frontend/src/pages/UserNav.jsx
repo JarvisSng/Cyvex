@@ -63,7 +63,7 @@ function UserNav({ setActiveSection }) {
 	return (
 		<>
 			{/* Top Navbar */}
-			<nav className="user-nav bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md text-white flex justify-between items-center">
+			<nav className="user-nav bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md text-white flex justify-between items-center z-50">
 				<div className="flex items-center space-x-12 hori-nav">
 					<img
 						onClick={() => navigate("/user-dashboard")}
