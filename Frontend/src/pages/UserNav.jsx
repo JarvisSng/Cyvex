@@ -9,8 +9,29 @@ function UserNav({ setActiveSection }) {
 	const trigger = useRef(null);
 	const dropdown = useRef(null);
 	const [NotificationOpen, setNotificationOpen] = useState(false);
+	const [isSubscribed, setIsSubscribed] = useState(false);
 
 	const Notification = useRef(null);
+
+	useEffect(() => {
+		const username = localStorage.getItem("username");
+		// only run the subscription check if we have a username
+		if (!username) return;
+
+		const checkSubscription = async () => {
+			try {
+				const subscribed = await checkCurrentUserSubscription();
+				if (subscribed) {
+					setIsSubscribed(true);
+				}
+			} catch (err) {
+				console.error("Error checking subscription:", err);
+			}
+		};
+
+		checkSubscription();
+	}, []);
+
 	const handleLogout = async () => {
 		const result = await logoutUserAll();
 		if (result.error) {
@@ -73,6 +94,20 @@ function UserNav({ setActiveSection }) {
 					>
 						Help
 					</a>
+					<a
+						onClick={() => navigate("/user/help")}
+						className="hover:bg-blue-700 px-3 py-2 rounded"
+					>
+						Subscribe
+					</a>
+					{!isSubscribed && (
+						<a
+							onClick={() => navigate("/user/subscribe")}
+							className="hover:bg-blue-700 px-3 py-2 rounded"
+						>
+							Subscription
+						</a>
+					)}
 				</div>
 				<div className="flex items-center space-x-2">
 					<Link

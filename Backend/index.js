@@ -21,6 +21,7 @@ const evmRoutes = require("./routes/evmRoutes");
 const checkSubRoute = require("./routes/checkSub");
 const decompileRoute = require("./routes/decompile");
 const activityRoutes = require("./routes/activity");
+const subscriptionRoutes = require("./routes/subscription");
 
 // Initialize the Express application
 const app = express();
@@ -62,6 +63,7 @@ app.use("/api/evm", evmRoutes);
 app.use("/api/check", checkSubRoute);
 app.use("/api/decompile", decompileRoute);
 app.use("/api/activity", activityRoutes);
+app.use("/api/subscription", subscriptionRoutes);
 
 // Set port from environment variables or default to 3000, and start the server
 const PORT = process.env.PORT || 3000;
