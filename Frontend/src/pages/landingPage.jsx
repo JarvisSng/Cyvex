@@ -7,13 +7,14 @@ import Chainlink from '../assets/Chainlink_logo.svg';
 import Coinbase from '../assets/Coinbase_logo.svg';
 import Ethereum from '../assets/Ethereum_logo.svg';
 import Uniswap from '../assets/Uniswap_logo.svg';
+import ContactForm from '../components/ContactForm';
 
 const LandingPage = () => {
 
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('solutions');
-
+  const [showContactForm, setShowContactForm] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -615,6 +616,27 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Contact Form (Conditional Render) */}
+        {showContactForm && (
+          <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-200">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-800">Enterprise Plan Inquiry</h3>
+              <button 
+                onClick={() => setShowContactForm(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <ContactForm 
+              onSuccess={() => {
+                setShowContactForm(false);
+                alert("Thank you! Our sales team will contact you shortly.");
+              }}
+            />
+          </div>
+        )}
 
         {/* Feature Comparison */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8 text-sm">
