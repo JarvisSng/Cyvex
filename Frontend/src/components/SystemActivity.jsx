@@ -77,12 +77,12 @@ const SystemActivity = () => {
 			}
 		}
 	}
-const borderColors = data?.orderPaymentType?.map((selling) => {
-      return selling._id === selectValue ? 'black' : 'white'; // Change border color for selected
-    });
-    const offsets = data?.orderPaymentType?.map((selling) => {
-      return selling._id === selectValue ? 35 : 0; // Offset for selected slice
-    });
+// const borderColors = data?.orderPaymentType?.map((selling) => {
+//       return selling._id === selectValue ? 'black' : 'white'; // Change border color for selected
+//     });
+//     const offsets = data?.orderPaymentType?.map((selling) => {
+//       return selling._id === selectValue ? 35 : 0; // Offset for selected slice
+//     });
 	const PieOption = {
       data: {
         datasets: [
@@ -90,8 +90,8 @@ const borderColors = data?.orderPaymentType?.map((selling) => {
             data: [2,3,4,3],
             backgroundColor: ["#10B981", "#3B82F6", "#F97316", "#0EA5E9"],
             label: "Dataset 1",
-            borderColor: borderColors,
-            offset: offsets,
+            borderColor: ["black", "white"],
+            offset: [35,0],
             borderWidth: 1, 
           },
         ],
