@@ -685,7 +685,7 @@ const LandingPage = () => {
 
   return (
   <>
-    <header className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md">
+    <header className="bg-blue-950 fixed top-0 left-0 w-full py-4 px-8 shadow-md z-50">
       {/* Header Container */}
       <div className="flex items-center justify-between w-full h-12">
         
@@ -777,8 +777,8 @@ const LandingPage = () => {
     </header>
 
     {/* Content Section */}
-    <main className="pt-24 min-h-screen flex flex-col justify-between bg-white w-full">
-      <div className="flex-grow flex items-center justify-center px-8 py-12">
+    <main className="h-screen flex flex-col justify-between bg-white w-full overflow-y-auto">
+      <div className="flex-grow flex items-center justify-center px-8 py-12 ">
         <div className="w-full max-w-7xl">
           {tabContent[activeTab]}
         </div>
