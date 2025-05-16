@@ -61,7 +61,7 @@ function UserNav({ setActiveSection }) {
 						className="h-10 w-auto" // adjust height/width to fit your design
 					/>
 					<a
-						onClick={() => navigate("/admin/contacts")}
+						onClick={() => navigate("/user/contacts")}
 						className="hover:bg-blue-700 px-3 py-2 rounded"
 					>
 						Contacts
