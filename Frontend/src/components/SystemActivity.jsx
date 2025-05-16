@@ -52,6 +52,7 @@ const SystemActivity = () => {
 				}
 			},
 			colors: ["#78f58d", "#041947"],
+			borderRadius:"10px",
 			responsive: [{
 				breakpoint: 480,
 				options: {
@@ -277,7 +278,8 @@ const SystemActivity = () => {
 				</h3>
 				<div className="relative p-6 z-20 bg-white dark:bg-form-input">
 					<select
-						className="relative z-20 w-half appearance-none rounded border border-stroke bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
+					  style={{borderRadius:"20px"}}
+						className="relative z-20 w-half appearance-none rounded border border-stroke border-r-4  bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
 						onChange={changeBarChart}
 					>
 						<option value="today">Today</option>
