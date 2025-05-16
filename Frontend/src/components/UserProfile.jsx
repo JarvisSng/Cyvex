@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import {
-	AccountResetEmail,
-	getUserProfileNoAuth,
-} from "../controller/userController";
+import { AccountResetEmail } from "../controller/authController";
+import { getUserProfileNoAuth } from "../controller/userController";
 
 const Profile = () => {
 	const [profile, setProfile] = useState({});
@@ -24,14 +22,14 @@ const Profile = () => {
 	}, []);
 
 	const handleResetPassword = async () => {
-		if (!profile.authData?.email) {
+		if (localStorage.getItem("email") === null) {
 			alert("Email address not available.");
 			return;
 		}
 
 		setMessage("Sending password reset email…");
 		const { success, error: resetError } = await AccountResetEmail(
-			profile.authData.email
+			localStorage.getItem("email")
 		);
 		if (resetError) {
 			setMessage(`Error: ${resetError}`);
