@@ -68,7 +68,7 @@ function UserNav({ setActiveSection }) {
 						Contacts
 					</a>
 					<a
-						href="#help"
+						onClick={() => navigate("/user/help")}
 						className="hover:bg-blue-700 px-3 py-2 rounded"
 					>
 						Help
