@@ -70,7 +70,7 @@ const AdminContacts = () => {
       {/* Scrollable Content Area */}
       <div 
         ref={contentRef}
-        className="flex-1 overflow-y-auto pt-16" // pt-16 accounts for navbar height
+        className="flex-1 overflow-y-auto pt-16 z-10" // pt-16 accounts for navbar height
       >
         <div className="p-6 md:p-8 lg:p-12 max-w-6xl mx-auto">
           {/* Header Section */}
