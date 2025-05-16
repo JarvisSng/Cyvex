@@ -9,6 +9,7 @@ router.post('/code/bytecode', async (req, res) => {
 
   // Normalize and fix bytecode
   let hex = bytecode.startsWith('0x') ? bytecode.slice(2) : bytecode;
+  console.log(hex);
 
   if (hex.length % 2 !== 0) {
     return res.status(400).json({
@@ -17,6 +18,7 @@ router.post('/code/bytecode', async (req, res) => {
     });
 }
   const cleanBytecode = '0x' + hex;
+  console.log(cleanBytecode);
 
   try {
     const { decompileByteCode } = await import('./decompile-esm.mjs');
