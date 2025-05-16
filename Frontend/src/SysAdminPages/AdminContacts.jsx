@@ -11,20 +11,8 @@ const AdminContacts = () => {
     {
       icon: <FiMail className="text-blue-500 text-2xl" />,
       title: "Email",
-      value: "support@example.com",
+      value: "cyvexsupport@gmail.com",
       description: "We'll respond within 24 hours"
-    },
-    {
-      icon: <FiPhone className="text-blue-500 text-2xl" />,
-      title: "Phone",
-      value: "(123) 456-7890",
-      description: "Mon-Fri, 9am-5pm"
-    },
-    {
-      icon: <FiMapPin className="text-blue-500 text-2xl" />,
-      title: "Office",
-      value: "123 Example Road, City, Country",
-      description: "Come visit us"
     },
     {
       icon: <FiClock className="text-blue-500 text-2xl" />,
