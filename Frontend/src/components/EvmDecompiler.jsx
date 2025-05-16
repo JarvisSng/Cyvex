@@ -1,302 +1,298 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getCryptoPatterns } from "../controller/cryptoPatternsController";
 import { getEvmOpcodes } from "../controller/evmOpcodesController";
 import { getOpcodePatterns } from "../controller/opcodePatternsController";
-import { decompileByteCode, AddressDecompileToOpcodes, ByteCodeDecompileToOpcodes, getByteCode, decompileAddress } from "../controller/SEVMController";
+import { 
+  decompileByteCode, 
+  decompileAddress,
+  getByteCode,
+  AddressDecompileToOpcodes, 
+  ByteCodeDecompileToOpcodes 
+} from "../controller/SEVMController";
 
 export default function CryptoDetector() {
-  const [address, setAddress] = useState("");
-  const [cryptoFindings, setCryptoFindings] = useState([]);
-  const [disassembly, setDisassembly] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [pseudocode, setPseudocode] = useState("");
+  const [input, setInput] = useState("");
+  const [analysis, setAnalysis] = useState({
+    findings: [],
+    disassembly: "",
+    pseudocode: "",
+    bytecode: "",
+    isContract: false
+  });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [resources, setResources] = useState({
+    opcodes: {},
+    cryptoPatterns: {},
+    opcodePatterns: {}
+  });
 
-  const [OPCODE_MAP, setOpcodeMap] = useState({});
-  const [CRYPTO_PATTERNS, setCryptoPatternsState] = useState({});
-  const [OPCODE_PATTERNS, setOpcodePatternsState] = useState({});
+  // Load required resources on mount
+  useEffect(() => {
+    const loadResources = async () => {
+      try {
+        const [opcodes, cryptoPatterns, opcodePatterns] = await Promise.all([
+          getEvmOpcodes(),
+          getCryptoPatterns(),
+          getOpcodePatterns()
+        ]);
 
- 	// Load opcodes and patterns on mount
-	useEffect(() => {
-	const loadAll = async () => {
-		try {
-		const [evm, crypto, ops] = await Promise.all([
-			getEvmOpcodes(),
-			getCryptoPatterns(),
-			getOpcodePatterns()
-		]);
+        setResources({
+          opcodes: opcodes.reduce((acc, op) => ({
+            ...acc,
+            [op.opcode.toLowerCase()]: op
+          }), {}),
+          cryptoPatterns: cryptoPatterns.reduce((acc, pattern) => ({
+            ...acc,
+            [pattern.pattern_name]: pattern.signature.toLowerCase()
+          }), {}),
+          opcodePatterns: opcodePatterns.reduce((acc, pattern) => ({
+            ...acc,
+            [pattern.pattern_name]: new RegExp(pattern.regex, 'g')
+          }), {})
+        });
+      } catch (err) {
+        console.error("Failed to load resources:", err);
+        setError("Failed to load analysis resources");
+      }
+    };
 
-		if (!evm.error) {
-			const map = {};
-			evm.forEach(op => {
-			// Maintains exact JSON structure you required
-			map[op.opcode.toLowerCase()] = {
-				opcode: op.opcode,        // Preserved exactly as from API
-				mnemonic: op.mnemonic    // Preserved exactly
-			};
-			});
-			setOpcodeMap(map);
-		}
+    loadResources();
+  }, []);
 
-		if (!crypto.error) {
-			const cryptoMap = {};
-			crypto.forEach(({ pattern_name, signature }) => {
-			cryptoMap[pattern_name] = signature.toLowerCase();
-			});
-			setCryptoPatternsState(cryptoMap);
-		}
+  const isEthereumAddress = (str) => /^0x[a-fA-F0-9]{40}$/.test(str);
 
-		if (!ops.error) {
-			const opPatterns = {};
-			ops.forEach(({ pattern_name, regex }) => {
-			opPatterns[pattern_name] = regex;
-			});
-			setOpcodePatternsState(opPatterns);
-		}
-		} catch (err) {
-		console.error("Failed to load data:", err);
-		}
-	};
+  const getRiskLevel = (patternName) => {
+    if (patternName.includes("ec_") || patternName.includes("ecrecover")) return 3;
+    if (patternName.includes("sig") || patternName.includes("verify")) return 2;
+    return 1;
+  };
 
-	loadAll();
-	}, []);
+  const detectCryptoPatterns = (bytecode) => {
+    const cleanBytecode = bytecode.toLowerCase().replace(/^0x/, "");
+    const findings = [];
 
-	// Convert bytecode to disassembly
-	const AddressDisassembleBytecode = async (address) => {
-		try {
-			const opcodeData = await  AddressDecompileToOpcodes(address);
+    // Check for function signature patterns
+    Object.entries(resources.cryptoPatterns).forEach(([name, pattern]) => {
+      let index = cleanBytecode.indexOf(pattern);
+      while (index !== -1) {
+        findings.push({
+          type: pattern.length === 8 ? "function_sig" : "precompile",
+          name,
+          pattern,
+          location: `0x${index.toString(16)}`,
+          risk: getRiskLevel(name),
+        });
+        index = cleanBytecode.indexOf(pattern, index + 1);
+      }
+    });
 
-			// Optional: Validate or transform data if needed
-			console.log('Disassembled Opcodes:', opcodeData);
-			return opcodeData;
-		} catch (err) {
-			console.error('Disassembly failed:', err);
-			throw err;
-		}
-	};
+    // Check for opcode patterns
+    Object.entries(resources.opcodePatterns).forEach(([name, regex]) => {
+      const matches = cleanBytecode.matchAll(regex);
+      for (const match of matches) {
+        findings.push({
+          type: "opcode_pattern",
+          name,
+          location: `0x${match.index.toString(16)}`,
+          risk: getRiskLevel(name),
+        });
+      }
+    });
 
-	const ByteCodeDisassembleBytecode = async (address) => {
-		try {
-			const opcodeData = await ByteCodeDecompileToOpcodes(address);
+    return findings.sort((a, b) => b.risk - a.risk);
+  };
 
-			// Optional: Validate or transform data if needed
-			console.log('Disassembled Opcodes:', opcodeData);
-			return opcodeData;
-		} catch (err) {
-			console.error('Disassembly failed:', err);
-			throw err;
-		}
-	};
+  const analyzeInput = async () => {
+    setLoading(true);
+    setError(null);
+    setAnalysis({
+      findings: [],
+      disassembly: "",
+      pseudocode: "",
+      bytecode: "",
+      isContract: false
+    });
 
-	// Helper function to determine risk based on pattern name
-	const getRisk = (name) => {
-	if (name.includes("ec_") || name.includes("ecrecover")) return 3;
-	if (name.includes("sig") || name.includes("verify")) return 2;
-	return 1;
-	};
+    try {
+      let bytecode = "";
+      let disassembly = "";
+      let pseudocode = "";
+      let isContract = false;
 
-	// Detect cryptographic patterns
-	const detectCryptoOperations = (code) => {
-		const findings = [];
-		const cleanCode = code.toLowerCase().replace(/^0x/, "");  // Clean the code once
+      if (isEthereumAddress(input)) {
+        // Address analysis flow
+        const [bytecodeRes, disassemblyRes, pseudocodeRes] = await Promise.all([
+          getByteCode(input),
+          AddressDecompileToOpcodes(input),
+          decompileAddress(input)
+        ]);
 
-		// Match patterns by string (function signatures, precompiles)
-		for (const [name, pattern] of Object.entries(CRYPTO_PATTERNS)) {
-			if (typeof pattern === "string") {
-			let index = cleanCode.indexOf(pattern);  // Find the first occurrence of the pattern
-			while (index !== -1) {
-				findings.push({
-				type: pattern.length === 8 ? "function_sig" : "precompile",  // Check if it's a function signature
-				name,
-				pattern,
-				location: `0x${index.toString(16)}`,
-				risk: getRisk(name),  // Assuming getRisk is defined to assign a risk level
-				});
-				index = cleanCode.indexOf(pattern, index + 1);  // Move to next match
-			}
-			}
-		}
+        bytecode = bytecodeRes.data?.bytecode || "";
+        disassembly = disassemblyRes.data?.disassembly?.join("\n") || "";
+        pseudocode = pseudocodeRes.data?.pseudocode || "";
+        isContract = true;
+      } else {
+        // Raw bytecode analysis flow
+        const [disassemblyRes, pseudocodeRes] = await Promise.all([
+          ByteCodeDecompileToOpcodes(input),
+          decompileByteCode(input)
+        ]);
 
-		// Match patterns by regex (opcode patterns)
-		for (const [name, regex] of Object.entries(OPCODE_PATTERNS)) {
-			const clone = new RegExp(regex.source, 'g');  // Ensure global flag for regex
-			let match;
-			while ((match = clone.exec(cleanCode)) !== null) {
-			findings.push({
-				type: "opcode_pattern",
-				name,
-				location: `0x${match.index.toString(16)}`,
-				risk: getRisk(name),
-			});
-			}
-		}
+        bytecode = input;
+        disassembly = disassemblyRes.data?.disassembly?.join("\n") || "";
+        pseudocode = pseudocodeRes.data?.pseudocode || "";
+      }
 
-		// Sort findings by risk in descending order
-		return findings.sort((a, b) => b.risk - a.risk);
-	};
+      if (!bytecode) {
+        throw new Error("No bytecode available for analysis");
+      }
 
-	const analyzeBytecode = async () => {
-		setIsLoading(true);
-		setError(null);
-		setCryptoFindings([]);
-		setDisassembly("");
-		setPseudocode("");
+      const findings = detectCryptoPatterns(bytecode);
 
-		console.log(address);
-		// Log the maps to the console
-		console.log("CRYPTO_PATTERNS:", CRYPTO_PATTERNS);
-		console.log("OPCODE_PATTERNS:", OPCODE_PATTERNS);
+      setAnalysis({
+        findings,
+        disassembly,
+        pseudocode,
+        bytecode,
+        isContract
+      });
 
-		try {
-			if (!address.trim()) throw new Error("Please enter a contract address");
+    } catch (err) {
+      console.error("Analysis failed:", err);
+      setError(err.message);
+      setAnalysis(prev => ({
+        ...prev,
+        findings: [{
+          type: "error",
+          message: err.message
+        }]
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-			// Check if the input is a valid Ethereum address (starts with "0x" and has 40 hex characters)
-			if (/^0x[a-fA-F0-9]{40}$/.test(address)) {
-			// If address is valid, proceed with disassembling and decompiling
+  return (
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          EVM Address or Bytecode to Analyze:
+        </label>
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+                    focus:outline-none focus:ring-2 focus:ring-blue-500
+                    focus:border-blue-500 font-mono text-sm !text-gray-800"
+          rows={8}
+          placeholder="Paste contract address or bytecode (with or without 0x)"
+          disabled={loading}
+        />
+      </div>
 
-			// === Call backend to disassemble the bytecode from the address ===
-			const disassembled = await AddressDisassembleBytecode(address); // Send address to get disassembly
-			setDisassembly(disassembled.data?.disassembly?.join("\n") || "No disassembly output");
+      <button
+        onClick={analyzeInput}
+        disabled={loading || !input.trim()}
+        className={`px-4 py-2 rounded-md text-white font-medium ${
+          loading || !input.trim()
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-blue-950 hover:bg-blue-700"
+        }`}
+      >
+        {loading ? "Analyzing..." : "Analyze Contract"}
+      </button>
 
-			// === Crypto detection ===
-			const bytecodeRaw = await getByteCode(address); // Fetch the real bytecode using the address
-			setCryptoFindings(detectCryptoOperations(bytecodeRaw.data.bytecode));
+      {error && (
+        <div className="mt-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+          {error}
+        </div>
+      )}
 
-			// === Call backend to decompile the bytecode from the address ===
-			const response = await decompileAddress(address); // Send address to get the pseudocode
-			console.log(response);
+      <div className="mt-6 space-y-6">
+        <AnalysisSection 
+          title="Cryptographic Findings"
+          content={
+            analysis.findings.length > 0 ? (
+              <div className="space-y-3">
+                {analysis.findings.map((finding, index) => (
+                  <FindingCard key={index} finding={finding} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">
+                {loading ? "Analyzing..." : "No findings to display"}
+              </p>
+            )
+          }
+        />
 
-			if (response.success) {
-				setPseudocode(response.data.pseudocode);
-			} else {
-				throw new Error(response.error || "Decompilation failed");
-			}
-			} else {
-			// If it's raw bytecode (does not match Ethereum address format)
-			// === Call backend to disassemble the bytecode directly ===
-			const disassembled = await ByteCodeDisassembleBytecode(address); // Directly disassemble the bytecode
-			setDisassembly(disassembled.data?.disassembly?.join("\n") || "No disassembly output");
+        {analysis.disassembly && (
+          <AnalysisSection
+            title="Disassembly"
+            content={
+              <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60">
+                {analysis.disassembly}
+              </pre>
+            }
+          />
+        )}
 
-			// === Crypto detection ===
-			setCryptoFindings(detectCryptoOperations(address)); // Use raw bytecode for crypto detection
-
-			// === Call backend to decompile the bytecode directly ===
-			const response = await decompileByteCode(address); // Send raw bytecode to decompile
-			console.log(response);
-
-			if (response.success) {
-				setPseudocode(response.data.pseudocode);
-			} else {
-				throw new Error(response.error || "Decompilation failed");
-			}
-			}
-		} catch (err) {
-			setError(err.message);
-			setCryptoFindings([{
-			type: "error",
-			message: err.message
-			}]);
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	return (
-	<div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
-		<div className="mb-4">
-			<label className="block text-sm font-medium text-gray-700 mb-2">
-			EVM Address or Bytecode to Analyze:
-			</label>
-			<textarea
-			value={address}
-			onChange={(e) => setAddress(e.target.value)}
-			className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-					focus:outline-none focus:ring-2 focus:ring-blue-500
-					focus:border-blue-500 font-mono text-sm !text-gray-800"
-			rows={8}
-			placeholder="Paste contract address or bytecode (with or without 0x)"
-			disabled={isLoading}
-			/>
-		</div>
-
-		<button
-			onClick={analyzeBytecode}
-			disabled={isLoading || !address.trim()}
-			className={`px-4 py-2 rounded-md text-white font-medium ${
-			isLoading || !address.trim()
-				? "!bg-gray-400 cursor-not-allowed"
-				: "!bg-blue-950 hover:bg-blue-700"
-			}`}
-		>
-			{isLoading ? "Analyzing..." : "Detect Cryptographic Operations"}
-		</button>
-
-		<div className="mt-6 space-y-6">
-			<div>
-			<h2 className="text-lg font-medium text-gray-800 mb-2">
-				Cryptographic Findings:
-			</h2>
-			{cryptoFindings.length > 0 ? (
-				<div className="space-y-3">
-				{cryptoFindings.map((finding, index) => (
-					<div
-					key={index}
-					className={`p-3 rounded-md border-l-4 ${
-						finding.type === "error"
-						? "bg-red-50 border-red-500 text-red-700"
-						: finding.risk === 3
-						? "bg-orange-50 border-orange-500 text-orange-700"
-						: finding.risk === 2
-						? "bg-yellow-50 border-yellow-500 text-yellow-700"
-						: "bg-green-50 border-green-500 text-green-700"
-					}`}
-					>
-					{finding.type === "error" ? (
-						<p>{finding.message}</p>
-					) : (
-						<>
-						<p className="font-bold">{finding.name}</p>
-						<p>Type: {finding.type.replace("_", " ")}</p>
-						{finding.pattern && <p>Pattern: {finding.pattern}</p>}
-						<p>Location: {finding.location}</p>
-						<p>Risk: {"❗".repeat(finding.risk)}</p>
-						</>
-					)}
-					</div>
-				))}
-				</div>
-			) : (
-				<p className="text-gray-500">
-				{isLoading ? "Analyzing..." : "No cryptographic operations detected yet"}
-				</p>
-			)}
-			</div>
-
-			{disassembly && (
-			<div>
-				<h2 className="text-lg font-medium text-gray-800 mb-2">
-				Disassembly:
-				</h2>
-				<pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm max-h-60 !text-gray-800">
-				{disassembly}
-				</pre>
-			</div>
-			)}
-
-			{pseudocode && (
-			<div className="mt-6">
-				<h2 className="text-lg font-medium text-gray-800 mb-2">
-				Reconstructed Solidity Code
-				</h2>
-				<div className="bg-gray-100 p-4 rounded-md overflow-auto max-h-96">
-					<pre className="text-sm font-mono whitespace-pre-wrap">
-						{pseudocode}
-					</pre>
-				</div>
-				<p>Note: This is reconstructed code, not the actual code</p>
-			</div>
-			)}
-		</div>
-	</div>
-	);
+        {analysis.pseudocode && (
+          <AnalysisSection
+            title="Reconstructed Solidity Code"
+            content={
+              <>
+                <div className="bg-gray-100 p-4 rounded-md overflow-auto max-h-96">
+                  <pre className="text-sm font-mono whitespace-pre-wrap">
+                    {analysis.pseudocode}
+                  </pre>
+                </div>
+                <p className="mt-2 text-sm text-gray-500">
+                  Note: This is reconstructed code, not the original source
+                </p>
+              </>
+            }
+          />
+        )}
+      </div>
+    </div>
+  );
 }
+
+// Helper components for better organization
+const AnalysisSection = ({ title, content }) => (
+  <div>
+    <h2 className="text-lg font-medium text-gray-800 mb-2">{title}</h2>
+    {content}
+  </div>
+);
+
+const FindingCard = ({ finding }) => {
+  const riskColors = {
+    1: "bg-green-50 border-green-500 text-green-700",
+    2: "bg-yellow-50 border-yellow-500 text-yellow-700",
+    3: "bg-orange-50 border-orange-500 text-orange-700",
+    error: "bg-red-50 border-red-500 text-red-700"
+  };
+
+  const colorClass = finding.type === "error" 
+    ? riskColors.error 
+    : riskColors[finding.risk] || riskColors[1];
+
+  return (
+    <div className={`p-3 rounded-md border-l-4 ${colorClass}`}>
+      {finding.type === "error" ? (
+        <p>{finding.message}</p>
+      ) : (
+        <>
+          <p className="font-bold">{finding.name}</p>
+          <p>Type: {finding.type.replace("_", " ")}</p>
+          {finding.pattern && <p>Pattern: {finding.pattern}</p>}
+          <p>Location: {finding.location}</p>
+          <p>Risk: {"❗".repeat(finding.risk)}</p>
+        </>
+      )}
+    </div>
+  );
+};
