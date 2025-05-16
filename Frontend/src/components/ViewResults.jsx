@@ -172,32 +172,130 @@ export default function ViewResults({code, fileExt}) {
   };
 
   const detectLanguage = (fileExt, code) => {
-    // 1. First try to detect by file extension
+    // 1. First try file extension if available
     const extensionMap = {
       py: 'Python',
       js: 'JavaScript',
-      java: 'Java',
-      cpp: 'C++',
-      sol: 'Solidity'
+      java: 'Java'
     };
 
     if (fileExt) {
       const ext = fileExt.replace('.', '').toLowerCase();
-      return extensionMap[ext] || 'Unknown';
+      if (extensionMap[ext]) {
+        return extensionMap[ext];
+      }
     }
 
-    // 2. For pasted code, use more aggressive content detection
-    const codeStr = code.toLowerCase();
+    // 2. Process code for analysis
+    const lines = code.split('\n');
+    let codeContent = '';
     
-    if (/(^|\n)\s*(import|def|class)\s/.test(codeStr)) return 'Python';
-    if (/(^|\n)\s*(function|const|let|var)\s/.test(codeStr)) return 'JavaScript';
-    if (/(^|\n)\s*(#include|using namespace)/.test(codeStr)) return 'C++';
-    if (/(^|\n)\s*(contract|pragma solidity)/.test(codeStr)) return 'Solidity';
-    if (/(^|\n)\s*(public class|import java\.)/.test(codeStr)) return 'Java';
+    // Skip comments and collect significant lines
+    for (const line of lines) {
+      const trimmed = line.trim();
+      
+      // Skip empty lines and comments
+      if (!trimmed || 
+          trimmed.startsWith('#') || 
+          trimmed.startsWith('//') ||
+          trimmed.startsWith('/*')) {
+        continue;
+      }
+      
+      // Remove inline comments
+      const codeLine = line.split('//')[0].split('/*')[0].trim();
+      if (codeLine) {
+        codeContent += codeLine + '\n';
+        if (codeContent.split('\n').length > 10) break; // Analyze first 10 meaningful lines
+      }
+    }
+
+    // Convert to lowercase for case-insensitive matching
+    const analysisContent = codeContent.toLowerCase();
+
+    // 3. Language-specific patterns (ordered by specificity)
+    const languagePatterns = [
+      {
+        language: 'Python',
+        patterns: [
+          /^[\s]*def\s+\w+\(.*\)\s*:/,    // Function definition
+          /^[\s]*class\s+\w+.*:/,          // Class definition
+          /^[\s]*import\s+\w+/,            // Import statement
+          /^[\s]*from\s+\w+\s+import/,     // From import
+          /^[\s]*@\w+/,                    // Decorator
+          /^[\s]*self\.\w+/,               // Self reference
+          /^[\s]*__init__\(/,              // Constructor
+          /^[\s]*print\(/,                 // Print function
+          /^[\s]*try:/,                    // Try block
+          /^[\s]*except\s/,                // Except block
+          /^[\s]*elif\s/,                  // Elif statement
+          /^[\s]*else:/                    // Else statement
+        ],
+        weight: 0
+      },
+      {
+        language: 'JavaScript',
+        patterns: [
+          /^[\s]*function\s+\w+\(.*\)\s*\{/, // Function declaration
+          /^[\s]*const\s+\w+\s*=/,         // Const variable
+          /^[\s]*let\s+\w+\s*=/,           // Let variable
+          /^[\s]*=>/,                      // Arrow function
+          /^[\s]*import\s+\w+/,           // ES6 import
+          /^[\s]*export\s/,               // Export statement
+          /^[\s]*console\.log\(/,         // Console log
+          /^[\s]*`\$\{/,                  // Template literal
+          /^[\s]*\/\/.*/,                 // Single-line comment
+          /^[\s]*\/\*.*\*\//             // Block comment
+        ],
+        weight: 0
+      },
+      {
+        language: 'Java',
+        patterns: [
+          /^[\s]*public\s+class\s+\w+/,   // Class definition
+          /^[\s]*import\s+[\w\.]+;/,      // Import statement
+          /^[\s]*public\s+\w+\s+\w+\(/,   // Method definition
+          /^[\s]*System\.out\.print/,     // Print statement
+          /^[\s]*new\s+\w+\(/,            // Object creation
+          /^[\s]*@Override/,              // Annotation
+          /^[\s]*private\s+\w+\s+\w+;/,   // Field declaration
+          /^[\s]*try\s*\{/,               // Try block
+          /^[\s]*catch\s*\(/,             // Catch block
+          /^[\s]*package\s+[\w\.]+;/      // Package declaration
+        ],
+        weight: 0
+      }
+    ];
+
+    // Calculate weights for each language
+    languagePatterns.forEach(lang => {
+      lang.weight = lang.patterns.reduce((count, pattern) => {
+        return count + (pattern.test(analysisContent) ? 1 : 0);
+      }, 0);
+    });
+
+    // 4. Determine the most likely language
+    languagePatterns.sort((a, b) => b.weight - a.weight);
+    
+    if (languagePatterns[0].weight > 0) {
+      return languagePatterns[0].language;
+    }
+
+    // 5. Fallback: scan entire code for strong indicators
+    const fullCode = code.toLowerCase();
+    if (/(def \w+\(|class \w+|import \w+|from \w+ import)/.test(fullCode)) {
+      return 'Python';
+    }
+    if (/(function \w+\(|const \w+=|let \w+=|=>|import \w+)/.test(fullCode)) {
+      return 'JavaScript';
+    }
+    if (/(public class |import [\w\.]+;|System\.out)/.test(fullCode)) {
+      return 'Java';
+    }
 
     return 'Unknown';
   };
-
+    
   const handleScan = () => {
     setIsScanComplete(false);
     setActiveButton(null);

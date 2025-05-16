@@ -238,22 +238,6 @@ function Detector() {
 				{isMenuOpen && (
 					<div className="xl:hidden bg-blue-900 w-full py-4 px-8 absolute left-0 top-20 shadow-lg z-50">
 						<nav className="flex flex-col items-center gap-4">
-							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
-								solutions
-							</h2>
-							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
-								customers
-							</h2>
-							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
-								services
-							</h2>
-							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
-								insights
-							</h2>
-							<h2 className="text-stone-50 text-xl font-bold cursor-pointer">
-								company
-							</h2>
-
 							<div className="flex flex-col sm:flex-row items-center gap-4 mt-4 w-full justify-center">
 								<button
 									onClick={login}

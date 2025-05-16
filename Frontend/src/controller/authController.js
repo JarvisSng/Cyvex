@@ -240,7 +240,7 @@ export const logoutUser = async () => {
 // Function to handle account reset
 export const AccountResetEmail = async (email) => {
 	const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-		redirectTo: "https://cyvex.onrender.com/resetAccount/password",
+		redirectTo: "https://cyvex.onrender.com/#/resetAccount/password",
 	});
 
 	if (error) {
