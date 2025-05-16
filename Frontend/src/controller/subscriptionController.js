@@ -7,7 +7,7 @@
  */
 export async function activateSubscription(userId) {
 	try {
-		const resp = await fetch(`/api/subscription/activate/${userId}`, {
+		const resp = await fetch(`${path}/subscription/activate/${userId}`, {
 			method: "POST",
 			credentials: "include", // if you need cookies/auth
 			headers: {
