@@ -2,66 +2,50 @@ const express = require("express");
 const router = express.Router();
 const supabase = require("../config/supabaseAdminClient");
 
+/**
+ * POST /api/activity/login
+ *
+ * Increments today's login count:
+ *  - If a row for today exists, increments its `logins`.
+ *  - Otherwise inserts a new row with `date = today` and `logins = 1`.
+ * Returns 204 No Content on success.
+ */
 router.post("/login", async (req, res) => {
-	console.log("[API] POST /api/activity/login called");
 	try {
-		// 1. Get latest row
-		console.log("[API] fetching latest activity row…");
-		const { data: lastRow, error: fetchError } = await supabase
-			.from("activity")
-			.select("id, date, logins")
-			.order("date", { ascending: false })
-			.limit(1)
-			.maybeSingle();
+		// Compute today's date as YYYY-MM-DD
+		const today = new Date().toISOString().split("T")[0];
 
-		if (fetchError) {
-			console.error(
-				"[API] Error fetching last activity row:",
-				fetchError
-			);
+		// Try to fetch the existing activity row for today
+		const { data: existing, error: fetchError } = await supabase
+			.from("activity")
+			.select("id, logins")
+			.eq("date", today)
+			.single();
+
+		// If there was an error *other than* “no rows found”, bail out
+		if (fetchError && fetchError.code !== "PGRST116") {
+			console.error("[API] Error fetching today's row:", fetchError);
 			return res.status(500).json({ error: fetchError.message });
 		}
-		console.log("[API] lastRow fetched:", lastRow);
 
-		// 2. Today’s date
-		const today = new Date().toISOString().split("T")[0];
-		console.log("[API] today =", today);
-
-		// 3. Decide update vs insert
-		if (lastRow && lastRow.date === today) {
-			const newCount = lastRow.logins + 1;
-			console.log(
-				`[API] updating row id=${lastRow.id} (was ${lastRow.logins}) → ${newCount}`
-			);
-			const { error: updateError } = await supabase
+		if (existing) {
+			// Row exists → increment
+			await supabase
 				.from("activity")
-				.update({ logins: newCount })
-				.eq("id", lastRow.id);
-
-			if (updateError) {
-				console.error("[API] Error updating login count:", updateError);
-				return res.status(500).json({ error: updateError.message });
-			}
+				.update({ logins: existing.logins + 1 })
+				.eq("id", existing.id);
 		} else {
-			console.log("[API] inserting new row for today");
-			const { error: insertError } = await supabase
-				.from("activity")
-				.insert({ date: today, logins: 1 });
-
-			if (insertError) {
-				console.error(
-					"[API] Error inserting new activity row:",
-					insertError
-				);
-				return res.status(500).json({ error: insertError.message });
-			}
+			// No row yet for today → insert new
+			await supabase.from("activity").insert({ date: today, logins: 1 });
 		}
 
-		console.log("[API] increment complete, sending 204");
-		res.sendStatus(204);
+		return res.sendStatus(204);
 	} catch (err) {
-		console.error("[API] Unexpected error in /api/activity/login:", err);
-		res.status(500).json({ error: "Internal Server Error" });
+		console.error(
+			"[API] Unexpected error in POST /api/activity/login:",
+			err
+		);
+		return res.status(500).json({ error: "Internal Server Error" });
 	}
 });
 

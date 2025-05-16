@@ -37,7 +37,7 @@ router.post("/user/:userId/reset-password", async (req, res) => {
 		console.log("User email retrieved:", email);
 
 		const { error } = await supabase.auth.resetPasswordForEmail(email, {
-			redirectTo: "https://cyvex.onrender.com/reset-password",
+			redirectTo: "https://cyvex.onrender.com/#/reset-password",
 		});
 		if (error) {
 			console.error("Error resetting password:", error);
