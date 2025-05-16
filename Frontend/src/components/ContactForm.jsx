@@ -40,7 +40,7 @@ const ContactForm = ({ onSuccess }) => {
             required
             value={formData.name}
             onChange={handleChange}
-            className="pl-10 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+            className="pl-10 w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             placeholder="Bob"
           />
         </div>
@@ -61,7 +61,7 @@ const ContactForm = ({ onSuccess }) => {
             required
             value={formData.email}
             onChange={handleChange}
-            className="pl-10 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+            className="pl-10 w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             placeholder="you@example.com"
           />
         </div>
@@ -82,7 +82,7 @@ const ContactForm = ({ onSuccess }) => {
             required
             value={formData.message}
             onChange={handleChange}
-            className="pl-10 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+            className="pl-10 w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             placeholder="How can we help you?"
           ></textarea>
         </div>
