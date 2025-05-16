@@ -30,7 +30,7 @@ router.post('/code/bytecode', async (req, res) => {
         pseudocode,
         functions,
         events,
-        bytecodeSize: (cleanBytecode.length - 2) / 2,
+        bytecodeSize: (cleanBytecode.length - 4),
       }
     });
   } catch (error) {
@@ -75,7 +75,7 @@ router.post('/code/address', async (req, res) => {
         pseudocode,
         functions,
         events,
-        bytecodeSize: (evenBytecode.length - 2) / 2,
+        bytecodeSize: (evenBytecode.length - 4),
       }
     });
   } catch (error) {
