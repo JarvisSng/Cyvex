@@ -7,6 +7,7 @@ import path from "../config/expressPath";
  * @returns {Promise<{ success?: true, error?: string }>}
  */
 export async function activateSubscription(userId) {
+	console.log(userId);
 	try {
 		const resp = await fetch(
 			`${path}/api/subscription/activate/${userId}`,
