@@ -87,7 +87,7 @@ const borderColors = data?.orderPaymentType?.map((selling) => {
       data: {
         datasets: [
           {
-            data: newData?.data,
+            data: [2,3,4,3],
             backgroundColor: ["#10B981", "#3B82F6", "#F97316", "#0EA5E9"],
             label: "Dataset 1",
             borderColor: borderColors,
