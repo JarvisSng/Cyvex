@@ -8,52 +8,26 @@ export const decompileByteCode = async (bytecode) => {
             body: JSON.stringify({ bytecode })
         });
 
-        const rawText = await response.text();
-        console.debug('Decompilation Response:', rawText);
+        const rawText = await response.text(); // get raw response
+        console.log('Raw Response:', rawText);
 
         if (!response.ok) {
-            let errorData = { error: 'Unknown error', details: {} };
+            let errorData;
             try {
-                errorData = JSON.parse(rawText);
-            } catch (e) {
-                console.warn('Failed to parse error response:', e);
+                errorData = JSON.parse(rawText); // try to parse error body
+            } catch {
+                throw new Error('Server error: ' + rawText);
             }
-            
-            const apiError = new Error(errorData.error || 'Decompilation failed');
-            apiError.details = errorData.details || {};
-            apiError.status = response.status;
-            throw apiError;
+            throw new Error(errorData.error || 'Decompilation failed');
         }
 
-        const result = JSON.parse(rawText);
-        
-        if (!result.success) {
-            const error = new Error(result.error || 'Decompilation unsuccessful');
-            error.details = result.data || {};
-            throw error;
-        }
-
-        return {
-            ...result.data,
-            rawResponse: rawText // Include raw response for debugging
-        };
+        return JSON.parse(rawText);
 
     } catch (error) {
-        console.error('Decompilation Error:', {
-            message: error.message,
-            stack: error.stack,
-            input: { bytecode: bytecode?.slice(0, 50) + (bytecode?.length > 50 ? '...' : '') }
-        });
-        
-        // Enhance the error with additional context
-        error.context = {
-            endpoint: 'bytecode',
-            inputType: 'bytecode',
-            timestamp: new Date().toISOString()
-        };
+        console.error('API Error:', error);
         throw error;
     }    
-};
+}
 
 export const decompileAddress = async (address) => {
     try {
@@ -63,50 +37,23 @@ export const decompileAddress = async (address) => {
             body: JSON.stringify({ address })
         });
 
-        const rawText = await response.text();
-        console.debug('Address Decompilation Response:', rawText);
+        const rawText = await response.text(); // get raw response
+        console.log('Raw Response:', rawText);
 
         if (!response.ok) {
-            let errorData = { error: 'Unknown error', details: {} };
+            let errorData;
             try {
-                errorData = JSON.parse(rawText);
-            } catch (e) {
-                console.warn('Failed to parse error response:', e);
+                errorData = JSON.parse(rawText); // try to parse error body
+            } catch {
+                throw new Error('Server error: ' + rawText);
             }
-            
-            const apiError = new Error(errorData.error || 'Address decompilation failed');
-            apiError.details = errorData.details || {};
-            apiError.status = response.status;
-            throw apiError;
+            throw new Error(errorData.error || 'Decompilation failed');
         }
 
-        const result = JSON.parse(rawText);
-        
-        if (!result.success) {
-            const error = new Error(result.error || 'Address decompilation unsuccessful');
-            error.details = result.data || {};
-            throw error;
-        }
-
-        return {
-            ...result.data,
-            isContract: result.data.isContract !== false, // Default to true if not specified
-            rawResponse: rawText
-        };
+        return JSON.parse(rawText);
 
     } catch (error) {
-        console.error('Address Decompilation Error:', {
-            message: error.message,
-            stack: error.stack,
-            input: { address }
-        });
-        
-        // Enhance the error with additional context
-        error.context = {
-            endpoint: 'address',
-            inputType: 'address',
-            timestamp: new Date().toISOString()
-        };
+        console.error('API Error:', error);
         throw error;
     }
 };
