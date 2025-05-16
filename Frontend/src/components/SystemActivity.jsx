@@ -96,17 +96,19 @@ const SystemActivity = () => {
 			const limit = val === "today" ? 1 : val === "week" ? 7 : val === "month" ? 30 : result.length;
 
 			if (val === "today") {
-				activitynewData = [
-					{ name: "Activity", data: result.map(item => item["currently active"]).slice(result.length-limit, result.length) },
-					{ name: "In Active", data: result.map(item => item["currently inactive"]).slice(result.length-limit, result.length) }
-				];
+				// activitynewData = [
+				// 	{ name: "Activity", data: result.map(item => item["currently active"]).slice(result.length-limit, result.length) },
+				// 	{ name: "In Active", data: result.map(item => item["currently inactive"]).slice(result.length-limit, result.length) }
+				// ];
 				activityCategory=["Actine", "In Active"];
-				activitynewData= [{ name: "System Activity", data: [result[result.length-limit]["currently active"] ,  result[result.length-limit]["currently inactive"]]}]
+				activitynewData= [{ name: "System Activity", data: [result[result.length-limit]["currently active"] ,  result[result.length-limit]["currently inactive"]]}];
+				setCategories(activityCategory);
 			} else {
 				activitynewData = [{ name: "System Activity", data: result.map(item => item["logins"]).slice(result.length-limit, result.length) }];
+				setCategories(activityCategory.slice(result.length-limit, result.length));
 			}
 			console.log("activitynewData", activitynewData);
-			setCategories(activityCategory.slice(result.length-limit, result.length));
+			// setCategories(activityCategory.slice(result.length-limit, result.length));
 			setData(activityData.slice(result.length-limit, result.length));
 			setNewData(activitynewData);
 
@@ -285,7 +287,7 @@ const SystemActivity = () => {
 					System Activity
 				</h3>
 				<div className="relative p-6 z-20 bg-white dark:bg-form-input">
-					<span><b>Filter By</b></span>
+					<span className="me32"><b>Filter By</b></span>
 					<select
 						className="system-active-select relative z-20 w-half appearance-none rounded border border-stroke rounded-md  bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
 						onChange={changeBarChart}
