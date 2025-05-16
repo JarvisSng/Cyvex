@@ -89,15 +89,15 @@ const SystemActivity = () => {
 
 			if (val === "today") {
 				activitynewData = [
-					{ name: "Activity", data: result.map(item => item["currently active"]).slice(0, limit) },
-					{ name: "In Active", data: result.map(item => item["currently inactive"]).slice(0, limit) }
+					{ name: "Activity", data: result.map(item => item["currently active"]).slice(result.length-limit, result.length) },
+					{ name: "In Active", data: result.map(item => item["currently inactive"]).slice(result.length-limit, result.length) }
 				];
 			} else {
 				activitynewData = [{ name: "System Activity", data: activityData }];
 			}
 			console.log("activitynewData", activitynewData);
-			setCategories(activityCategory.slice(0, limit));
-			setData(activityData.slice(0, limit));
+			setCategories(activityCategory.slice(result.length-limit, result.length));
+			setData(activityData.slice(result.length-limit, result.length));
 			setNewData(activitynewData);
 
 
@@ -280,14 +280,14 @@ const SystemActivity = () => {
 						onChange={changeBarChart}
 					>
 						<option value="today">Today</option>
-						<option value="week">This Week</option>
+						<option value="week">Last 7 Days</option>
 						<option value="month">Last 30 Days</option>
 						{/* <option value="3">This Year</option> */}
 					</select>
 				</div>
 			</div>
 
-			<div className="mb-2">
+			{/* <div className="mb-2">
 				<div id="chartFour" className="-ml-5">
 					<ReactApexChart
 						options={options}
@@ -301,7 +301,7 @@ const SystemActivity = () => {
 						height={350}
 					/>
 				</div>
-			</div>
+			</div> */}
 			<div className="mb-2">
 				<div id="chartFive" ac-chart="'donut'" className="-ml-5">
 					<Chart
