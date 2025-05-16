@@ -136,7 +136,7 @@ const borderColors = data?.orderPaymentType?.map((selling) => {
 		}
 	}
 	useEffect(() => {
-		getAllActivitys("week");
+		getAllActivitys("today");
 	}, [])
 
 	const changeBarChart = (e) => {
@@ -337,7 +337,7 @@ const borderColors = data?.orderPaymentType?.map((selling) => {
 					<Chart
 						options={chartData?.options}
 						series={chartData?.options?.series}
-						type="pie"
+						type="bar"
 						height={350}
 					/>
 				</div>
