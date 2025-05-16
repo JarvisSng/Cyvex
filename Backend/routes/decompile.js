@@ -131,11 +131,31 @@ router.post('/opcode/address', async (req, res) => {
 
 router.post('/opcode/bytecode', async (req, res) => {
   const { bytecode } = req.body;
-  console.log(bytecode);
+  console.log('Received bytecode:', bytecode);
+
+  // Normalize and validate bytecode
+  let hex = bytecode.startsWith('0x') ? bytecode.slice(2) : bytecode;
+
+  if (!/^[0-9a-fA-F]*$/.test(hex)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Bytecode contains non-hex characters.'
+    });
+  }
+
+  if (hex.length % 2 !== 0) {
+    return res.status(400).json({
+      success: false,
+      error: `Bytecode must have even length. Got ${hex.length} characters.`
+    });
+  }
+
+  const cleanBytecode = '0x' + hex;
+  console.log('Sanitized bytecode:', cleanBytecode);
 
   try {
     const { getOpcodesByByteCode } = await import('./decompile-esm.mjs');
-    const formattedOpcodes = await getOpcodesByByteCode(bytecode);
+    const formattedOpcodes = await getOpcodesByByteCode(cleanBytecode);
 
     res.json({
       success: true,
