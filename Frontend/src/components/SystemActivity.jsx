@@ -337,7 +337,7 @@ const borderColors = data?.orderPaymentType?.map((selling) => {
 					<Chart
 						options={chartData?.options}
 						series={chartData?.options?.series}
-						type="bar"
+						type="pie"
 						height={350}
 					/>
 				</div>
