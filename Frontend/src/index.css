@@ -99,6 +99,10 @@ button:focus-visible {
   z-index: 1000;
 }
 
+.user-nav{
+  z-index: 999999;
+}
+
 .hori-nav a{
   color: #ffffff !important;
 }
