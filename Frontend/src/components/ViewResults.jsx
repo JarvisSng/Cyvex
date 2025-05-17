@@ -176,7 +176,8 @@ export default function ViewResults({code, fileExt}) {
     const extensionMap = {
       py: 'Python',
       js: 'JavaScript',
-      java: 'Java'
+      java: 'Java',
+      cpp : 'C++'
     };
 
     if (fileExt) {
